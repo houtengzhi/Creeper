@@ -8,6 +8,7 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -156,9 +157,29 @@ private fun HomePageScreen(modifier: Modifier = Modifier) {
             colors = if (serverStarted) CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary) else CardDefaults.cardColors()
         )
 
+        AnimatedVisibility(visible = serverStarted) {
+            CardItem(
+                iconResId = R.drawable.ic_cloud,
+                title = "Server Status",
+                subtitle = "api request",
+                onClick = {
+
+                },
+                modifier = Modifier,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            )
+        }
+
         CommonItem(
             iconResId = R.drawable.ic_convert,
-            title = "Converter",
+            title = "Add converter",
+            onClick = { },
+            modifier = Modifier
+        )
+
+        CommonItem(
+            iconResId = R.drawable.ic_settings,
+            title = "Settings",
             onClick = { },
             modifier = Modifier
         )
@@ -188,7 +209,7 @@ fun CardItem(@DrawableRes iconResId: Int, title: String, subtitle: String, onCli
 
             Column {
                 Text(text = title,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 24.dp, top = 12.dp),
                     textAlign = TextAlign.Center)
 
@@ -218,7 +239,7 @@ fun CommonItem(@DrawableRes iconResId: Int, title: String, onClick: () -> Unit, 
         )
 
         Text(text = title,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 12.dp),
             textAlign = TextAlign.Center)
     }
