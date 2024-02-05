@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Spider</string>
     <string name="You_have_denied_to_access_to_your_y">"You have denied to access to your %1$s. This can be changed in your app settings."</string>
+    <string name="Convert">"Convert"</string>
 </resources>

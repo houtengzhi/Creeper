@@ -23,7 +23,14 @@ fun AppMain() {
 
         NavHost(navController = navController, startDestination = Screen.Home.route) {
             composable(Screen.Home.route) {
-                HomePage()
+                HomePage(onConvertClick = {
+                    navController.navigate(Screen.Convert.route)
+                })
+            }
+            composable(Screen.Convert.route) {
+                ConverterPage(onUpClick = {
+                    navController.navigateUp()
+                })
             }
 
             composable(route = Screen.Gallery.route,
@@ -37,6 +44,7 @@ fun AppMain() {
 
 sealed class Screen(val route: String, val navArguments: List<NamedNavArgument> = emptyList()) {
     data object Home: Screen("Home")
+    data object Convert: Screen("Convert")
     data object Gallery: Screen(route = "Gallery/{sourceId}",
         navArguments = listOf(navArgument("sourceId") {type = NavType.IntType})
     ) {

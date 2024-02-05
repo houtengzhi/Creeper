@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavController
 import com.cloud.spider.R
 import com.cloud.spider.server.SpiderService
 import com.cloud.spider.util.SystemUtil
@@ -62,7 +63,7 @@ import com.google.accompanist.permissions.shouldShowRationale
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
-fun HomePage() {
+fun HomePage(onConvertClick: () -> Unit = {}) {
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -72,7 +73,8 @@ fun HomePage() {
             HomeTopAppBar(scrollBehavior = scrollBehavior)
         }
     ) { contentPadding ->
-        HomePageScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()))
+        HomePageScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
+            onConvertClick = onConvertClick)
 
         var showRationableDialog by remember {
             mutableStateOf(false)
@@ -128,9 +130,8 @@ private fun HomeTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
         scrollBehavior = scrollBehavior)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomePageScreen(modifier: Modifier = Modifier) {
+private fun HomePageScreen(modifier: Modifier = Modifier, onConvertClick: () -> Unit) {
 
     Column(modifier = modifier
         .fillMaxWidth()
@@ -173,7 +174,7 @@ private fun HomePageScreen(modifier: Modifier = Modifier) {
         CommonItem(
             iconResId = R.drawable.ic_convert,
             title = "Add converter",
-            onClick = { },
+            onClick = onConvertClick,
             modifier = Modifier
         )
 
