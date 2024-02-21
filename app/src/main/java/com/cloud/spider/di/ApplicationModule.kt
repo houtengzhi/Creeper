@@ -1,5 +1,7 @@
 package com.cloud.spider.di
 
+import android.app.Application
+import com.cloud.spider.base.SpiderApp
 import com.yanzhenjie.andserver.AndServer
 import dagger.Module
 import dagger.Provides
@@ -15,5 +17,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApplicationModule {
 
-
+    @Provides
+    @Singleton
+    fun provideSpiderApplication(application: Application): SpiderApp = application as SpiderApp
 }

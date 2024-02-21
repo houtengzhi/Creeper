@@ -9,10 +9,7 @@ import com.cloud.spider.protocol.clash.ClashConfig
  */
 class ConverterManager {
 
-    fun readClashSubscription(url: String): ApiResponse<ClashConfig> {
-        return HttpHelper.getInstance().fetchSubscription(url)
-            .mapSuccess {
-                Yaml.default.decodeFromString(ClashConfig.serializer(), this)
-            }
+    fun readClashSubscription(content: String): ClashConfig {
+        return Yaml.default.decodeFromString(ClashConfig.serializer(), content)
     }
 }
