@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import com.cloud.spider.repository.db.AppDatabase
 import com.cloud.spider.repository.db.DbRepos
+import com.cloud.spider.repository.file.FileRepos
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,4 +30,8 @@ object PersistanceModule {
     @Provides
     @Singleton
     fun provideDbRepos(appDatabase: AppDatabase): DbRepos = DbRepos(appDatabase)
+
+    @Provides
+    @Singleton
+    fun provideFileRepos(): FileRepos = FileRepos()
 }
