@@ -8,7 +8,7 @@ import okhttp3.Request
  *
  * Created by cloud on 2024/2/21.
  */
-class HttpRepos(val httpClient: OkHttpClient) {
+class HttpRepos(private val httpClient: OkHttpClient) {
 
     fun getSubscriptionContent(url: String): ApiResponse<String> {
         val request = Request.Builder()

@@ -1,6 +1,12 @@
 package com.cloud.spider.compose
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -9,6 +15,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.twotone.Add
+import androidx.compose.material.icons.twotone.Clear
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -17,7 +26,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -29,10 +40,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cloud.spider.R
 import com.cloud.spider.protocol.ClientType
@@ -87,11 +100,15 @@ private fun NewConverterTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
 @Composable
 fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewModel) {
 
-        var url by remember {
+    var url by remember {
             mutableStateOf("")
         }
 
-        var clientMenuExpanded by remember { mutableStateOf(false) }
+    var clientMenuExpanded by remember { mutableStateOf(false) }
+
+    var showAddSubscriptionDialog by remember {
+        mutableStateOf(false)
+    }
 
         val supportedClientList = mutableListOf<ClientType>()
         supportedClientList.add(ClientType.Clash)
@@ -102,22 +119,49 @@ fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
             .fillMaxHeight()) {
 
             Text(text = "Name", modifier = Modifier
-                .padding(start = 12.dp))
-            TextField(value = viewModel.converterName, onValueChange = { viewModel.updateConverterName(it) }, label = { Text("Name")}, singleLine = true, modifier = Modifier
+                .padding(start = 20.dp))
+            TextField(value = viewModel.converterName, onValueChange = { viewModel.updateConverterName(it) }, singleLine = true, modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp)
                 .fillMaxWidth())
 
+            Row(modifier = Modifier
+                .padding(top = 24.dp)
+                .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(text = "Subscription Url", modifier = Modifier
+                    .padding(start = 20.dp))
+
+                IconButton(modifier = Modifier.padding(end = 20.dp), onClick = {
+                    showAddSubscriptionDialog = true
+                }) {
+                    Icon(imageVector = Icons.TwoTone.Add, contentDescription = "Add subscription")
+                }
+            }
+
             TextField(value = url, onValueChange = {url = it}, label = { Text("Subscription Url")}, singleLine = true, modifier = Modifier
-                .padding(start = 12.dp, end = 12.dp, top = 24.dp)
+                .padding(start = 12.dp, end = 12.dp)
                 .fillMaxWidth())
 
+            Row(modifier = Modifier
+                .padding(top = 12.dp)
+                .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                TextField(value = url, onValueChange = {url = it}, label = { Text("Subscription Url")}, singleLine = true, modifier = Modifier
+                    .padding(start = 12.dp))
+
+                IconButton(modifier = Modifier.padding(end = 20.dp), onClick = {
+
+                }) {
+                    Icon(imageVector = Icons.TwoTone.Clear, contentDescription = "Remove subscription url")
+                }
+            }
+
+            Text(text = "Client", modifier = Modifier
+                .padding(start = 20.dp, top = 24.dp))
             ExposedDropdownMenuBox(modifier = Modifier
-                .padding(start = 12.dp, end = 12.dp, top = 24.dp)
+                .padding(start = 12.dp, end = 12.dp)
                 .fillMaxWidth(), expanded = clientMenuExpanded, onExpandedChange = {
                 clientMenuExpanded = it
             }) {
                 TextField(value = viewModel.clientType.text, onValueChange = {url = it},
-                    label = { Text("Client")},
                     readOnly = true,
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = clientMenuExpanded)
@@ -138,4 +182,65 @@ fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
 
         }
 
+    when {
+        showAddSubscriptionDialog -> {
+            AddSubscriptionUrlDialog(onDismissRequest = {
+                showAddSubscriptionDialog = false
+            }, onSaveClick = { name: String, url: String ->
+
+            })
+        }
+    }
+
+}
+
+@Composable
+private fun AddSubscriptionUrlDialog(onDismissRequest: () -> Unit, onSaveClick: (name: String, url: String) -> Unit) {
+    var name by remember {
+        mutableStateOf("")
+    }
+    var url by remember {
+        mutableStateOf("")
+    }
+
+    var isSaveBtnEnabled by remember {
+        mutableStateOf(false)
+    }
+
+    AlertDialog(onDismissRequest = onDismissRequest, modifier = Modifier,
+        confirmButton = {
+        TextButton(onClick = {
+            onDismissRequest()
+            onSaveClick(name, url)
+
+        }, enabled = isSaveBtnEnabled) {
+            Text(text = "Save")
+        }
+    },
+        dismissButton = {
+            TextButton(onClick = {
+                onDismissRequest()
+            }) {
+                Text(text = "Cancel")
+            }
+        },
+        title = {
+                Text(text = "Add subscription")
+        },
+        text = {
+            Column(modifier = Modifier) {
+                TextField(value = name,
+                    onValueChange = {
+                        name = it
+                        isSaveBtnEnabled = url.isNotEmpty() && it.isNotEmpty()
+                                    }, label = { Text("Name")}, singleLine = true, modifier = Modifier)
+                TextField(value = url,
+                    onValueChange = {
+                        url = it
+                        isSaveBtnEnabled = name.isNotEmpty() && it.isNotEmpty()
+                                    }, label = { Text("Subscription Url")}, singleLine = true, modifier = Modifier.padding(top = 12.dp))
+
+            }
+        },
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false))
 }
