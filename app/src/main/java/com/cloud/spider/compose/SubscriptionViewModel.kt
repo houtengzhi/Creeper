@@ -1,7 +1,9 @@
 package com.cloud.spider.compose
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.cloud.spider.repository.db.DbRepos
 import com.cloud.spider.repository.entity.SubscriptionSource
@@ -9,10 +11,15 @@ import com.cloud.spider.repository.file.FileRepos
 import com.cloud.spider.repository.http.HttpRepos
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,10 +31,13 @@ import javax.inject.Inject
 class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos, private val dbRepos: DbRepos, private val fileRepos: FileRepos):  ViewModel() {
 
     private val _addState = MutableLiveData<DataState<Boolean>>()
-    val addState get() = _addState
+    val addState: MutableLiveData<DataState<Boolean>> get() = _addState
 
     private val _updateState = MutableLiveData<DataState<Boolean>>()
-    val updateState get() = _updateState
+    val updateState: LiveData<DataState<Boolean>> get() = _updateState
+
+    private val _subscriptionListState = MutableStateFlow(DataState<List<SubscriptionSource>>(true, null, null))
+    val subscriptionListState = _subscriptionListState.stateIn(viewModelScope, SharingStarted.Eagerly, _subscriptionListState.value)
 
     fun addSubscriptionSource(source: SubscriptionSource) {
         viewModelScope.launch {
@@ -64,4 +74,28 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
                 }
         }
     }
+
+    fun getSubscriptionSourceList() =
+        viewModelScope.launch {
+            flow {
+                val list = dbRepos.querySubscriptionSourceList()
+                emit(list)
+            }.flowOn(Dispatchers.IO)
+                .onStart {
+                    _subscriptionListState.update {
+                        DataState(true, null, null)
+                    }
+                }
+                .catch { throwable ->
+                    _subscriptionListState.update {
+                        DataState(throwable)
+                    }
+                }
+                .collect {
+                    _subscriptionListState.update {
+                        DataState(false, null, null)
+                    }
+                }
+        }
+
 }

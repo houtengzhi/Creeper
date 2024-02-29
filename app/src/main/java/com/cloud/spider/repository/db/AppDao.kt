@@ -43,4 +43,7 @@ interface AppDao {
 
     @Update
     suspend fun updateSubscriptionSource(source: SubscriptionSource)
+
+    @Query("SELECT * FROM subscription_source")
+    suspend fun querySubscriptionSourceList(): List<SubscriptionSource>
 }

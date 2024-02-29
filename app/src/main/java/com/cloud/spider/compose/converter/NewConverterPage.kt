@@ -1,18 +1,12 @@
-package com.cloud.spider.compose
+package com.cloud.spider.compose.converter
 
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.twotone.Add
@@ -24,21 +18,17 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cloud.spider.R
+import com.cloud.spider.compose.ConvertViewModel
 import com.cloud.spider.protocol.ClientType
 
 /**
@@ -56,7 +47,7 @@ import com.cloud.spider.protocol.ClientType
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = hiltViewModel()) {
+fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = hiltViewModel(), onSubscriptionClick: () -> Unit) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var showBottomSheet by remember { mutableStateOf(false) }
 
@@ -69,7 +60,7 @@ fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = h
         }
     ) { contentPadding ->
 
-        MergeProxiesScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), viewModel)
+        MergeProxiesScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), viewModel, onSubscriptionClick)
 
     }
 }
@@ -98,7 +89,7 @@ private fun NewConverterTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewModel) {
+fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewModel, onSubscriptionClick: () -> Unit) {
 
     var url by remember {
             mutableStateOf("")
@@ -130,9 +121,7 @@ fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
                 Text(text = "Subscription Url", modifier = Modifier
                     .padding(start = 20.dp))
 
-                IconButton(modifier = Modifier.padding(end = 20.dp), onClick = {
-                    showAddSubscriptionDialog = true
-                }) {
+                IconButton(modifier = Modifier.padding(end = 20.dp), onClick = onSubscriptionClick) {
                     Icon(imageVector = Icons.TwoTone.Add, contentDescription = "Add subscription")
                 }
             }

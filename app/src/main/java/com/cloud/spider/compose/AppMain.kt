@@ -7,7 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cloud.spider.compose.converter.ConverterManagePage
+import com.cloud.spider.compose.converter.NewConverterPage
 import com.cloud.spider.compose.home.HomePage
+import com.cloud.spider.compose.source.SubscriptionManagePage
 import com.cloud.spider.ui.AppTheme
 
 /**
@@ -37,6 +40,15 @@ fun AppMain() {
             composable(Screen.NewConverter.route) {
                 NewConverterPage(onUpClick = {
                     navController.navigateUp()
+                }, onSubscriptionClick = {
+                    navController.navigate(Screen.SubscriptionManage.route)
+                })
+            }
+            composable(Screen.SubscriptionManage.route) {
+                SubscriptionManagePage(onUpClick = {
+                    navController.navigateUp()
+                }, onNewClick = {
+                    navController.navigate(Screen.NewConverter.route)
                 })
             }
 
@@ -55,6 +67,8 @@ sealed class Screen(val route: String, val navArguments: List<NamedNavArgument> 
     data object ConverterManage: Screen("ConverterManage")
 
     data object NewConverter: Screen("NewConverter")
+
+    data object SubscriptionManage: Screen("SubscriptionManage")
 
     data object Gallery: Screen(route = "Gallery/{sourceId}",
         navArguments = listOf(navArgument("sourceId") {type = NavType.IntType})

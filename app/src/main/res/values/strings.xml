@@ -4,4 +4,6 @@
     <string name="Convert">"Convert"</string>
     <string name="Converter_Manage">"Converter Manage"</string>
     <string name="New_Converter">"New Converter"</string>
+    <string name="Subscription_Source_Manage">"Subscription Source Manage"</string>
+    <string name="Subscription_Manage">"Subscription Manage"</string>
 </resources>
