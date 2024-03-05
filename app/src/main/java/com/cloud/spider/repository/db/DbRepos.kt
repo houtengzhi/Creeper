@@ -43,4 +43,6 @@ class DbRepos(private val appDatabase: AppDatabase) {
     }
 
     suspend fun querySubscriptionSourceList() = appDatabase.appDao().querySubscriptionSourceList()
+
+    fun subscribeSubscriptionSourceList() = appDatabase.appDao().subscribeSubscriptionSourceList()
 }

@@ -10,6 +10,7 @@ import com.cloud.spider.repository.entity.Converter
 import com.cloud.spider.repository.entity.ConverterSubscriptionSourceCrossRef
 import com.cloud.spider.repository.entity.ConverterWithSources
 import com.cloud.spider.repository.entity.SubscriptionSource
+import kotlinx.coroutines.flow.Flow
 
 /**
  *
@@ -46,4 +47,7 @@ interface AppDao {
 
     @Query("SELECT * FROM subscription_source")
     suspend fun querySubscriptionSourceList(): List<SubscriptionSource>
+
+    @Query("SELECT * FROM subscription_source")
+    fun subscribeSubscriptionSourceList(): Flow<List<SubscriptionSource>>
 }

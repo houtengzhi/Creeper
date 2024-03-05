@@ -3,22 +3,26 @@ package com.cloud.spider.compose
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.cloud.spider.base.DataState
 import com.cloud.spider.repository.db.DbRepos
 import com.cloud.spider.repository.entity.SubscriptionSource
 import com.cloud.spider.repository.file.FileRepos
 import com.cloud.spider.repository.http.HttpRepos
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -38,6 +42,10 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
 
     private val _subscriptionListState = MutableStateFlow(DataState<List<SubscriptionSource>>(true, null, null))
     val subscriptionListState = _subscriptionListState.stateIn(viewModelScope, SharingStarted.Eagerly, _subscriptionListState.value)
+
+    init {
+
+    }
 
     fun addSubscriptionSource(source: SubscriptionSource) {
         viewModelScope.launch {
@@ -97,5 +105,18 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
                     }
                 }
         }
+
+    fun subscribeSubscriptionSourceList() = dbRepos.subscribeSubscriptionSourceList()
+        .flowOn(Dispatchers.IO)
+        .map {
+            DataState(it)
+        }
+        .onStart {
+            emit(DataState(true, null, null))
+        }
+        .catch { throwable ->
+            emit(DataState(throwable))
+        }
+        .stateIn(viewModelScope, started = SharingStarted.Eagerly, initialValue = DataState.initial())
 
 }

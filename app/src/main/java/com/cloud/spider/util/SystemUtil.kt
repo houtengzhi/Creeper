@@ -3,6 +3,7 @@ package com.cloud.spider.util
 import android.app.ActivityManager
 import android.content.Context
 import androidx.core.app.NotificationManagerCompat
+import java.util.UUID
 
 /**
  *
@@ -24,5 +25,13 @@ object SystemUtil {
 
     fun isNotificationEnabled(context: Context): Boolean {
         return NotificationManagerCompat.from(context).areNotificationsEnabled()
+    }
+
+    fun generateSubscriptionSourceId(): String {
+        return "SS_${UUID.randomUUID()}"
+    }
+
+    fun generateConverterId(): String {
+        return "CO_${UUID.randomUUID()}"
     }
 }

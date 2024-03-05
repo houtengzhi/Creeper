@@ -1,11 +1,17 @@
 package com.cloud.spider.compose.source
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,6 +27,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,7 +39,11 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cloud.spider.R
+import com.cloud.spider.base.DataState
 import com.cloud.spider.compose.SubscriptionViewModel
+import com.cloud.spider.protocol.ClientType
+import com.cloud.spider.repository.entity.SubscriptionSource
+import com.cloud.spider.util.SystemUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 
 /**
@@ -48,7 +59,6 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
         mutableStateOf(false)
     }
 
-    val state = viewModel.subscriptionListState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -60,12 +70,31 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
     ) { contentPadding ->
         ConverterPageScreen(viewModel, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()))
 
+        val addState = viewModel.addState.observeAsState(DataState.initial())
+
+        when {
+            addState.value.isLoading -> {
+                showAddSubscriptionDialog = false
+                LoadingIndicator()
+            }
+            addState.value.throwable != null -> {
+
+            }
+            addState.value.error != null -> {
+
+            }
+            else -> {
+
+            }
+        }
+
         when {
             showAddSubscriptionDialog -> {
                 AddSubscriptionUrlDialog(onDismissRequest = {
                     showAddSubscriptionDialog = false
                 }, onSaveClick = { name: String, url: String ->
-
+                    val subscriptionSource = SubscriptionSource(SystemUtil.generateSubscriptionSourceId(), name, url, ClientType.Clash.text)
+                    viewModel.addSubscriptionSource(subscriptionSource)
                 })
             }
         }
@@ -118,7 +147,7 @@ private fun MoreMenu(expanded: Boolean, onDismissRequest: () -> Unit, onNewClick
 
 @Composable
 fun ConverterPageScreen(viewModel: SubscriptionViewModel, modifier: Modifier = Modifier) {
-    val state = viewModel.subscriptionListState.collectAsStateWithLifecycle()
+    val state = viewModel.subscribeSubscriptionSourceList().collectAsStateWithLifecycle()
     when {
         state.value.isLoading -> {
 
@@ -126,10 +155,35 @@ fun ConverterPageScreen(viewModel: SubscriptionViewModel, modifier: Modifier = M
         state.value.throwable != null -> {
 
         }
-        state.value.data != null ->{
+        state.value.error != null -> {
+
+        }
+        state.value.data != null -> {
+            state.value.data?.let { dataList ->
+                LazyColumn(modifier = Modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(dataList) {
+                        SubscriptionSourceItem(it)
+                    }
+                }
+            }
 
         }
     }
+}
+
+@Composable
+private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource) {
+    Row {
+        Column {
+            Text(text = subscriptionSource.name)
+            Text(text = subscriptionSource.sourceUrl)
+        }
+
+        IconButton(onClick = {  }) {
+            Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More Menu")
+        }
+    }
+
 }
 
 @Composable
@@ -182,4 +236,9 @@ private fun AddSubscriptionUrlDialog(onDismissRequest: () -> Unit, onSaveClick: 
         },
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
     )
+}
+
+@Composable
+private fun LoadingIndicator() {
+    CircularProgressIndicator(modifier = Modifier)
 }
