@@ -76,7 +76,7 @@ dependencies {
     implementation("com.charleskorn.kaml:kaml:0.57.0")
 
     //compose
-    val composeBom = platform("androidx.compose:compose-bom:2023.10.01")
+    val composeBom = platform("androidx.compose:compose-bom:2024.02.01")
     implementation(composeBom)
     androidTestImplementation(composeBom)
     // Material Design 3

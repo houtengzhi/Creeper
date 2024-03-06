@@ -1,5 +1,6 @@
 package com.cloud.spider.compose
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
@@ -33,6 +35,10 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos, private val dbRepos: DbRepos, private val fileRepos: FileRepos):  ViewModel() {
+
+    companion object {
+        const val TAG = "SubscriptionViewModel"
+    }
 
     private val _addState = MutableLiveData<DataState<Boolean>>()
     val addState: MutableLiveData<DataState<Boolean>> get() = _addState
@@ -50,16 +56,20 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
     fun addSubscriptionSource(source: SubscriptionSource) {
         viewModelScope.launch {
             flow {
+                Log.d(TAG, "addSubscriptionSource()")
                 dbRepos.insertSubscriptionSource(source)
                 emit(true)
             }.flowOn(Dispatchers.IO)
                 .onStart {
+                    Log.d(TAG, "addSubscriptionSource onStart")
                     _addState.value = DataState(true, null, null)
                 }
                 .catch {
+                    Log.e(TAG, "addSubscriptionSource throwable=${it.message}")
                     _addState.value = DataState(it)
                 }
                 .collect {
+                    Log.d(TAG, "addSubscriptionSource collect")
                     _addState.value = DataState(isLoading = false, data = true, throwable = null)
                 }
         }
@@ -109,12 +119,15 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
     fun subscribeSubscriptionSourceList() = dbRepos.subscribeSubscriptionSourceList()
         .flowOn(Dispatchers.IO)
         .map {
+            Log.d(TAG, "subscribeSubscriptionSourceList map: subscription list size ${it.size}")
             DataState(it)
         }
         .onStart {
+            Log.d(TAG, "subscribeSubscriptionSourceList onStart")
             emit(DataState(true, null, null))
         }
         .catch { throwable ->
+            Log.e(TAG, "subscribeSubscriptionSourceList throwable=${throwable.message}")
             emit(DataState(throwable))
         }
         .stateIn(viewModelScope, started = SharingStarted.Eagerly, initialValue = DataState.initial())

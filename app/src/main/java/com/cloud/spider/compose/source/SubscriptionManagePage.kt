@@ -1,9 +1,14 @@
 package com.cloud.spider.compose.source
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -50,14 +55,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
  *
  * Created by cloud on 2024/2/5.
  */
+private const val TAG = "SubscriptionManagePage"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), onUpClick: () -> Unit = {}, onNewClick: () -> Unit) {
+    Log.d(TAG, "SubscriptionManagePage()")
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     var showAddSubscriptionDialog by remember {
         mutableStateOf(false)
     }
+    val uiState = viewModel.subscribeSubscriptionSourceList().collectAsStateWithLifecycle()
 
 
     Scaffold(
@@ -68,7 +76,9 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
             })
         }
     ) { contentPadding ->
-        ConverterPageScreen(viewModel, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()))
+        Log.d(TAG, "Scaffold()")
+
+        ConverterPageScreen(uiState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()))
 
         val addState = viewModel.addState.observeAsState(DataState.initial())
 
@@ -107,7 +117,7 @@ private fun SubscriptionManageTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
                                      modifier: Modifier = Modifier, onUpClick: () -> Unit, onNewClick: () -> Unit) {
     var moreMenuExpanded by remember { mutableStateOf(false) }
     TopAppBar(title = {
-        Text(text = stringResource(id = R.string.Subscription_Source_Manage))
+        Text(text = stringResource(id = R.string.Subscription_Manage))
     },
         modifier = modifier,
         navigationIcon = {
@@ -146,21 +156,21 @@ private fun MoreMenu(expanded: Boolean, onDismissRequest: () -> Unit, onNewClick
 }
 
 @Composable
-fun ConverterPageScreen(viewModel: SubscriptionViewModel, modifier: Modifier = Modifier) {
-    val state = viewModel.subscribeSubscriptionSourceList().collectAsStateWithLifecycle()
+fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, modifier: Modifier = Modifier) {
+    Log.d(TAG, "ConverterPageScreen(), dataState=${dataState}")
     when {
-        state.value.isLoading -> {
+        dataState.isLoading -> {
+            LoadingIndicator()
+        }
+        dataState.throwable != null -> {
 
         }
-        state.value.throwable != null -> {
+        dataState.error != null -> {
 
         }
-        state.value.error != null -> {
-
-        }
-        state.value.data != null -> {
-            state.value.data?.let { dataList ->
-                LazyColumn(modifier = Modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        dataState.data != null -> {
+            dataState.data.let { dataList ->
+                LazyColumn(modifier = modifier.padding(start = 12.dp).fillMaxWidth().fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(dataList) {
                         SubscriptionSourceItem(it)
                     }
@@ -173,7 +183,9 @@ fun ConverterPageScreen(viewModel: SubscriptionViewModel, modifier: Modifier = M
 
 @Composable
 private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource) {
-    Row {
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .wrapContentHeight()) {
         Column {
             Text(text = subscriptionSource.name)
             Text(text = subscriptionSource.sourceUrl)
@@ -240,5 +252,5 @@ private fun AddSubscriptionUrlDialog(onDismissRequest: () -> Unit, onSaveClick: 
 
 @Composable
 private fun LoadingIndicator() {
-    CircularProgressIndicator(modifier = Modifier)
+    CircularProgressIndicator()
 }

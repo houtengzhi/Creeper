@@ -17,10 +17,16 @@ open class DataState<T>(val isLoading: Boolean,
         this.error = error
     }
 
+
+
     companion object {
         fun <T> initial(): DataState<T> {
             return DataState<T>(isLoading = false, data = null, throwable = null)
         }
+    }
+
+    override fun toString(): String {
+        return "DataState(isLoading=$isLoading, data=$data, throwable=$throwable, error=$error)"
     }
 
 }
