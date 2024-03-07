@@ -1,13 +1,12 @@
 package com.cloud.spider.compose.source
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,6 +21,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -30,12 +30,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -49,7 +49,6 @@ import com.cloud.spider.compose.SubscriptionViewModel
 import com.cloud.spider.protocol.ClientType
 import com.cloud.spider.repository.entity.SubscriptionSource
 import com.cloud.spider.util.SystemUtil
-import dagger.hilt.android.lifecycle.HiltViewModel
 
 /**
  *
@@ -100,7 +99,7 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
 
         when {
             showAddSubscriptionDialog -> {
-                AddSubscriptionUrlDialog(onDismissRequest = {
+                AddSubscriptionSourceDialog(onDismissRequest = {
                     showAddSubscriptionDialog = false
                 }, onSaveClick = { name: String, url: String ->
                     val subscriptionSource = SubscriptionSource(SystemUtil.generateSubscriptionSourceId(), name, url, ClientType.Clash.text)
@@ -170,7 +169,7 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, modifier
         }
         dataState.data != null -> {
             dataState.data.let { dataList ->
-                LazyColumn(modifier = modifier.padding(start = 12.dp).fillMaxWidth().fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LazyColumn(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(dataList) {
                         SubscriptionSourceItem(it)
                     }
@@ -183,23 +182,55 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, modifier
 
 @Composable
 private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource) {
+    var menuExpanded by remember { mutableStateOf(false) }
+
     Row(modifier = Modifier
         .fillMaxWidth()
-        .wrapContentHeight()) {
-        Column {
-            Text(text = subscriptionSource.name)
-            Text(text = subscriptionSource.sourceUrl)
+        .wrapContentHeight()
+        .clickable {
+
+        }, verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = subscriptionSource.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 6.dp))
+            Text(text = subscriptionSource.sourceUrl, modifier = Modifier.padding(start = 24.dp, bottom = 12.dp))
         }
 
-        IconButton(onClick = {  }) {
+        IconButton(onClick = {
+            menuExpanded = true
+        }, modifier = Modifier.padding(end = 12.dp)) {
             Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More Menu")
         }
+    }
+
+    SubscriptionSourceMenu(
+        expanded = menuExpanded,
+        onDismissRequest = { /*TODO*/ },
+        onEditClick = { /*TODO*/ }) {
+
     }
 
 }
 
 @Composable
-private fun AddSubscriptionUrlDialog(onDismissRequest: () -> Unit, onSaveClick: (name: String, url: String) -> Unit) {
+private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit) {
+    DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
+        DropdownMenuItem(text = {
+            Text(text = stringResource(id = R.string.Edit))
+        }, onClick = {
+            onDismissRequest()
+            onEditClick()
+        } )
+        DropdownMenuItem(text = {
+            Text(text = stringResource(id = R.string.Delete))
+        }, onClick = {
+            onDismissRequest()
+            onDeleteClick()
+        })
+    }
+}
+
+@Composable
+private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClick: (name: String, url: String) -> Unit) {
     var name by remember {
         mutableStateOf("")
     }
@@ -245,6 +276,42 @@ private fun AddSubscriptionUrlDialog(onDismissRequest: () -> Unit, onSaveClick: 
                     }, label = { Text("Subscription Url")}, singleLine = true, modifier = Modifier.padding(top = 12.dp))
 
             }
+        },
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+    )
+}
+
+@Composable
+private fun DeleteSubscriptionSourceDialog(onDismissRequest: () -> Unit, onConfirmClick: (name: String, url: String) -> Unit) {
+    var name by remember {
+        mutableStateOf("")
+    }
+    var url by remember {
+        mutableStateOf("")
+    }
+
+    AlertDialog(onDismissRequest = onDismissRequest, modifier = Modifier,
+        confirmButton = {
+            TextButton(onClick = {
+                onDismissRequest()
+                onConfirmClick(name, url)
+
+            }) {
+                Text(text = stringResource(id = R.string.OK))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = {
+                onDismissRequest()
+            }) {
+                Text(text = stringResource(id = R.string.Cancel))
+            }
+        },
+        title = {
+            Text(text = stringResource(id = R.string.Delete_subscription_source))
+        },
+        text = {
+            Text(text = stringResource(id = R.string.You_wont_be_able_to_recover_it_once_confirmed))
         },
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
     )
