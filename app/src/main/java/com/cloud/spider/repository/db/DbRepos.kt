@@ -4,6 +4,7 @@ import androidx.room.Transaction
 import com.cloud.spider.repository.entity.ConverterSubscriptionSourceCrossRef
 import com.cloud.spider.repository.entity.ConverterWithSources
 import com.cloud.spider.repository.entity.SubscriptionSource
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 /**
  *
@@ -42,7 +43,11 @@ class DbRepos(private val appDatabase: AppDatabase) {
         appDatabase.appDao().updateSubscriptionSource(source)
     }
 
+    suspend fun deleteSubscriptionSource(source: SubscriptionSource) {
+        appDatabase.appDao().deleteSubscriptionSource(source)
+    }
+
     suspend fun querySubscriptionSourceList() = appDatabase.appDao().querySubscriptionSourceList()
 
-    fun subscribeSubscriptionSourceList() = appDatabase.appDao().subscribeSubscriptionSourceList()
+    fun subscribeSubscriptionSourceList() = appDatabase.appDao().subscribeSubscriptionSourceList().distinctUntilChanged()
 }

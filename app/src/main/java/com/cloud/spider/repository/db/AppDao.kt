@@ -1,6 +1,7 @@
 package com.cloud.spider.repository.db
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -44,6 +45,9 @@ interface AppDao {
 
     @Update
     suspend fun updateSubscriptionSource(source: SubscriptionSource)
+
+    @Delete
+    suspend fun deleteSubscriptionSource(source: SubscriptionSource)
 
     @Query("SELECT * FROM subscription_source")
     suspend fun querySubscriptionSourceList(): List<SubscriptionSource>

@@ -46,7 +46,10 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
     private val _updateState = MutableLiveData<DataState<Boolean>>()
     val updateState: LiveData<DataState<Boolean>> get() = _updateState
 
-    private val _subscriptionListState = MutableStateFlow(DataState<List<SubscriptionSource>>(true, null, null))
+    private val _deleteState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
+    val deleteState = _deleteState.stateIn(viewModelScope, SharingStarted.Lazily, _deleteState.value)
+
+    private val _subscriptionListState = MutableStateFlow(DataState<List<SubscriptionSource>>(false, null, null))
     val subscriptionListState = _subscriptionListState.stateIn(viewModelScope, SharingStarted.Eagerly, _subscriptionListState.value)
 
     init {
@@ -59,7 +62,7 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
                 Log.d(TAG, "addSubscriptionSource()")
                 dbRepos.insertSubscriptionSource(source)
                 emit(true)
-            }.flowOn(Dispatchers.IO)
+            }
                 .onStart {
                     Log.d(TAG, "addSubscriptionSource onStart")
                     _addState.value = DataState(true, null, null)
@@ -80,8 +83,7 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
             flow {
                 dbRepos.updateSubscriptionSource(source)
                 emit(true)
-            }.flowOn(Dispatchers.IO)
-                .onStart {
+            }.onStart {
                     _updateState.value = DataState(true, null, null)
                 }
                 .catch {
@@ -93,12 +95,35 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
         }
     }
 
+    fun deleteSubscriptionSource(source: SubscriptionSource) {
+        viewModelScope.launch {
+            flow {
+                dbRepos.deleteSubscriptionSource(source)
+                emit(true)
+            }.onStart {
+                _deleteState.update {
+                    DataState(true, null, null)
+                }
+            }
+                .catch {throwable ->
+                    _deleteState.update {
+                        DataState(throwable)
+                    }
+                }
+                .collect {
+                    _deleteState.update {
+                        DataState(isLoading = false, data = true, throwable = null)
+                    }
+                }
+        }
+    }
+
     fun getSubscriptionSourceList() =
         viewModelScope.launch {
             flow {
                 val list = dbRepos.querySubscriptionSourceList()
                 emit(list)
-            }.flowOn(Dispatchers.IO)
+            }
                 .onStart {
                     _subscriptionListState.update {
                         DataState(true, null, null)

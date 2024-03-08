@@ -13,4 +13,9 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
                               @ColumnInfo(name = "source_name") val name: String,
                               @ColumnInfo(name = "source_url") val sourceUrl: String,
                               @ColumnInfo(name = "source_type") val type: String) {
+    @ColumnInfo(name = "created_time")
+    var createdTime: Long = 0
+
+    @ColumnInfo(name = "updated_time")
+    var updatedTime: Long = 0
 }

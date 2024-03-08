@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -66,6 +67,10 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
     }
     val uiState = viewModel.subscribeSubscriptionSourceList().collectAsStateWithLifecycle()
 
+    val deleteState = viewModel.deleteState.collectAsStateWithLifecycle()
+
+    val addState = viewModel.addState.observeAsState(DataState.initial())
+
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -77,25 +82,9 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
     ) { contentPadding ->
         Log.d(TAG, "Scaffold()")
 
-        ConverterPageScreen(uiState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()))
-
-        val addState = viewModel.addState.observeAsState(DataState.initial())
-
-        when {
-            addState.value.isLoading -> {
-                showAddSubscriptionDialog = false
-                LoadingIndicator()
-            }
-            addState.value.throwable != null -> {
-
-            }
-            addState.value.error != null -> {
-
-            }
-            else -> {
-
-            }
-        }
+        ConverterPageScreen(uiState.value, addState.value, deleteState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), onDeleteClick = {
+            viewModel.deleteSubscriptionSource(it)
+        })
 
         when {
             showAddSubscriptionDialog -> {
@@ -121,7 +110,7 @@ private fun SubscriptionManageTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
         modifier = modifier,
         navigationIcon = {
              IconButton(onClick = onUpClick) {
-                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+                 Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
              }
         },
         actions = {
@@ -155,7 +144,7 @@ private fun MoreMenu(expanded: Boolean, onDismissRequest: () -> Unit, onNewClick
 }
 
 @Composable
-fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, modifier: Modifier = Modifier) {
+fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState: DataState<Boolean>, deleteState: DataState<Boolean>, modifier: Modifier = Modifier, onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     Log.d(TAG, "ConverterPageScreen(), dataState=${dataState}")
     when {
         dataState.isLoading -> {
@@ -171,18 +160,49 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, modifier
             dataState.data.let { dataList ->
                 LazyColumn(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(dataList) {
-                        SubscriptionSourceItem(it)
+                        SubscriptionSourceItem(it, onDeleteClick)
                     }
                 }
             }
 
         }
     }
+
+    when {
+        addState.isLoading -> {
+            LoadingIndicator()
+        }
+        addState.throwable != null -> {
+
+        }
+        addState.error != null -> {
+
+        }
+        else -> {
+
+        }
+    }
+
+    when {
+        deleteState.isLoading -> {
+            LoadingIndicator()
+        }
+        deleteState.throwable != null -> {
+
+        }
+        deleteState.error != null -> {
+
+        }
+        else -> {
+
+        }
+    }
 }
 
 @Composable
-private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource) {
+private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     Row(modifier = Modifier
         .fillMaxWidth()
@@ -199,21 +219,28 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource) {
             menuExpanded = true
         }, modifier = Modifier.padding(end = 12.dp)) {
             Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More Menu")
+
+            SubscriptionSourceMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false },
+                onEditClick = { /*TODO*/ },
+                onDeleteClick = { showDeleteDialog = true } )
         }
     }
 
-    SubscriptionSourceMenu(
-        expanded = menuExpanded,
-        onDismissRequest = { /*TODO*/ },
-        onEditClick = { /*TODO*/ }) {
-
+    if (showDeleteDialog) {
+        DeleteSubscriptionSourceDialog(
+            subscriptionSource = subscriptionSource,
+            onDismissRequest = { showDeleteDialog = false },
+            onDeleteClick = {onDeleteClick(subscriptionSource)}
+        )
     }
 
 }
 
 @Composable
 private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit) {
-    DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
+    DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest, modifier = Modifier) {
         DropdownMenuItem(text = {
             Text(text = stringResource(id = R.string.Edit))
         }, onClick = {
@@ -282,19 +309,12 @@ private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClic
 }
 
 @Composable
-private fun DeleteSubscriptionSourceDialog(onDismissRequest: () -> Unit, onConfirmClick: (name: String, url: String) -> Unit) {
-    var name by remember {
-        mutableStateOf("")
-    }
-    var url by remember {
-        mutableStateOf("")
-    }
-
+private fun DeleteSubscriptionSourceDialog(subscriptionSource: SubscriptionSource, onDismissRequest: () -> Unit, onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     AlertDialog(onDismissRequest = onDismissRequest, modifier = Modifier,
         confirmButton = {
             TextButton(onClick = {
                 onDismissRequest()
-                onConfirmClick(name, url)
+                onDeleteClick(subscriptionSource)
 
             }) {
                 Text(text = stringResource(id = R.string.OK))
