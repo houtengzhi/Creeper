@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cloud.spider.R
-import com.cloud.spider.compose.ConvertViewModel
 import com.cloud.spider.protocol.ClientType
 
 /**

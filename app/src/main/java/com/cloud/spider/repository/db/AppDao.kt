@@ -52,6 +52,6 @@ interface AppDao {
     @Query("SELECT * FROM subscription_source")
     suspend fun querySubscriptionSourceList(): List<SubscriptionSource>
 
-    @Query("SELECT * FROM subscription_source")
+    @Query("SELECT * FROM subscription_source ORDER BY updated_time DESC")
     fun subscribeSubscriptionSourceList(): Flow<List<SubscriptionSource>>
 }

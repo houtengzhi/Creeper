@@ -2,6 +2,8 @@ package com.cloud.spider.util
 
 import android.app.ActivityManager
 import android.content.Context
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toLowerCase
 import androidx.core.app.NotificationManagerCompat
 import java.util.UUID
 
@@ -28,10 +30,10 @@ object SystemUtil {
     }
 
     fun generateSubscriptionSourceId(): String {
-        return "SS_${UUID.randomUUID()}"
+        return "ss${UUID.randomUUID().toString().replace("-", "").lowercase()}"
     }
 
     fun generateConverterId(): String {
-        return "CO_${UUID.randomUUID()}"
+        return "co${UUID.randomUUID().toString().replace("-", "").lowercase()}"
     }
 }

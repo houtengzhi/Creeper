@@ -33,5 +33,9 @@ object PersistanceModule {
 
     @Provides
     @Singleton
-    fun provideFileRepos(): FileRepos = FileRepos()
+    fun provideFileRepos(application: Application): FileRepos {
+        val cacheDir = application.externalCacheDir ?: application.cacheDir
+        val fileDir = application.getExternalFilesDir(null) ?: application.filesDir
+        return FileRepos(cacheDir.absolutePath, fileDir.absolutePath)
+    }
 }

@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -46,7 +45,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cloud.spider.R
 import com.cloud.spider.base.DataState
-import com.cloud.spider.compose.SubscriptionViewModel
 import com.cloud.spider.protocol.ClientType
 import com.cloud.spider.repository.entity.SubscriptionSource
 import com.cloud.spider.util.SystemUtil
@@ -92,6 +90,8 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
                     showAddSubscriptionDialog = false
                 }, onSaveClick = { name: String, url: String ->
                     val subscriptionSource = SubscriptionSource(SystemUtil.generateSubscriptionSourceId(), name, url, ClientType.Clash.text)
+                    subscriptionSource.createdTime = System.currentTimeMillis()
+                    subscriptionSource.updatedTime = System.currentTimeMillis()
                     viewModel.addSubscriptionSource(subscriptionSource)
                 })
             }
