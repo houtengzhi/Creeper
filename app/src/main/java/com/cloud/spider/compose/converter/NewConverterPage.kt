@@ -1,5 +1,6 @@
 package com.cloud.spider.compose.converter
 
+import android.os.Bundle
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,6 +40,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cloud.spider.R
 import com.cloud.spider.protocol.ClientType
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  *
@@ -46,7 +48,7 @@ import com.cloud.spider.protocol.ClientType
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = hiltViewModel(), onSubscriptionClick: () -> Unit) {
+fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = hiltViewModel(), onSubscriptionClick: () -> Unit, onResult: () -> StateFlow<Bundle>) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var showBottomSheet by remember { mutableStateOf(false) }
 

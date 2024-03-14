@@ -5,6 +5,7 @@ plugins {
     id("com.yanzhenjie.andserver")
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
+    id("kotlin-parcelize")
 }
 
 android {

@@ -56,7 +56,8 @@ import com.cloud.spider.util.SystemUtil
 private const val TAG = "SubscriptionManagePage"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), onUpClick: () -> Unit = {}, onNewClick: () -> Unit) {
+fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), onUpClick: () -> Unit = {}, onNewClick: () -> Unit,
+                           onResultSet: (subscriptionSource: SubscriptionSource) -> Unit) {
     Log.d(TAG, "SubscriptionManagePage()")
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -80,7 +81,9 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
     ) { contentPadding ->
         Log.d(TAG, "Scaffold()")
 
-        ConverterPageScreen(uiState.value, addState.value, deleteState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), onDeleteClick = {
+        ConverterPageScreen(uiState.value, addState.value, deleteState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
+            onItemClick = onResultSet,
+            onDeleteClick = {
             viewModel.deleteSubscriptionSource(it)
         })
 
@@ -144,7 +147,9 @@ private fun MoreMenu(expanded: Boolean, onDismissRequest: () -> Unit, onNewClick
 }
 
 @Composable
-fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState: DataState<Boolean>, deleteState: DataState<Boolean>, modifier: Modifier = Modifier, onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit) {
+fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState: DataState<Boolean>, deleteState: DataState<Boolean>, modifier: Modifier = Modifier,
+                        onItemClick: (subscriptionSource: SubscriptionSource) -> Unit,
+                        onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     Log.d(TAG, "ConverterPageScreen(), dataState=${dataState}")
     when {
         dataState.isLoading -> {
@@ -160,7 +165,7 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
             dataState.data.let { dataList ->
                 LazyColumn(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(dataList) {
-                        SubscriptionSourceItem(it, onDeleteClick)
+                        SubscriptionSourceItem(it, onItemClick, onDeleteClick)
                     }
                 }
             }
@@ -200,7 +205,8 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
 }
 
 @Composable
-private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit) {
+private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onItemClick: (subscriptionSource: SubscriptionSource) -> Unit,
+                                   onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -208,7 +214,7 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onDel
         .fillMaxWidth()
         .wrapContentHeight()
         .clickable {
-
+            onItemClick(subscriptionSource)
         }, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
             Text(text = subscriptionSource.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 6.dp))

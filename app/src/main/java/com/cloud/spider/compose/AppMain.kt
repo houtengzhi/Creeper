@@ -1,5 +1,6 @@
 package com.cloud.spider.compose
 
+import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
@@ -12,6 +13,8 @@ import com.cloud.spider.compose.converter.NewConverterPage
 import com.cloud.spider.compose.home.HomePage
 import com.cloud.spider.compose.source.SubscriptionManagePage
 import com.cloud.spider.ui.AppTheme
+import com.cloud.spider.util.navigateForResult
+import com.cloud.spider.util.setResult
 
 /**
  *
@@ -41,15 +44,23 @@ fun AppMain() {
                 NewConverterPage(onUpClick = {
                     navController.navigateUp()
                 }, onSubscriptionClick = {
-                    navController.navigate(Screen.SubscriptionManage.route)
+                    navController.navigate(Screen.SubscriptionManage.createRouteForResult("SELECT_SUBSCRIPTION"))
+
+                    navController.navigateForResult(Screen.SubscriptionManage.createRouteForResult("SELECT_SUBSCRIPTION"))
                 })
             }
-            composable(Screen.SubscriptionManage.route) {
+            composable(route = Screen.SubscriptionManage.route, arguments = Screen.SubscriptionManage.navArguments ) {
+                val requestCode = it.arguments?.getString("requestCode")
                 SubscriptionManagePage(onUpClick = {
                     navController.navigateUp()
                 }, onNewClick = {
                     navController.navigate(Screen.NewConverter.route)
-                })
+                },
+                    onResultSet = { subscriptionSource ->
+                        val data = Bundle()
+                        data.putParcelable("SUBSCRIPTION_SOURCE", subscriptionSource)
+                        navController.setResult(data)
+                    })
             }
 
             composable(route = Screen.Gallery.route,
@@ -68,7 +79,19 @@ sealed class Screen(val route: String, val navArguments: List<NamedNavArgument> 
 
     data object NewConverter: Screen("NewConverter")
 
-    data object SubscriptionManage: Screen("SubscriptionManage")
+    data object SubscriptionManage: Screen(route = "SubscriptionManage/?{requestCode}",
+        navArguments = listOf(navArgument("requestCode") {
+            type = NavType.StringType
+            nullable = true}
+        )
+    ) {
+
+        fun createRoute(): String = "SubscriptionManage"
+
+        fun createRouteForResult(requestCode: String): String {
+            return "SubscriptionManage/${requestCode}"
+        }
+    }
 
     data object Gallery: Screen(route = "Gallery/{sourceId}",
         navArguments = listOf(navArgument("sourceId") {type = NavType.IntType})
