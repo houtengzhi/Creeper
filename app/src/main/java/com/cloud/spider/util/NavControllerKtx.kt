@@ -11,11 +11,11 @@ import kotlinx.coroutines.flow.StateFlow
  * Created by cloud on 2024/3/11.
  */
 
-const val NavResultKey = ""
+const val NavResultKey = "NavResultKey"
 
 fun NavController.navigateForResult(route: String,
                                     navOptions: NavOptions? = null,
-                                    navigatorExtras: Navigator.Extras? = null): StateFlow<Bundle?>? {
+                                    navigatorExtras: Navigator.Extras? = null): StateFlow<Bundle>? {
     val stateHandle = this.currentBackStackEntry?.savedStateHandle
     navigate(route, navOptions, navigatorExtras)
     return stateHandle?.getStateFlow<Bundle>(NavResultKey, Bundle.EMPTY)
@@ -24,5 +24,12 @@ fun NavController.navigateForResult(route: String,
 fun NavController.setResult(data: Bundle) {
     this.previousBackStackEntry?.let {
         it.savedStateHandle[NavResultKey] = data
+    }
+}
+
+fun NavController.clearForResult() {
+    this.currentBackStackEntry?.savedStateHandle?.let {
+        it.remove<Any>(NavResultKey)
+        it[NavResultKey] = null
     }
 }

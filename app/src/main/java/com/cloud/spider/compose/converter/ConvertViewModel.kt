@@ -11,6 +11,7 @@ import com.cloud.spider.repository.db.DbRepos
 import com.cloud.spider.repository.file.FileRepos
 import com.cloud.spider.repository.http.HttpRepos
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,6 +41,12 @@ class ConvertViewModel @Inject constructor(private val httpRepos: HttpRepos, pri
     fun testSubscription(url: String) {
         viewModelScope.launch {
             httpRepos.getSubscriptionContent(url)
+        }
+    }
+
+    fun collectState(block: suspend (CoroutineScope) -> Unit) {
+        viewModelScope.launch {
+            block(this)
         }
     }
 }

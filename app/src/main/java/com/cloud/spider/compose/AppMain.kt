@@ -1,7 +1,9 @@
 package com.cloud.spider.compose
 
 import android.os.Bundle
+import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -12,15 +14,20 @@ import com.cloud.spider.compose.converter.ConverterManagePage
 import com.cloud.spider.compose.converter.NewConverterPage
 import com.cloud.spider.compose.home.HomePage
 import com.cloud.spider.compose.source.SubscriptionManagePage
+import com.cloud.spider.repository.entity.SubscriptionSource
 import com.cloud.spider.ui.AppTheme
+import com.cloud.spider.util.clearForResult
 import com.cloud.spider.util.navigateForResult
+import com.cloud.spider.util.parcelable
 import com.cloud.spider.util.setResult
+import kotlinx.coroutines.launch
 
 /**
  *
  * Created by cloud on 2024/1/26.
  */
 
+private const val TAG = "AppMain"
 @Composable
 fun AppMain() {
 
@@ -44,9 +51,16 @@ fun AppMain() {
                 NewConverterPage(onUpClick = {
                     navController.navigateUp()
                 }, onSubscriptionClick = {
-                    navController.navigate(Screen.SubscriptionManage.createRouteForResult("SELECT_SUBSCRIPTION"))
 
-                    navController.navigateForResult(Screen.SubscriptionManage.createRouteForResult("SELECT_SUBSCRIPTION"))
+                }, navForResult = { coroutineScope, requestCode, onResult ->
+                    val resultFlow = navController.navigateForResult(Screen.SubscriptionManage.createRouteForResult(requestCode))
+                    coroutineScope.launch {
+                        resultFlow?.collect { data ->
+                            Log.d(TAG, "collect(), data=${data}")
+                            onResult(data)
+                            navController.clearForResult()
+                        }
+                    }
                 })
             }
             composable(route = Screen.SubscriptionManage.route, arguments = Screen.SubscriptionManage.navArguments ) {
@@ -54,12 +68,14 @@ fun AppMain() {
                 SubscriptionManagePage(onUpClick = {
                     navController.navigateUp()
                 }, onNewClick = {
-                    navController.navigate(Screen.NewConverter.route)
+
                 },
                     onResultSet = { subscriptionSource ->
                         val data = Bundle()
+                        data.putString("REQUEST_CODE", requestCode)
                         data.putParcelable("SUBSCRIPTION_SOURCE", subscriptionSource)
                         navController.setResult(data)
+                        navController.popBackStack()
                     })
             }
 
@@ -79,7 +95,7 @@ sealed class Screen(val route: String, val navArguments: List<NamedNavArgument> 
 
     data object NewConverter: Screen("NewConverter")
 
-    data object SubscriptionManage: Screen(route = "SubscriptionManage/?{requestCode}",
+    data object SubscriptionManage: Screen(route = "SubscriptionManage?requestCode={requestCode}",
         navArguments = listOf(navArgument("requestCode") {
             type = NavType.StringType
             nullable = true}
@@ -89,7 +105,7 @@ sealed class Screen(val route: String, val navArguments: List<NamedNavArgument> 
         fun createRoute(): String = "SubscriptionManage"
 
         fun createRouteForResult(requestCode: String): String {
-            return "SubscriptionManage/${requestCode}"
+            return "SubscriptionManage?requestCode=${requestCode}"
         }
     }
 

@@ -1,6 +1,7 @@
 package com.cloud.spider.compose.converter
 
 import android.os.Bundle
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,19 +39,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewModelScope
 import com.cloud.spider.R
 import com.cloud.spider.protocol.ClientType
+import com.cloud.spider.repository.entity.SubscriptionSource
+import com.cloud.spider.util.parcelable
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 
 /**
  *
  * Created by cloud on 2024/2/22.
  */
+private const val TAG = "NewConverterPage"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = hiltViewModel(), onSubscriptionClick: () -> Unit, onResult: () -> StateFlow<Bundle>) {
+fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = hiltViewModel(), onSubscriptionClick: () -> Unit,
+                     navForResult: (coroutineScope: CoroutineScope, requestCode: String, onResult: (data: Bundle) -> Unit) -> Unit) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var showBottomSheet by remember { mutableStateOf(false) }
+
+
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -61,7 +70,7 @@ fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = h
         }
     ) { contentPadding ->
 
-        MergeProxiesScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), viewModel, onSubscriptionClick)
+        MergeProxiesScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), viewModel, onSubscriptionClick, navForResult)
 
     }
 }
@@ -90,7 +99,7 @@ private fun NewConverterTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewModel, onSubscriptionClick: () -> Unit) {
+fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewModel, onSubscriptionClick: () -> Unit, navForResult: (coroutineScope: CoroutineScope, requestCode: String, onResult: (data: Bundle) -> Unit) -> Unit) {
 
     var url by remember {
             mutableStateOf("")
@@ -122,7 +131,19 @@ fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
                 Text(text = "Subscription Url", modifier = Modifier
                     .padding(start = 20.dp))
 
-                IconButton(modifier = Modifier.padding(end = 20.dp), onClick = onSubscriptionClick) {
+                IconButton(modifier = Modifier.padding(end = 20.dp), onClick = {
+                    navForResult(viewModel.viewModelScope, "SELECT_SUBSCRIPTION") { data ->
+                        val requestCode = data.getString("REQUEST_CODE")
+                        Log.d(TAG, "onResult(), requestCode=${requestCode}")
+                        if ("SELECT_SUBSCRIPTION".equals(requestCode)) {
+                            val subscriptionSource = data.parcelable<SubscriptionSource>("SUBSCRIPTION_SOURCE")
+                            subscriptionSource?.let {
+                                url = it.sourceUrl
+                            }
+                        }
+                    }
+
+                }) {
                     Icon(imageVector = Icons.TwoTone.Add, contentDescription = "Add subscription")
                 }
             }
