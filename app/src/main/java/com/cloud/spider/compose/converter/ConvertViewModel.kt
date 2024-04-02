@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloud.spider.protocol.ClientType
 import com.cloud.spider.repository.db.DbRepos
+import com.cloud.spider.repository.entity.SubscriptionSource
 import com.cloud.spider.repository.file.FileRepos
 import com.cloud.spider.repository.http.HttpRepos
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +30,7 @@ class ConvertViewModel @Inject constructor(private val httpRepos: HttpRepos, pri
         converterName = input
     }
 
-    val subscriptionUrlList = mutableStateListOf<String>()
+    val subscriptionSourceList = mutableStateListOf<SubscriptionSource>()
 
     var clientType by mutableStateOf(ClientType.Clash)
         private set

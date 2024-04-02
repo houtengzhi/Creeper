@@ -153,7 +153,6 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
     Log.d(TAG, "ConverterPageScreen(), dataState=${dataState}")
     when {
         dataState.isLoading -> {
-            LoadingIndicator()
         }
         dataState.throwable != null -> {
 

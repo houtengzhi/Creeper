@@ -38,7 +38,10 @@ fun AppMain() {
             composable(Screen.Home.route) {
                 HomePage(onConvertClick = {
                     navController.navigate(Screen.ConverterManage.route)
-                })
+                },
+                    onSubscriptionSourceManageClick = {
+                        navController.navigate(Screen.SubscriptionManage.createRoute())
+                    })
             }
             composable(Screen.ConverterManage.route) {
                 ConverterManagePage(onUpClick = {
@@ -54,11 +57,15 @@ fun AppMain() {
 
                 }, navForResult = { coroutineScope, requestCode, onResult ->
                     val resultFlow = navController.navigateForResult(Screen.SubscriptionManage.createRouteForResult(requestCode))
+                    Log.d(TAG, "navigateForResult(), initialValue=${resultFlow?.value}")
                     coroutineScope.launch {
                         resultFlow?.collect { data ->
                             Log.d(TAG, "collect(), data=${data}")
-                            onResult(data)
-                            navController.clearForResult()
+                            if (!data.isEmpty) {
+                                onResult(data)
+                                Log.d(TAG, "clearForResult()")
+                                navController.clearForResult()
+                            }
                         }
                     }
                 })
@@ -71,11 +78,14 @@ fun AppMain() {
 
                 },
                     onResultSet = { subscriptionSource ->
-                        val data = Bundle()
-                        data.putString("REQUEST_CODE", requestCode)
-                        data.putParcelable("SUBSCRIPTION_SOURCE", subscriptionSource)
-                        navController.setResult(data)
-                        navController.popBackStack()
+                        if ("SELECT_SUBSCRIPTION" == requestCode) {
+                            val data = Bundle()
+                            data.putString("REQUEST_CODE", requestCode)
+                            data.putParcelable("SUBSCRIPTION_SOURCE", subscriptionSource)
+                            Log.d(TAG, "setResult(), data=${data}")
+                            navController.setResult(data)
+                            navController.popBackStack()
+                        }
                     })
             }
 

@@ -14,4 +14,6 @@
     <string name="Cancel">"Cancel"</string>
     <string name="Delete_subscription_source">"Delete subscription source?"</string>
     <string name="You_wont_be_able_to_recover_it_once_confirmed">"You won't be able to recover it once confirmed"</string>
+    <string name="Settings">"Settings"</string>
+    <string name="About">"About"</string>
 </resources>

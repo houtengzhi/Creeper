@@ -20,6 +20,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -101,10 +102,6 @@ private fun NewConverterTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
 @Composable
 fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewModel, onSubscriptionClick: () -> Unit, navForResult: (coroutineScope: CoroutineScope, requestCode: String, onResult: (data: Bundle) -> Unit) -> Unit) {
 
-    var url by remember {
-            mutableStateOf("")
-        }
-
     var clientMenuExpanded by remember { mutableStateOf(false) }
 
     var showAddSubscriptionDialog by remember {
@@ -118,6 +115,10 @@ fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
         Column(modifier = modifier
             .fillMaxWidth()
             .fillMaxHeight()) {
+
+            var url by remember {
+                mutableStateOf("")
+            }
 
             Text(text = "Name", modifier = Modifier
                 .padding(start = 20.dp))
@@ -135,10 +136,12 @@ fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
                     navForResult(viewModel.viewModelScope, "SELECT_SUBSCRIPTION") { data ->
                         val requestCode = data.getString("REQUEST_CODE")
                         Log.d(TAG, "onResult(), requestCode=${requestCode}")
-                        if ("SELECT_SUBSCRIPTION".equals(requestCode)) {
+                        if ("SELECT_SUBSCRIPTION" == requestCode) {
                             val subscriptionSource = data.parcelable<SubscriptionSource>("SUBSCRIPTION_SOURCE")
                             subscriptionSource?.let {
+                                Log.d(TAG, "onResult(), url=${it.sourceUrl}")
                                 url = it.sourceUrl
+                                viewModel.subscriptionSourceList.add(it)
                             }
                         }
                     }
@@ -148,22 +151,32 @@ fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
                 }
             }
 
-            TextField(value = url, onValueChange = {url = it}, label = { Text("Subscription Url")}, singleLine = true, modifier = Modifier
-                .padding(start = 12.dp, end = 12.dp)
-                .fillMaxWidth())
+            viewModel.subscriptionSourceList.forEach { source ->
 
-            Row(modifier = Modifier
-                .padding(top = 12.dp)
-                .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                TextField(value = url, onValueChange = {url = it}, label = { Text("Subscription Url")}, singleLine = true, modifier = Modifier
-                    .padding(start = 12.dp))
+                Row(modifier = Modifier
+                    .padding(top = 12.dp)
+                    .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
 
-                IconButton(modifier = Modifier.padding(end = 20.dp), onClick = {
+                    Column {
+                        Text(text = source.name,
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier
+                            .padding(start = 12.dp))
 
-                }) {
-                    Icon(imageVector = Icons.TwoTone.Clear, contentDescription = "Remove subscription url")
+                        Text(text = source.sourceUrl,
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.padding(start = 12.dp))
+                    }
+
+
+                    IconButton(modifier = Modifier.padding(end = 20.dp), onClick = {
+                        viewModel.subscriptionSourceList.remove(source)
+                    }) {
+                        Icon(imageVector = Icons.TwoTone.Clear, contentDescription = "Remove subscription url")
+                    }
                 }
             }
+
 
             Text(text = "Client", modifier = Modifier
                 .padding(start = 20.dp, top = 24.dp))

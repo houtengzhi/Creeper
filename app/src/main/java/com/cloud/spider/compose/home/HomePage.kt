@@ -63,7 +63,7 @@ import com.google.accompanist.permissions.shouldShowRationale
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
-fun HomePage(onConvertClick: () -> Unit = {}) {
+fun HomePage(onConvertClick: () -> Unit = {}, onSubscriptionSourceManageClick: () -> Unit = {}) {
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -74,7 +74,7 @@ fun HomePage(onConvertClick: () -> Unit = {}) {
         }
     ) { contentPadding ->
         HomePageScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
-            onConvertClick = onConvertClick)
+            onConvertClick = onConvertClick, onSubscriptionSourceManageClick = onSubscriptionSourceManageClick)
 
         var showRationableDialog by remember {
             mutableStateOf(false)
@@ -131,7 +131,7 @@ private fun HomeTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
 }
 
 @Composable
-private fun HomePageScreen(modifier: Modifier = Modifier, onConvertClick: () -> Unit) {
+private fun HomePageScreen(modifier: Modifier = Modifier, onConvertClick: () -> Unit, onSubscriptionSourceManageClick: () -> Unit) {
 
     Column(modifier = modifier
         .fillMaxWidth()
@@ -173,14 +173,28 @@ private fun HomePageScreen(modifier: Modifier = Modifier, onConvertClick: () -> 
 
         CommonItem(
             iconResId = R.drawable.ic_convert,
-            title = "Add converter",
+            title = stringResource(id = R.string.Converter_Manage),
             onClick = onConvertClick,
             modifier = Modifier
         )
 
         CommonItem(
+            iconResId = R.drawable.ic_source,
+            title = stringResource(id = R.string.Subscription_Manage),
+            onClick = onSubscriptionSourceManageClick,
+            modifier = Modifier
+        )
+
+        CommonItem(
             iconResId = R.drawable.ic_settings,
-            title = "Settings",
+            title = stringResource(id = R.string.Settings),
+            onClick = { },
+            modifier = Modifier
+        )
+
+        CommonItem(
+            iconResId = R.drawable.ic_info,
+            title = stringResource(id = R.string.About),
             onClick = { },
             modifier = Modifier
         )
