@@ -1,4 +1,4 @@
-package com.cloud.spider.compose.converter
+package com.cloud.spider.ui.converter
 
 import android.os.Bundle
 import android.util.Log
@@ -46,7 +46,6 @@ import com.cloud.spider.protocol.ClientType
 import com.cloud.spider.repository.entity.SubscriptionSource
 import com.cloud.spider.util.parcelable
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.StateFlow
 
 /**
  *

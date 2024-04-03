@@ -1,4 +1,4 @@
-package com.cloud.spider.ui
+package com.cloud.spider.compose
 
 import androidx.compose.ui.graphics.Color
 

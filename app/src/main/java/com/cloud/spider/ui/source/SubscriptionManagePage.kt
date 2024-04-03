@@ -1,10 +1,11 @@
-package com.cloud.spider.compose.source
+package com.cloud.spider.ui.source
 
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -23,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -47,7 +49,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cloud.spider.R
 import com.cloud.spider.base.DataState
+import com.cloud.spider.compose.anim.ProgressAnimation
 import com.cloud.spider.protocol.ClientType
+import com.cloud.spider.repository.entity.SourceStatus
 import com.cloud.spider.repository.entity.SubscriptionSource
 import com.cloud.spider.util.SystemUtil
 
@@ -221,10 +225,16 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
             Text(text = subscriptionSource.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 6.dp), maxLines = 1)
             Text(text = subscriptionSource.sourceUrl, modifier = Modifier.padding(start = 24.dp, bottom = 12.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        
-        Text(text = subscriptionSource.getPulledTimeText(context),
-            modifier = Modifier.padding(start = 12.dp, end = 12.dp),
-            style = MaterialTheme.typography.labelMedium)
+
+        if (subscriptionSource.pullStatus == SourceStatus.IDLE || subscriptionSource.pullStatus == SourceStatus.PENDING) {
+            ProgressAnimation(modifier = Modifier
+                .padding(start = 12.dp, end = 12.dp)
+            )
+        } else {
+            Text(text = subscriptionSource.getPulledTimeText(context),
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp),
+                style = MaterialTheme.typography.labelMedium)
+        }
 
         IconButton(onClick = {
             menuExpanded = true

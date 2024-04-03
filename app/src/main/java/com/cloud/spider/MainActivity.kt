@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.cloud.spider.base.BaseActivity
-import com.cloud.spider.compose.AppMain
+import com.cloud.spider.ui.AppMain
 import dagger.hilt.android.AndroidEntryPoint
 
 /**

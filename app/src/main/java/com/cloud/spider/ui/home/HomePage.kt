@@ -1,4 +1,4 @@
-package com.cloud.spider.compose.home
+package com.cloud.spider.ui.home
 
 import android.Manifest
 import android.content.Intent
@@ -48,7 +48,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import androidx.navigation.NavController
 import com.cloud.spider.R
 import com.cloud.spider.server.SpiderService
 import com.cloud.spider.util.SystemUtil

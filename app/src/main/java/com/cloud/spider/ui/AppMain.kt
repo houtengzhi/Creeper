@@ -1,24 +1,21 @@
-package com.cloud.spider.compose
+package com.cloud.spider.ui
 
 import android.os.Bundle
 import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.cloud.spider.compose.converter.ConverterManagePage
-import com.cloud.spider.compose.converter.NewConverterPage
-import com.cloud.spider.compose.home.HomePage
-import com.cloud.spider.compose.source.SubscriptionManagePage
-import com.cloud.spider.repository.entity.SubscriptionSource
-import com.cloud.spider.ui.AppTheme
+import com.cloud.spider.ui.converter.ConverterManagePage
+import com.cloud.spider.ui.converter.NewConverterPage
+import com.cloud.spider.ui.home.HomePage
+import com.cloud.spider.ui.source.SubscriptionManagePage
+import com.cloud.spider.compose.AppTheme
 import com.cloud.spider.util.clearForResult
 import com.cloud.spider.util.navigateForResult
-import com.cloud.spider.util.parcelable
 import com.cloud.spider.util.setResult
 import kotlinx.coroutines.launch
 
