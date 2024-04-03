@@ -1,5 +1,6 @@
 package com.cloud.spider.repository.db
 
+import android.util.Log
 import androidx.room.Transaction
 import com.cloud.spider.repository.entity.ConverterSubscriptionSourceCrossRef
 import com.cloud.spider.repository.entity.ConverterWithSources
@@ -11,6 +12,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
  * Created by cloud on 2024/2/21.
  */
 class DbRepos(private val appDatabase: AppDatabase) {
+
+    companion object {
+        private const val TAG = "DbRepos"
+    }
 
     @Transaction
     suspend fun insertConverter(converter: ConverterWithSources) {
@@ -40,6 +45,7 @@ class DbRepos(private val appDatabase: AppDatabase) {
     }
 
     suspend fun updateSubscriptionSource(source: SubscriptionSource) {
+        Log.d(TAG, "updateSubscriptionSource()")
         appDatabase.appDao().updateSubscriptionSource(source)
     }
 
@@ -49,5 +55,5 @@ class DbRepos(private val appDatabase: AppDatabase) {
 
     suspend fun querySubscriptionSourceList() = appDatabase.appDao().querySubscriptionSourceList()
 
-    fun subscribeSubscriptionSourceList() = appDatabase.appDao().subscribeSubscriptionSourceList().distinctUntilChanged()
+    fun subscribeSubscriptionSourceList() = appDatabase.appDao().subscribeSubscriptionSourceList()
 }

@@ -41,7 +41,7 @@ class ConvertViewModel @Inject constructor(private val httpRepos: HttpRepos, pri
 
     fun testSubscription(url: String) {
         viewModelScope.launch {
-            httpRepos.getSubscriptionContent(url)
+            httpRepos.fetchSubscriptionContent(url)
         }
     }
 

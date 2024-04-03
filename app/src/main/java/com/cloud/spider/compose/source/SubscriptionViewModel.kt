@@ -6,7 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloud.spider.base.DataState
+import com.cloud.spider.protocol.core.onSuccess
 import com.cloud.spider.repository.db.DbRepos
+import com.cloud.spider.repository.entity.SourceStatus
 import com.cloud.spider.repository.entity.SubscriptionSource
 import com.cloud.spider.repository.file.FileRepos
 import com.cloud.spider.repository.http.HttpRepos
@@ -39,11 +41,14 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
     private val _addState = MutableLiveData<DataState<Boolean>>()
     val addState: MutableLiveData<DataState<Boolean>> get() = _addState
 
-    private val _updateState = MutableLiveData<DataState<Boolean>>()
-    val updateState: LiveData<DataState<Boolean>> get() = _updateState
+    private val _editState = MutableLiveData<DataState<Boolean>>()
+    val editState: LiveData<DataState<Boolean>> get() = _editState
 
     private val _deleteState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
     val deleteState = _deleteState.stateIn(viewModelScope, SharingStarted.Lazily, _deleteState.value)
+
+    private val _pullState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
+    val pullState = _pullState.stateIn(viewModelScope, SharingStarted.Lazily, _pullState.value)
 
     private val _subscriptionListState = MutableStateFlow(DataState<List<SubscriptionSource>>(false, null, null))
     val subscriptionListState = _subscriptionListState.stateIn(viewModelScope, SharingStarted.Eagerly, _subscriptionListState.value)
@@ -74,19 +79,19 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
         }
     }
 
-    fun updateSubscriptionSource(source: SubscriptionSource) {
+    fun editSubscriptionSource(source: SubscriptionSource) {
         viewModelScope.launch {
             flow {
                 dbRepos.updateSubscriptionSource(source)
                 emit(true)
             }.onStart {
-                    _updateState.value = DataState(true, null, null)
+                    _editState.value = DataState(true, null, null)
                 }
                 .catch {
-                    _updateState.value = DataState(it)
+                    _editState.value = DataState(it)
                 }
                 .collect {
-                    _updateState.value = DataState(isLoading = false, data = true, throwable = null)
+                    _editState.value = DataState(isLoading = false, data = true, throwable = null)
                 }
         }
     }
@@ -145,30 +150,60 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
             DataState(it)
         }
         .onStart {
-            Log.d(TAG, "subscribeSubscriptionSourceList onStart")
+            Log.d(TAG, "subscribeSubscriptionSourceList() onStart")
             emit(DataState(true, null, null))
         }
+        .onEach {
+            Log.d(TAG, "subscribeSubscriptionSourceList() onEach")
+        }
         .catch { throwable ->
-            Log.e(TAG, "subscribeSubscriptionSourceList throwable=${throwable.message}")
+            Log.e(TAG, "subscribeSubscriptionSourceList() throwable=${throwable.message}")
             emit(DataState(throwable))
         }
         .stateIn(viewModelScope, started = SharingStarted.Eagerly, initialValue = DataState.initial())
 
-    fun testSubscription(url: String) {
+    fun pullSubscription(source: SubscriptionSource) {
         viewModelScope.launch() {
-            httpRepos.getSubscriptionContent(url)
+            Log.d(TAG, "pullSubscription()")
+            httpRepos.fetchSubscriptionContent(source.sourceUrl)
+                .flowOn(Dispatchers.IO)
                 .onStart {
-
+                    Log.d(TAG, "pullSubscription() onStart")
+                    _pullState.update {
+                        DataState(true, null, null)
+                    }
+                    source.pullStatus = SourceStatus.PENDING
+                    source.updatedTime = System.currentTimeMillis()
+                    source.cacheName = "${source.id}.yaml"
+                    dbRepos.updateSubscriptionSource(source)
                 }
+                .flowOn(Dispatchers.Main)
                 .onEach {
+                    Log.d(TAG, "pullSubscription() onEach")
+                    it.onSuccess {
+                        source.cacheName?.let { it1 -> fileRepos.saveSubscriptionSource(it1, this.data) }
+                    }
 
                 }
                 .flowOn(Dispatchers.IO)
-                .catch {
-
+                .catch {throwable ->
+                    Log.e(TAG, "pullSubscription() throwable=${throwable.message}")
+                    _pullState.update {
+                        DataState(throwable)
+                    }
+                    source.pullStatus = SourceStatus.FAILED
+                    source.updatedTime = System.currentTimeMillis()
+                    dbRepos.updateSubscriptionSource(source)
                 }
                 .collect {
-
+                    Log.d(TAG, "pullSubscription() collect")
+                    _pullState.update {
+                        DataState(isLoading = false, data = true, throwable = null)
+                    }
+                    source.pullStatus = SourceStatus.UPDATED
+                    source.pulledTime = System.currentTimeMillis()
+                    source.updatedTime = System.currentTimeMillis()
+                    dbRepos.updateSubscriptionSource(source)
                 }
 
         }

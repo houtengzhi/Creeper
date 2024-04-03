@@ -1,5 +1,6 @@
 package com.cloud.spider.repository.http
 
+import android.util.Log
 import com.cloud.spider.protocol.core.ApiResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -12,8 +13,13 @@ import okhttp3.Request
  */
 class HttpRepos(private val httpClient: OkHttpClient) {
 
-    fun getSubscriptionContent(url: String): Flow<ApiResponse<String>> {
+    companion object {
+        private const val TAG = "HttpRepos"
+    }
+
+    fun fetchSubscriptionContent(url: String): Flow<ApiResponse<String>> {
         return flow {
+            Log.d(TAG, "fetchSubscriptionContent")
             val request = Request.Builder()
                 .url(url)
                 .get()

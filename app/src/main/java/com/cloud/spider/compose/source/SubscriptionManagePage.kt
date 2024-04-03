@@ -38,7 +38,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -85,7 +87,9 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
             onItemClick = onResultSet,
             onDeleteClick = {
             viewModel.deleteSubscriptionSource(it)
-        })
+        }, onUpdateClick = {
+            viewModel.pullSubscription(it)
+            })
 
         when {
             showAddSubscriptionDialog -> {
@@ -138,18 +142,14 @@ private fun MoreMenu(expanded: Boolean, onDismissRequest: () -> Unit, onNewClick
             onDismissRequest()
             onNewClick()
         } )
-        DropdownMenuItem(text = {
-            Text(text = "About")
-        }, onClick = {
-            onDismissRequest()
-        })
     }
 }
 
 @Composable
 fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState: DataState<Boolean>, deleteState: DataState<Boolean>, modifier: Modifier = Modifier,
                         onItemClick: (subscriptionSource: SubscriptionSource) -> Unit,
-                        onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit) {
+                        onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit,
+                        onUpdateClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     Log.d(TAG, "ConverterPageScreen(), dataState=${dataState}")
     when {
         dataState.isLoading -> {
@@ -164,7 +164,7 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
             dataState.data.let { dataList ->
                 LazyColumn(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(dataList) {
-                        SubscriptionSourceItem(it, onItemClick, onDeleteClick)
+                        SubscriptionSourceItem(it, onItemClick, onDeleteClick, onUpdateClick)
                     }
                 }
             }
@@ -205,9 +205,11 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
 
 @Composable
 private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onItemClick: (subscriptionSource: SubscriptionSource) -> Unit,
-                                   onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit) {
+                                   onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit,
+                                   onUpdateClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Row(modifier = Modifier
         .fillMaxWidth()
@@ -216,9 +218,13 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
             onItemClick(subscriptionSource)
         }, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = subscriptionSource.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 6.dp))
-            Text(text = subscriptionSource.sourceUrl, modifier = Modifier.padding(start = 24.dp, bottom = 12.dp))
+            Text(text = subscriptionSource.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 6.dp), maxLines = 1)
+            Text(text = subscriptionSource.sourceUrl, modifier = Modifier.padding(start = 24.dp, bottom = 12.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
+        
+        Text(text = subscriptionSource.getPulledTimeText(context),
+            modifier = Modifier.padding(start = 12.dp, end = 12.dp),
+            style = MaterialTheme.typography.labelMedium)
 
         IconButton(onClick = {
             menuExpanded = true
@@ -229,7 +235,8 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false },
                 onEditClick = { /*TODO*/ },
-                onDeleteClick = { showDeleteDialog = true } )
+                onDeleteClick = { showDeleteDialog = true },
+                onUpdateClick = { onUpdateClick(subscriptionSource)})
         }
     }
 
@@ -244,7 +251,7 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
 }
 
 @Composable
-private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit) {
+private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit, onUpdateClick: () -> Unit) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest, modifier = Modifier) {
         DropdownMenuItem(text = {
             Text(text = stringResource(id = R.string.Edit))
@@ -257,6 +264,12 @@ private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Un
         }, onClick = {
             onDismissRequest()
             onDeleteClick()
+        })
+        DropdownMenuItem(text = {
+            Text(text = stringResource(id = R.string.Update))
+        }, onClick = {
+            onDismissRequest()
+            onUpdateClick()
         })
     }
 }

@@ -9,6 +9,8 @@
     <string name="Select_Subscription">"Select Subscription"</string>
     <string name="Edit">"Edit"</string>
     <string name="Delete">"Delete"</string>
+    <string name="Test">"Test"</string>
+    <string name="Update">"Update"</string>
     <string name="OK">"OK"</string>
     <string name="Save">"Save"</string>
     <string name="Cancel">"Cancel"</string>
