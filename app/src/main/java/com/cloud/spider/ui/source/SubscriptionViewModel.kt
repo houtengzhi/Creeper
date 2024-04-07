@@ -82,6 +82,7 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
     fun editSubscriptionSource(source: SubscriptionSource) {
         viewModelScope.launch {
             flow {
+                Log.d(TAG, "editSubscriptionSource(), source=${source}")
                 dbRepos.updateSubscriptionSource(source)
                 emit(true)
             }.onStart {
@@ -174,14 +175,14 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
                     }
                     source.pullStatus = SourceStatus.PENDING
                     source.updatedTime = System.currentTimeMillis()
-                    source.cacheName = "${source.id}.yaml"
+                    source.cacheFileName = "${source.id}.yaml"
                     dbRepos.updateSubscriptionSource(source)
                 }
                 .flowOn(Dispatchers.Main)
                 .onEach {
                     Log.d(TAG, "pullSubscription() onEach")
                     it.onSuccess {
-                        source.cacheName?.let { it1 -> fileRepos.saveSubscriptionSource(it1, this.data) }
+                        source.cacheFileName?.let { it1 -> fileRepos.saveSubscriptionSource(it1, this.data) }
                     }
 
                 }

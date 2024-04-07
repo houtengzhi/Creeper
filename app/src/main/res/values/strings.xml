@@ -6,6 +6,8 @@
     <string name="New_Converter">"New Converter"</string>
     <string name="Subscription_Source_Manage">"Subscription Source Manage"</string>
     <string name="Subscription_Manage">"Subscription Manage"</string>
+    <string name="Add_subscription">"Add subscription"</string>
+    <string name="Edit_subscription">"Edit subscription"</string>
     <string name="Select_Subscription">"Select Subscription"</string>
     <string name="Edit">"Edit"</string>
     <string name="Delete">"Delete"</string>

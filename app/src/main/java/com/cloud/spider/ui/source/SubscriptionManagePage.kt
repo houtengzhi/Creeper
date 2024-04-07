@@ -89,11 +89,14 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
 
         ConverterPageScreen(uiState.value, addState.value, deleteState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
             onItemClick = onResultSet,
+            onEditClick = {
+                viewModel.editSubscriptionSource(it)
+            },
             onDeleteClick = {
-            viewModel.deleteSubscriptionSource(it)
+                viewModel.deleteSubscriptionSource(it)
         }, onUpdateClick = {
             viewModel.pullSubscription(it)
-            })
+        })
 
         when {
             showAddSubscriptionDialog -> {
@@ -152,6 +155,7 @@ private fun MoreMenu(expanded: Boolean, onDismissRequest: () -> Unit, onNewClick
 @Composable
 fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState: DataState<Boolean>, deleteState: DataState<Boolean>, modifier: Modifier = Modifier,
                         onItemClick: (subscriptionSource: SubscriptionSource) -> Unit,
+                        onEditClick: (subscriptionSource: SubscriptionSource) -> Unit,
                         onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit,
                         onUpdateClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     Log.d(TAG, "ConverterPageScreen(), dataState=${dataState}")
@@ -168,7 +172,7 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
             dataState.data.let { dataList ->
                 LazyColumn(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(dataList) {
-                        SubscriptionSourceItem(it, onItemClick, onDeleteClick, onUpdateClick)
+                        SubscriptionSourceItem(it, onItemClick, onEditClick, onDeleteClick, onUpdateClick)
                     }
                 }
             }
@@ -209,10 +213,12 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
 
 @Composable
 private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onItemClick: (subscriptionSource: SubscriptionSource) -> Unit,
+                                   onEditClick: (subscriptionSource: SubscriptionSource) -> Unit,
                                    onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit,
                                    onUpdateClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     Row(modifier = Modifier
@@ -226,15 +232,10 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
             Text(text = subscriptionSource.sourceUrl, modifier = Modifier.padding(start = 24.dp, bottom = 12.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
 
-        if (subscriptionSource.pullStatus == SourceStatus.IDLE || subscriptionSource.pullStatus == SourceStatus.PENDING) {
-            ProgressAnimation(modifier = Modifier
-                .padding(start = 12.dp, end = 12.dp)
-            )
-        } else {
-            Text(text = subscriptionSource.getPulledTimeText(context),
+
+        Text(text = subscriptionSource.getPulledTimeText(context),
                 modifier = Modifier.padding(start = 12.dp, end = 12.dp),
                 style = MaterialTheme.typography.labelMedium)
-        }
 
         IconButton(onClick = {
             menuExpanded = true
@@ -244,7 +245,7 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
             SubscriptionSourceMenu(
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false },
-                onEditClick = { /*TODO*/ },
+                onEditClick = { showEditDialog = true },
                 onDeleteClick = { showDeleteDialog = true },
                 onUpdateClick = { onUpdateClick(subscriptionSource)})
         }
@@ -254,7 +255,19 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
         DeleteSubscriptionSourceDialog(
             subscriptionSource = subscriptionSource,
             onDismissRequest = { showDeleteDialog = false },
-            onDeleteClick = {onDeleteClick(subscriptionSource)}
+            onDeleteClick = {
+                onDeleteClick(it)
+            }
+        )
+    }
+
+    if (showEditDialog) {
+        EditSubscriptionSourceDialog(
+            subscriptionSource = subscriptionSource,
+            onDismissRequest = { showEditDialog = false },
+            onSaveClick = {
+                onEditClick(it)
+            }
         )
     }
 
@@ -304,18 +317,18 @@ private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClic
                 onSaveClick(name, url)
 
             }, enabled = isSaveBtnEnabled) {
-                Text(text = "Save")
+                Text(text = stringResource(id = R.string.Save))
             }
         },
         dismissButton = {
             TextButton(onClick = {
                 onDismissRequest()
             }) {
-                Text(text = "Cancel")
+                Text(text = stringResource(id = R.string.Cancel))
             }
         },
         title = {
-            Text(text = "Add subscription")
+            Text(text = stringResource(id = R.string.Add_subscription))
         },
         text = {
             Column(modifier = Modifier) {
@@ -328,6 +341,67 @@ private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClic
                     onValueChange = {
                         url = it
                         isSaveBtnEnabled = name.isNotEmpty() && it.isNotEmpty()
+                    }, label = { Text("Subscription Url")}, singleLine = true, modifier = Modifier.padding(top = 12.dp))
+
+            }
+        },
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+    )
+}
+
+@Composable
+private fun EditSubscriptionSourceDialog(subscriptionSource: SubscriptionSource, onDismissRequest: () -> Unit, onSaveClick: (subscriptionSource: SubscriptionSource) -> Unit) {
+    var name by remember {
+        mutableStateOf(subscriptionSource.name)
+    }
+    var url by remember {
+        mutableStateOf(subscriptionSource.sourceUrl)
+    }
+
+    var dataChanged by remember {
+        mutableStateOf(false)
+    }
+
+    var isSaveBtnEnabled by remember {
+        mutableStateOf(false)
+    }
+
+    AlertDialog(onDismissRequest = onDismissRequest, modifier = Modifier,
+        confirmButton = {
+            TextButton(onClick = {
+                onDismissRequest()
+                val subscription = SubscriptionSource(subscriptionSource.id, name, url, subscriptionSource.type)
+                subscription.createdTime = subscription.createdTime
+                subscription.updatedTime = System.currentTimeMillis()
+                onSaveClick(subscriptionSource)
+
+            }, enabled = isSaveBtnEnabled) {
+                Text(text = stringResource(id = R.string.Save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = {
+                onDismissRequest()
+            }) {
+                Text(text = stringResource(id = R.string.Cancel))
+            }
+        },
+        title = {
+            Text(text = stringResource(id = R.string.Edit_subscription))
+        },
+        text = {
+            Column(modifier = Modifier) {
+                TextField(value = name,
+                    onValueChange = {
+                        name = it
+                        dataChanged = dataChanged || subscriptionSource.name != name
+                        isSaveBtnEnabled = url.isNotEmpty() && it.isNotEmpty() && dataChanged
+                    }, label = { Text("Name")}, singleLine = true, modifier = Modifier)
+                TextField(value = url,
+                    onValueChange = {
+                        url = it
+                        dataChanged = dataChanged || subscriptionSource.sourceUrl != url
+                        isSaveBtnEnabled = name.isNotEmpty() && it.isNotEmpty() && dataChanged
                     }, label = { Text("Subscription Url")}, singleLine = true, modifier = Modifier.padding(top = 12.dp))
 
             }
