@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.twotone.Add
 import androidx.compose.material.icons.twotone.Clear
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -30,6 +31,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,13 +39,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.cloud.spider.R
 import com.cloud.spider.protocol.ClientType
+import com.cloud.spider.repository.entity.Converter
+import com.cloud.spider.repository.entity.ConverterWithSources
 import com.cloud.spider.repository.entity.SubscriptionSource
+import com.cloud.spider.util.SystemUtil
 import com.cloud.spider.util.parcelable
 import kotlinx.coroutines.CoroutineScope
 
@@ -57,28 +64,47 @@ private const val TAG = "NewConverterPage"
 fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = hiltViewModel(), onSubscriptionClick: () -> Unit,
                      navForResult: (coroutineScope: CoroutineScope, requestCode: String, onResult: (data: Bundle) -> Unit) -> Unit) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    var showBottomSheet by remember { mutableStateOf(false) }
-
-
+    var canSave by remember {
+        mutableStateOf(viewModel.canSaveConverter)
+    }
+    val addState = viewModel.addState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            NewConverterTopAppBar(scrollBehavior = scrollBehavior, onUpClick = onUpClick, onSaveClick = {
-
+            NewConverterTopAppBar(scrollBehavior = scrollBehavior, canSave = canSave, onUpClick = onUpClick, onSaveClick = {
+                val converter = ConverterWithSources(Converter(SystemUtil.generateConverterId(), viewModel.converterName), viewModel.subscriptionSourceList)
+                viewModel.addConverter(converter)
             })
         }
     ) { contentPadding ->
 
-        MergeProxiesScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), viewModel, onSubscriptionClick, navForResult)
+        MergeProxiesScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), viewModel, onSubscriptionClick, onDataChanged = {
+            canSave = it
+        }, navForResult)
 
+    }
+
+    when {
+        addState.value.isLoading -> {
+            LoadingIndicator()
+        }
+        addState.value.throwable != null -> {
+
+        }
+        addState.value.error != null -> {
+
+        }
+        else -> {
+
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NewConverterTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
-                               modifier: Modifier = Modifier, onUpClick: () -> Unit, onSaveClick: () -> Unit) {
+                               modifier: Modifier = Modifier, canSave: Boolean, onUpClick: () -> Unit, onSaveClick: () -> Unit) {
 
     TopAppBar(title = {
         Text(text = stringResource(id = R.string.New_Converter))
@@ -90,7 +116,7 @@ private fun NewConverterTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
             }
         },
         actions = {
-            IconButton(onClick = onSaveClick) {
+            IconButton(onClick = onSaveClick, enabled = canSave) {
                 Icon(imageVector = Icons.Filled.Done, contentDescription = "Save converter")
             }
         },
@@ -99,7 +125,8 @@ private fun NewConverterTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewModel, onSubscriptionClick: () -> Unit, navForResult: (coroutineScope: CoroutineScope, requestCode: String, onResult: (data: Bundle) -> Unit) -> Unit) {
+fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewModel, onSubscriptionClick: () -> Unit, onDataChanged: (canSave: Boolean) -> Unit,
+                       navForResult: (coroutineScope: CoroutineScope, requestCode: String, onResult: (data: Bundle) -> Unit) -> Unit) {
 
     var clientMenuExpanded by remember { mutableStateOf(false) }
 
@@ -119,11 +146,19 @@ fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
                 mutableStateOf("")
             }
 
-            Text(text = "Name", modifier = Modifier
-                .padding(start = 20.dp))
-            TextField(value = viewModel.converterName, onValueChange = { viewModel.updateConverterName(it) }, singleLine = true, modifier = Modifier
-                .padding(start = 12.dp, end = 12.dp)
-                .fillMaxWidth())
+            Text(
+                text = "Name", modifier = Modifier
+                    .padding(start = 20.dp)
+            )
+            TextField(
+                value = viewModel.converterName, onValueChange = {
+                    viewModel.updateConverterName(it)
+                    onDataChanged(viewModel.converterName.isNotEmpty() && viewModel.subscriptionSourceList.isNotEmpty())
+
+                }, singleLine = true, modifier = Modifier
+                    .padding(start = 12.dp, end = 12.dp)
+                    .fillMaxWidth()
+            )
 
             Row(modifier = Modifier
                 .padding(top = 24.dp)
@@ -141,6 +176,7 @@ fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
                                 Log.d(TAG, "onResult(), url=${it.sourceUrl}")
                                 url = it.sourceUrl
                                 viewModel.subscriptionSourceList.add(it)
+                                onDataChanged(viewModel.canSaveConverter)
                             }
                         }
                     }
@@ -154,22 +190,27 @@ fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
 
                 Row(modifier = Modifier
                     .padding(top = 12.dp)
-                    .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
 
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(text = source.name,
-                            style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier
-                            .padding(start = 12.dp))
+                                .padding(start = 12.dp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.labelLarge)
 
                         Text(text = source.sourceUrl,
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.padding(start = 12.dp))
+                            modifier = Modifier.padding(start = 12.dp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.labelMedium)
                     }
 
 
                     IconButton(modifier = Modifier.padding(end = 20.dp), onClick = {
                         viewModel.subscriptionSourceList.remove(source)
+                        onDataChanged(viewModel.canSaveConverter)
                     }) {
                         Icon(imageVector = Icons.TwoTone.Clear, contentDescription = "Remove subscription url")
                     }
@@ -177,7 +218,7 @@ fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
             }
 
 
-            Text(text = "Client", modifier = Modifier
+            Text(text = "Output Type", modifier = Modifier
                 .padding(start = 20.dp, top = 24.dp))
             ExposedDropdownMenuBox(modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp)
@@ -266,4 +307,9 @@ private fun AddSubscriptionUrlDialog(onDismissRequest: () -> Unit, onSaveClick: 
             }
         },
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false))
+}
+
+@Composable
+private fun LoadingIndicator() {
+    CircularProgressIndicator()
 }

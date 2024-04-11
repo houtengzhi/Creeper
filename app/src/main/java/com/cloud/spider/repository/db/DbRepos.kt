@@ -19,6 +19,7 @@ class DbRepos(private val appDatabase: AppDatabase) {
 
     @Transaction
     suspend fun insertConverter(converter: ConverterWithSources) {
+        Log.d(TAG, "insertConverter()")
         appDatabase.appDao().insertConverter(converter.converter)
         converter.subscriptionSourceList.forEach {
             appDatabase.appDao().insertConverterSubscriptionSourceCrossRef(
@@ -39,6 +40,8 @@ class DbRepos(private val appDatabase: AppDatabase) {
     suspend fun queryConverterList(): List<ConverterWithSources> {
         return appDatabase.appDao().queryConverterList()
     }
+
+    fun subscribeConverterList() = appDatabase.appDao().subscribeConverterList()
 
     suspend fun insertSubscriptionSource(source: SubscriptionSource) {
         appDatabase.appDao().insertSubscriptionSource(source)

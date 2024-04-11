@@ -40,6 +40,9 @@ interface AppDao {
     @Query("SELECT * FROM converter")
     suspend fun queryConverterList(): List<ConverterWithSources>
 
+    @Query("SELECT * FROM converter")
+    fun subscribeConverterList(): Flow<List<ConverterWithSources>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSubscriptionSource(source: SubscriptionSource)
 
