@@ -157,12 +157,11 @@ private fun ConverterItem(converter: ConverterWithSources,
 
         }, verticalAlignment = Alignment.CenterVertically) {
 
-        Image(painter = painterResource(id = R.drawable.ic_clashr), contentDescription = "",
-            modifier = Modifier.padding())
+        Image(painter = painterResource(id = converter.converter.getClientIconResId()), contentDescription = "",
+            modifier = Modifier.padding(start = 24.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = converter.converter.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 6.dp), maxLines = 1)
-            Text(text = "", modifier = Modifier.padding(start = 24.dp, bottom = 12.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = converter.converter.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
 
 

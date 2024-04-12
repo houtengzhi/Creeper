@@ -95,6 +95,11 @@ fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = h
         addState.value.error != null -> {
 
         }
+        addState.value.data != null -> {
+            if (addState.value.data!!) {
+                onUpClick()
+            }
+        }
         else -> {
 
         }

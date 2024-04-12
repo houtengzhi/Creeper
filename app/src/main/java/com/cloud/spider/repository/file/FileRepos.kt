@@ -25,7 +25,11 @@ class FileRepos(private val cacheDirectory: String, private val fileDirectory: S
 
     private fun saveAsFile(parentPath: String, fileName: String, content: String) {
         Log.d(TAG, "saveAsFile(), parentPath=${parentPath}, name=${fileName}")
-        val file = File(parentPath, fileName)
+        val parentDir = File(parentPath)
+        if (!parentDir.exists()) {
+            parentDir.mkdirs()
+        }
+        val file = File(parentDir, fileName)
         file.writeText(content)
     }
 
