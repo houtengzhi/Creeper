@@ -230,7 +230,9 @@ fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
                 .fillMaxWidth(), expanded = clientMenuExpanded, onExpandedChange = {
                 clientMenuExpanded = it
             }) {
-                TextField(value = viewModel.clientType.text, onValueChange = {url = it},
+                TextField(value = viewModel.clientType.text, onValueChange = {
+
+                                                                             },
                     readOnly = true,
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = clientMenuExpanded)

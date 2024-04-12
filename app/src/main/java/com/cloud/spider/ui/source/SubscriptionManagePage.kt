@@ -20,6 +20,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,6 +55,7 @@ import com.cloud.spider.compose.anim.ProgressAnimation
 import com.cloud.spider.protocol.ClientType
 import com.cloud.spider.repository.entity.SourceStatus
 import com.cloud.spider.repository.entity.SubscriptionSource
+import com.cloud.spider.util.SUPPORTED_SOURCE_TYPE_LIST
 import com.cloud.spider.util.SystemUtil
 
 /**
@@ -102,11 +105,8 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
             showAddSubscriptionDialog -> {
                 AddSubscriptionSourceDialog(onDismissRequest = {
                     showAddSubscriptionDialog = false
-                }, onSaveClick = { name: String, url: String ->
-                    val subscriptionSource = SubscriptionSource(SystemUtil.generateSubscriptionSourceId(), name, url, ClientType.Clash.text)
-                    subscriptionSource.createdTime = System.currentTimeMillis()
-                    subscriptionSource.updatedTime = System.currentTimeMillis()
-                    viewModel.addSubscriptionSource(subscriptionSource)
+                }, onSaveClick = { source: SubscriptionSource ->
+                    viewModel.addSubscriptionSource(source)
                 })
             }
         }
@@ -297,13 +297,17 @@ private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Un
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClick: (name: String, url: String) -> Unit) {
+private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClick: (source: SubscriptionSource) -> Unit) {
     var name by remember {
         mutableStateOf("")
     }
     var url by remember {
         mutableStateOf("")
+    }
+    var sourceType by remember {
+        mutableStateOf(ClientType.Clash)
     }
 
     var isSaveBtnEnabled by remember {
@@ -314,7 +318,10 @@ private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClic
         confirmButton = {
             TextButton(onClick = {
                 onDismissRequest()
-                onSaveClick(name, url)
+                val subscriptionSource = SubscriptionSource(SystemUtil.generateSubscriptionSourceId(), name, url, sourceType.text)
+                subscriptionSource.createdTime = System.currentTimeMillis()
+                subscriptionSource.updatedTime = System.currentTimeMillis()
+                onSaveClick(subscriptionSource)
 
             }, enabled = isSaveBtnEnabled) {
                 Text(text = stringResource(id = R.string.Save))
@@ -332,6 +339,8 @@ private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClic
         },
         text = {
             Column(modifier = Modifier) {
+                var clientMenuExpanded by remember { mutableStateOf(false) }
+
                 TextField(value = name,
                     onValueChange = {
                         name = it
@@ -343,12 +352,38 @@ private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClic
                         isSaveBtnEnabled = name.isNotEmpty() && it.isNotEmpty()
                     }, label = { Text("Subscription Url")}, singleLine = true, modifier = Modifier.padding(top = 12.dp))
 
+                ExposedDropdownMenuBox(modifier = Modifier
+                    .padding(top = 12.dp)
+                    .fillMaxWidth(), expanded = clientMenuExpanded, onExpandedChange = {
+                    clientMenuExpanded = it
+                }) {
+                    TextField(value = sourceType.text, onValueChange = {
+
+                    },
+                        readOnly = true,
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = clientMenuExpanded)
+                        },
+                        placeholder = {Text("Please select client")},
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth())
+                    ExposedDropdownMenu(expanded = clientMenuExpanded, onDismissRequest = { clientMenuExpanded = false }) {
+                        SUPPORTED_SOURCE_TYPE_LIST.forEach {
+                            DropdownMenuItem(text = { Text(text = it.text) }, onClick = {
+                                sourceType = ClientType.valueOf(it.text)
+                                clientMenuExpanded = false
+                            })
+                        }
+                    }
+                }
             }
         },
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EditSubscriptionSourceDialog(subscriptionSource: SubscriptionSource, onDismissRequest: () -> Unit, onSaveClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     var name by remember {
@@ -356,6 +391,9 @@ private fun EditSubscriptionSourceDialog(subscriptionSource: SubscriptionSource,
     }
     var url by remember {
         mutableStateOf(subscriptionSource.sourceUrl)
+    }
+    var sourceType by remember {
+        mutableStateOf(ClientType.valueOf(subscriptionSource.type))
     }
 
     var dataChanged by remember {
@@ -370,7 +408,7 @@ private fun EditSubscriptionSourceDialog(subscriptionSource: SubscriptionSource,
         confirmButton = {
             TextButton(onClick = {
                 onDismissRequest()
-                val subscription = SubscriptionSource(subscriptionSource.id, name, url, subscriptionSource.type)
+                val subscription = SubscriptionSource(subscriptionSource.id, name, url, sourceType.text)
                 subscription.createdTime = subscription.createdTime
                 subscription.updatedTime = System.currentTimeMillis()
                 onSaveClick(subscriptionSource)
@@ -391,6 +429,8 @@ private fun EditSubscriptionSourceDialog(subscriptionSource: SubscriptionSource,
         },
         text = {
             Column(modifier = Modifier) {
+                var clientMenuExpanded by remember { mutableStateOf(false) }
+
                 TextField(value = name,
                     onValueChange = {
                         name = it
@@ -404,6 +444,32 @@ private fun EditSubscriptionSourceDialog(subscriptionSource: SubscriptionSource,
                         isSaveBtnEnabled = name.isNotEmpty() && it.isNotEmpty() && dataChanged
                     }, label = { Text("Subscription Url")}, singleLine = true, modifier = Modifier.padding(top = 12.dp))
 
+                ExposedDropdownMenuBox(modifier = Modifier
+                    .padding(top = 12.dp)
+                    .fillMaxWidth(), expanded = clientMenuExpanded, onExpandedChange = {
+                    clientMenuExpanded = it
+                }) {
+                    TextField(value = sourceType.text, onValueChange = {
+                        dataChanged = dataChanged || subscriptionSource.type != sourceType.text
+                        isSaveBtnEnabled = name.isNotEmpty() && url.isNotEmpty() && dataChanged
+                                                                       },
+                        readOnly = true,
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = clientMenuExpanded)
+                        },
+                        placeholder = {Text("Please select client")},
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth())
+                    ExposedDropdownMenu(expanded = clientMenuExpanded, onDismissRequest = { clientMenuExpanded = false }) {
+                        SUPPORTED_SOURCE_TYPE_LIST.forEach {
+                            DropdownMenuItem(text = { Text(text = it.text) }, onClick = {
+                                sourceType = ClientType.valueOf(it.text)
+                                clientMenuExpanded = false
+                            })
+                        }
+                    }
+                }
             }
         },
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
