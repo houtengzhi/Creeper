@@ -5,7 +5,6 @@ import androidx.room.Transaction
 import com.cloud.spider.repository.entity.ConverterSubscriptionSourceCrossRef
 import com.cloud.spider.repository.entity.ConverterWithSources
 import com.cloud.spider.repository.entity.SubscriptionSource
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 /**
  *
@@ -33,8 +32,16 @@ class DbRepos(private val appDatabase: AppDatabase) {
     }
 
 
-    suspend fun queryConverter(name: String): ConverterWithSources? {
-        return appDatabase.appDao().queryConverter(name)
+    suspend fun suspendQueryConverter(name: String): ConverterWithSources? {
+        return appDatabase.appDao().suspendQueryConverter(name)
+    }
+
+    fun queryConverterByName(name: String): ConverterWithSources? {
+        return appDatabase.appDao().queryConverterByName(name)
+    }
+
+    fun queryConverterById(converterId: String): ConverterWithSources? {
+        return appDatabase.appDao().queryConverterById(converterId)
     }
 
     suspend fun queryConverterList(): List<ConverterWithSources> {

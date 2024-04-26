@@ -34,12 +34,22 @@ interface AppDao {
 
     @Transaction
     @Query("SELECT * FROM converter WHERE name = :name")
-    suspend fun queryConverter(name: String): ConverterWithSources?
+    suspend fun suspendQueryConverter(name: String): ConverterWithSources?
+
+    @Transaction
+    @Query("SELECT * FROM converter WHERE name = :name")
+    fun queryConverterByName(name: String): ConverterWithSources?
+
+    @Transaction
+    @Query("SELECT * FROM converter WHERE converter_id = :converterId")
+    fun queryConverterById(converterId: String): ConverterWithSources?
+
 
     @Transaction
     @Query("SELECT * FROM converter")
     suspend fun queryConverterList(): List<ConverterWithSources>
 
+    @Transaction
     @Query("SELECT * FROM converter")
     fun subscribeConverterList(): Flow<List<ConverterWithSources>>
 

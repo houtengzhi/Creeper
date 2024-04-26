@@ -1,6 +1,8 @@
 package com.cloud.spider.repository.file
 
 import android.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
@@ -21,6 +23,33 @@ class FileRepos(private val cacheDirectory: String, private val fileDirectory: S
     fun readSubscriptionSource(fileName: String): String {
         val path = "${cacheDirectory}/subscription-source"
         return readFile(path, fileName)
+    }
+
+    fun saveConverter(fileName: String, content: String) {
+        val path = "${fileDirectory}/converter"
+        saveAsFile(path, fileName, content)
+    }
+
+    fun readConverter(fileName: String): String {
+        val path = "${fileDirectory}/converter"
+        return readFile(path, fileName)
+    }
+
+    fun readConverterFile(fileName: String): File {
+        val path = "${fileDirectory}/converter"
+        return File(path, fileName)
+    }
+
+    suspend fun suspendSaveConverter(fileName: String, content: String) {
+        withContext(Dispatchers.IO) {
+            saveConverter(fileName, content)
+        }
+    }
+
+    suspend fun suspendReadConverter(fileName: String): String {
+        return withContext(Dispatchers.IO) {
+            readConverter(fileName)
+        }
     }
 
     private fun saveAsFile(parentPath: String, fileName: String, content: String) {

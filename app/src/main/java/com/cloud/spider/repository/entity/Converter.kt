@@ -24,6 +24,9 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
     @ColumnInfo(name = "output_type")
     var outputType: String = ClientType.Clash.text
 
+    @ColumnInfo(name = "output_file_name")
+    var outputFileName: String? = null
+
     fun getClientIconResId():Int {
         return when (outputType) {
             ClientType.Clash.text -> {
