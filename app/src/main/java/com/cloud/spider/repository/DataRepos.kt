@@ -41,14 +41,14 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                     when (apiResponse) {
                         is ApiResponse.Success<String> -> {
                             when (source.type) {
-                                ClientType.Clash.text -> {
+                                ClientType.Clash -> {
                                     withContext(Dispatchers.Default) {
                                         val clashConfig = ConverterUtil.deserializeClashConfig(apiResponse.data)
                                         clashConfig
                                     }
                                 }
 
-                                ClientType.V2Ray.text -> {
+                                ClientType.V2Ray -> {
                                     withContext(Dispatchers.Default) {
                                         val v2RayConfig = ConverterUtil.readV2RaySubscription(apiResponse.data)
                                         v2RayConfig
@@ -97,7 +97,7 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
             if (proxyConfigList.isNotEmpty()) {
                 val content: String
                 when (converter.converter.outputType) {
-                    ClientType.Clash.text -> {
+                    ClientType.Clash -> {
                         val proxyNodeList = mutableListOf<ClashProxyNode>()
                         proxyConfigList.forEach { config ->
                             val clashConfig = config.toClashConfig()
@@ -111,7 +111,7 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                         }
 
                     }
-                    ClientType.V2Ray.text -> {
+                    ClientType.V2Ray -> {
                         content = ""
                     }
                     else -> {

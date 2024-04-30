@@ -151,7 +151,7 @@ fun NewConverterScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
             }
 
             Text(
-                text = "Name", modifier = Modifier
+                text = stringResource(id = R.string.Name), modifier = Modifier
                     .padding(start = 20.dp)
             )
             TextField(
@@ -160,6 +160,22 @@ fun NewConverterScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
                     onDataChanged(viewModel.converterName.isNotEmpty() && viewModel.subscriptionSourceList.isNotEmpty())
 
                 }, singleLine = true, modifier = Modifier
+                    .padding(start = 12.dp, end = 12.dp)
+                    .fillMaxWidth()
+            )
+
+            Text(
+                text = stringResource(id = R.string.Description), modifier = Modifier
+                    .padding(start = 20.dp, top = 24.dp)
+            )
+            TextField(
+                value = viewModel.converterDescription, onValueChange = {
+                    viewModel.updateConverterDescription(it)
+                    onDataChanged(viewModel.converterName.isNotEmpty() && viewModel.subscriptionSourceList.isNotEmpty())
+
+                }, 
+                placeholder = { Text(text = stringResource(id = R.string.Optional))},
+                singleLine = true, modifier = Modifier
                     .padding(start = 12.dp, end = 12.dp)
                     .fillMaxWidth()
             )
@@ -229,7 +245,7 @@ fun NewConverterScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
                 .fillMaxWidth(), expanded = clientMenuExpanded, onExpandedChange = {
                 clientMenuExpanded = it
             }) {
-                TextField(value = viewModel.clientType.text, onValueChange = {
+                TextField(value = viewModel.clientType.name, onValueChange = {
 
                                                                              },
                     readOnly = true,
@@ -242,8 +258,8 @@ fun NewConverterScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
                         .fillMaxWidth())
                 ExposedDropdownMenu(expanded = clientMenuExpanded, onDismissRequest = { clientMenuExpanded = false }) {
                     supportedClientList.forEach {
-                        DropdownMenuItem(text = { Text(text = it.text) }, onClick = {
-                            viewModel.updateClientType(it.text)
+                        DropdownMenuItem(text = { Text(text = it.name) }, onClick = {
+                            viewModel.updateClientType(it)
                             clientMenuExpanded = false
                         })
                     }

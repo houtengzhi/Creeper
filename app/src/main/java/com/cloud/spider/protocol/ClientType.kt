@@ -4,15 +4,10 @@ package com.cloud.spider.protocol
  *
  * Created by cloud on 2024/2/19.
  */
-enum class ClientType(val value: Int, val text: String) {
+enum class ClientType(val value: Int) {
 
-    Unknown(100, "Unknown"),
-    Clash(200, "Clash"),
-    V2Ray(300, "V2Ray");
+    Unknown(100),
+    Clash(200),
+    V2Ray(300);
 
-    fun getClientType(text: String): ClientType = when(text) {
-        Clash.text -> Clash
-        V2Ray.text -> V2Ray
-        else -> Unknown
-    }
 }

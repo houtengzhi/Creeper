@@ -318,7 +318,7 @@ private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClic
         confirmButton = {
             TextButton(onClick = {
                 onDismissRequest()
-                val subscriptionSource = SubscriptionSource(SystemUtil.generateSubscriptionSourceId(), name, url, sourceType.text)
+                val subscriptionSource = SubscriptionSource(SystemUtil.generateSubscriptionSourceId(), name, url, sourceType)
                 subscriptionSource.createdTime = System.currentTimeMillis()
                 subscriptionSource.updatedTime = System.currentTimeMillis()
                 onSaveClick(subscriptionSource)
@@ -357,7 +357,7 @@ private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClic
                     .fillMaxWidth(), expanded = clientMenuExpanded, onExpandedChange = {
                     clientMenuExpanded = it
                 }) {
-                    TextField(value = sourceType.text, onValueChange = {
+                    TextField(value = sourceType.name, onValueChange = {
 
                     },
                         readOnly = true,
@@ -370,8 +370,8 @@ private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClic
                             .fillMaxWidth())
                     ExposedDropdownMenu(expanded = clientMenuExpanded, onDismissRequest = { clientMenuExpanded = false }) {
                         SUPPORTED_SOURCE_TYPE_LIST.forEach {
-                            DropdownMenuItem(text = { Text(text = it.text) }, onClick = {
-                                sourceType = ClientType.valueOf(it.text)
+                            DropdownMenuItem(text = { Text(text = it.name) }, onClick = {
+                                sourceType = it
                                 clientMenuExpanded = false
                             })
                         }
@@ -393,7 +393,7 @@ private fun EditSubscriptionSourceDialog(subscriptionSource: SubscriptionSource,
         mutableStateOf(subscriptionSource.sourceUrl)
     }
     var sourceType by remember {
-        mutableStateOf(ClientType.valueOf(subscriptionSource.type))
+        mutableStateOf(subscriptionSource.type)
     }
 
     var dataChanged by remember {
@@ -408,7 +408,7 @@ private fun EditSubscriptionSourceDialog(subscriptionSource: SubscriptionSource,
         confirmButton = {
             TextButton(onClick = {
                 onDismissRequest()
-                val subscription = SubscriptionSource(subscriptionSource.id, name, url, sourceType.text)
+                val subscription = SubscriptionSource(subscriptionSource.id, name, url, sourceType)
                 subscription.createdTime = subscription.createdTime
                 subscription.updatedTime = System.currentTimeMillis()
                 onSaveClick(subscriptionSource)
@@ -449,8 +449,8 @@ private fun EditSubscriptionSourceDialog(subscriptionSource: SubscriptionSource,
                     .fillMaxWidth(), expanded = clientMenuExpanded, onExpandedChange = {
                     clientMenuExpanded = it
                 }) {
-                    TextField(value = sourceType.text, onValueChange = {
-                        dataChanged = dataChanged || subscriptionSource.type != sourceType.text
+                    TextField(value = sourceType.name, onValueChange = {
+                        dataChanged = dataChanged || subscriptionSource.type != sourceType
                         isSaveBtnEnabled = name.isNotEmpty() && url.isNotEmpty() && dataChanged
                                                                        },
                         readOnly = true,
@@ -463,8 +463,8 @@ private fun EditSubscriptionSourceDialog(subscriptionSource: SubscriptionSource,
                             .fillMaxWidth())
                     ExposedDropdownMenu(expanded = clientMenuExpanded, onDismissRequest = { clientMenuExpanded = false }) {
                         SUPPORTED_SOURCE_TYPE_LIST.forEach {
-                            DropdownMenuItem(text = { Text(text = it.text) }, onClick = {
-                                sourceType = ClientType.valueOf(it.text)
+                            DropdownMenuItem(text = { Text(text = it.name) }, onClick = {
+                                sourceType = it
                                 clientMenuExpanded = false
                             })
                         }

@@ -53,6 +53,13 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
         converterName = input
     }
 
+    var converterDescription by mutableStateOf("")
+        private set
+
+    fun updateConverterDescription(input: String) {
+        converterDescription = input
+    }
+
     val subscriptionSourceList = mutableStateListOf<SubscriptionSource>()
 
     val canSaveConverter get() = converterName.isNotEmpty() && subscriptionSourceList.isNotEmpty()
@@ -60,8 +67,8 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
     var clientType by mutableStateOf(ClientType.Clash)
         private set
 
-    fun updateClientType(input: String) {
-        clientType = ClientType.valueOf(input)
+    fun updateClientType(input: ClientType) {
+        clientType = input
     }
 
     private val _addState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
@@ -164,12 +171,12 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
                         when (it) {
                             is ApiResponse.Success<String> -> {
                                 when (source.type) {
-                                    ClientType.Clash.text -> {
+                                    ClientType.Clash -> {
                                         val clashConfig = ConverterUtil.deserializeClashConfig(it.data)
                                         clashConfig
                                     }
 
-                                    ClientType.V2Ray.text -> {
+                                    ClientType.V2Ray -> {
                                         val v2RayConfig = ConverterUtil.readV2RaySubscription(it.data)
                                         v2RayConfig
                                     }
@@ -202,10 +209,10 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
             }
                 .map {
                     it.forEach { proxyConfig ->
-                        if (converter.converter.outputType == ClientType.Clash.text) {
+                        if (converter.converter.outputType == ClientType.Clash) {
                             val clashConfig = proxyConfig.toClashConfig()
 
-                        } else if (converter.converter.outputType == ClientType.V2Ray.text) {
+                        } else if (converter.converter.outputType == ClientType.V2Ray) {
                             val v2RayConfig = proxyConfig.toV2RayConfig()
                         }
 

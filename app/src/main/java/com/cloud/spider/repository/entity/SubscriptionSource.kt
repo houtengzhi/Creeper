@@ -6,6 +6,7 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.cloud.spider.protocol.ClientType
 import com.cloud.spider.util.SystemUtil
 
 /**
@@ -16,7 +17,11 @@ import com.cloud.spider.util.SystemUtil
 data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id: String,
                               @ColumnInfo(name = "source_name") val name: String,
                               @ColumnInfo(name = "source_url") val sourceUrl: String,
-                              @ColumnInfo(name = "source_type") val type: String): Parcelable {
+                              @ColumnInfo(name = "source_type") val type: ClientType): Parcelable {
+
+    @ColumnInfo(name = "description")
+    var description: String? = null
+
     @ColumnInfo(name = "created_time")
     var createdTime: Long = 0
 
@@ -36,8 +41,9 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
-        parcel.readString()!!
+        ClientType.valueOf(parcel.readString()!!)
     ) {
+        description = parcel.readString()
         createdTime = parcel.readLong()
         updatedTime = parcel.readLong()
         pulledTime = parcel.readLong()
@@ -49,7 +55,10 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
         parcel.writeString(id)
         parcel.writeString(name)
         parcel.writeString(sourceUrl)
-        parcel.writeString(type)
+        parcel.writeString(type.name)
+        description?.let {
+            parcel.writeString(it)
+        }
         parcel.writeLong(createdTime)
         parcel.writeLong(updatedTime)
         parcel.writeLong(pulledTime)

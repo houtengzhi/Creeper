@@ -20,4 +20,7 @@
     <string name="You_wont_be_able_to_recover_it_once_confirmed">"You won't be able to recover it once confirmed"</string>
     <string name="Settings">"Settings"</string>
     <string name="About">"About"</string>
+    <string name="Name">"Name"</string>
+    <string name="Description">"Description"</string>
+    <string name="Optional">"Optional"</string>
 </resources>

@@ -25,17 +25,17 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
     var updatedTime: Long = 0
 
     @ColumnInfo(name = "output_type")
-    var outputType: String = ClientType.Clash.text
+    var outputType: ClientType = ClientType.Clash
 
     @ColumnInfo(name = "output_file_name")
     var outputFileName: String? = null
 
     fun getClientIconResId():Int {
         return when (outputType) {
-            ClientType.Clash.text -> {
+            ClientType.Clash -> {
                 R.drawable.ic_clashr
             }
-            ClientType.V2Ray.text -> {
+            ClientType.V2Ray -> {
                 R.drawable.ic_v2ray
             }
             else -> {
