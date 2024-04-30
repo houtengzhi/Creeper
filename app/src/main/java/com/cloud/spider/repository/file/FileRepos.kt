@@ -25,9 +25,9 @@ class FileRepos(private val cacheDirectory: String, private val fileDirectory: S
         return readFile(path, fileName)
     }
 
-    fun saveConverter(fileName: String, content: String) {
+    fun saveConverter(fileName: String, content: String): File {
         val path = "${fileDirectory}/converter"
-        saveAsFile(path, fileName, content)
+        return saveAsFile(path, fileName, content)
     }
 
     fun readConverter(fileName: String): String {
@@ -40,8 +40,8 @@ class FileRepos(private val cacheDirectory: String, private val fileDirectory: S
         return File(path, fileName)
     }
 
-    suspend fun suspendSaveConverter(fileName: String, content: String) {
-        withContext(Dispatchers.IO) {
+    suspend fun suspendSaveConverter(fileName: String, content: String): File {
+        return withContext(Dispatchers.IO) {
             saveConverter(fileName, content)
         }
     }
@@ -52,7 +52,7 @@ class FileRepos(private val cacheDirectory: String, private val fileDirectory: S
         }
     }
 
-    private fun saveAsFile(parentPath: String, fileName: String, content: String) {
+    private fun saveAsFile(parentPath: String, fileName: String, content: String): File {
         Log.d(TAG, "saveAsFile(), parentPath=${parentPath}, name=${fileName}")
         val parentDir = File(parentPath)
         if (!parentDir.exists()) {
@@ -60,6 +60,7 @@ class FileRepos(private val cacheDirectory: String, private val fileDirectory: S
         }
         val file = File(parentDir, fileName)
         file.writeText(content)
+        return file
     }
 
     private fun readFile(parentPath: String, fileName: String): String {

@@ -15,6 +15,9 @@ import com.cloud.spider.protocol.ClientType
 @Entity(tableName = "converter", indices = [Index(value = ["name"], unique = true)])
 data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: String, val name: String) {
 
+    @ColumnInfo(name = "description")
+    var description: String? = null
+
     @ColumnInfo(name = "created_time")
     var createdTime: Long = 0
 
@@ -40,4 +43,10 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
             }
         }
     }
+
+    override fun toString(): String {
+        return "Converter(id='$id', name='$name', outputType='$outputType')"
+    }
+
+
 }

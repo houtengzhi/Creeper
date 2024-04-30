@@ -31,7 +31,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -79,7 +78,7 @@ fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = h
         }
     ) { contentPadding ->
 
-        MergeProxiesScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), viewModel, onSubscriptionClick, onDataChanged = {
+        NewConverterScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), viewModel, onSubscriptionClick, onDataChanged = {
             canSave = it
         }, navForResult)
 
@@ -130,7 +129,7 @@ private fun NewConverterTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MergeProxiesScreen(modifier: Modifier = Modifier, viewModel: ConvertViewModel, onSubscriptionClick: () -> Unit, onDataChanged: (canSave: Boolean) -> Unit,
+fun NewConverterScreen(modifier: Modifier = Modifier, viewModel: ConvertViewModel, onSubscriptionClick: () -> Unit, onDataChanged: (canSave: Boolean) -> Unit,
                        navForResult: (coroutineScope: CoroutineScope, requestCode: String, onResult: (data: Bundle) -> Unit) -> Unit) {
 
     var clientMenuExpanded by remember { mutableStateOf(false) }

@@ -21,20 +21,29 @@ import kotlinx.coroutines.flow.Flow
 interface AppDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertConverter(converter: Converter)
+    suspend fun suspendInsertConverter(converter: Converter)
 
     @Update
-    suspend fun updateConverter(converter: Converter)
+    suspend fun suspendUpdateConverter(converter: Converter)
+
+    @Delete
+    suspend fun suspendDeleteConverter(converter: Converter)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertConverterSubscriptionSourceCrossRef(crossRef: ConverterSubscriptionSourceCrossRef)
+    suspend fun suspendInsertConverterSubscriptionSourceCrossRef(crossRef: ConverterSubscriptionSourceCrossRef)
 
     @Update
-    suspend fun updateConverterSubscriptionSourceCrossRef(crossRef: ConverterSubscriptionSourceCrossRef)
+    suspend fun suspendUpdateConverterSubscriptionSourceCrossRef(crossRef: ConverterSubscriptionSourceCrossRef)
+
+    @Delete
+    suspend fun suspendDeleteConverterSubscriptionSourceCrossRef(crossRef: ConverterSubscriptionSourceCrossRef)
+
+    @Query("DELETE FROM converter_subscription_source_cross_ref WHERE converter_id =:converterId")
+    suspend fun suspendDeleteConverterSubscriptionSourceCrossRefByConverterId(converterId: String)
 
     @Transaction
     @Query("SELECT * FROM converter WHERE name = :name")
-    suspend fun suspendQueryConverter(name: String): ConverterWithSources?
+    suspend fun suspendQueryConverterByName(name: String): ConverterWithSources?
 
     @Transaction
     @Query("SELECT * FROM converter WHERE name = :name")

@@ -9,12 +9,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloud.spider.base.DataState
 import com.cloud.spider.base.VMError
-import com.cloud.spider.protocol.ClashConfig
 import com.cloud.spider.protocol.ClientType
 import com.cloud.spider.protocol.ProxyConfig
-import com.cloud.spider.protocol.clash.ClashProxyNode
 import com.cloud.spider.protocol.core.ApiResponse
 import com.cloud.spider.protocol.core.ConverterUtil
+import com.cloud.spider.repository.DataRepos
 import com.cloud.spider.repository.db.DbRepos
 import com.cloud.spider.repository.entity.ConverterWithSources
 import com.cloud.spider.repository.entity.SubscriptionSource
@@ -22,9 +21,7 @@ import com.cloud.spider.repository.file.FileRepos
 import com.cloud.spider.repository.http.HttpRepos
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -37,8 +34,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -46,7 +41,7 @@ import javax.inject.Inject
  * Created by cloud on 2024/2/21.
  */
 @HiltViewModel
-class ConvertViewModel @Inject constructor(private val httpRepos: HttpRepos, private val dbRepos: DbRepos, private val fileRepos: FileRepos):  ViewModel() {
+class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, private val httpRepos: HttpRepos, private val dbRepos: DbRepos, private val fileRepos: FileRepos):  ViewModel() {
 
     companion object {
         const val TAG = "ConvertViewModel"
@@ -72,6 +67,12 @@ class ConvertViewModel @Inject constructor(private val httpRepos: HttpRepos, pri
     private val _addState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
     val addState = _addState.stateIn(viewModelScope, SharingStarted.Lazily, _addState.value)
 
+    private val _editState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
+    val editState = _editState.stateIn(viewModelScope, SharingStarted.Lazily, _editState.value)
+
+    private val _deleteState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
+    val deleteState = _deleteState.stateIn(viewModelScope, SharingStarted.Lazily, _deleteState.value)
+
     fun testSubscription(url: String) {
         viewModelScope.launch {
             httpRepos.fetchSubscriptionContent(url)
@@ -88,108 +89,70 @@ class ConvertViewModel @Inject constructor(private val httpRepos: HttpRepos, pri
                 DataState(throwable)
             }
         }
-        viewModelScope.launch(Dispatchers.Main + coroutineExceptionHandler) {
-           val deferredList = mutableListOf<Deferred<ProxyConfig?>>()
-            val proxyConfigList = mutableListOf<ProxyConfig>()
+        viewModelScope.launch(Dispatchers.Default + coroutineExceptionHandler) {
 
-            supervisorScope {
-                converter.subscriptionSourceList.forEach { source ->
-                    val deferred = async {
-                        val apiResponse = httpRepos.suspendFetchSubscriptionContent(source.sourceUrl)
-                        when (apiResponse) {
-                            is ApiResponse.Success<String> -> {
-                                when (source.type) {
-                                    ClientType.Clash.text -> {
-                                        withContext(Dispatchers.Default) {
-                                            val clashConfig = ConverterUtil.deserializeClashConfig(apiResponse.data)
-                                            clashConfig
-                                        }
-                                    }
-
-                                    ClientType.V2Ray.text -> {
-                                        withContext(Dispatchers.Default) {
-                                            val v2RayConfig = ConverterUtil.readV2RaySubscription(apiResponse.data)
-                                            v2RayConfig
-                                        }
-                                    }
-
-                                    else -> {
-                                        null
-                                    }
-                                }
-                            }
-
-                            is ApiResponse.Error -> {
-                                null
-                            }
-
-                            is ApiResponse.Exception -> {
-                                null
-                            }
-
-                        }
-                    }
-                    deferredList.add(deferred)
-                }
-
-                deferredList.forEach { deferred ->
-                    try {
-                        deferred.await()?.let {
-                            when (converter.converter.outputType) {
-                                ClientType.Clash.text -> {
-                                    val clashConfig = it.toClashConfig()
-                                    proxyConfigList.add(clashConfig)
-
-                                }
-                                ClientType.V2Ray.text -> {
-                                    val v2RayConfig = it.toV2RayConfig()
-                                    proxyConfigList.add(v2RayConfig)
-                                }
-                                else -> {
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        Log.w(TAG, "fetchSubscriptionContent exception for ${e.message}")
-                    }
-
-                }
-            }
-
-            if (proxyConfigList.isEmpty()) {
-                _addState.update {
-                    DataState(VMError.EmptyProxyList)
-                }
-            } else {
-                val content: String
-                when (converter.converter.outputType) {
-                    ClientType.Clash.text -> {
-                        val proxyNodeList = mutableListOf<ClashProxyNode>()
-                        proxyConfigList.forEach { config ->
-                            val clashConfig = config.toClashConfig()
-                            clashConfig.proxy?.let {
-                                proxyNodeList.addAll(it)
-                            }
-                        }
-                        content =  ConverterUtil.serializeClashConfig(ClashConfig(proxy = proxyNodeList))
-                        converter.converter.outputFileName = "${converter.converter.id}.yaml"
-
-                    }
-                    ClientType.V2Ray.text -> {
-                        content = ""
-                    }
-                    else -> {
-                        content = ""
-                    }
-                }
-                fileRepos.suspendSaveConverter(converter.converter.outputFileName!!, content)
-                dbRepos.insertConverter(converter)
+            val file = dataRepos.suspendConvertSubscription(converter)
+            if (file != null) {
+                dbRepos.suspendInsertConverter(converter)
                 _addState.update {
                     DataState(isLoading = false, data = true, throwable = null)
                 }
+
+            } else {
+                _addState.update {
+                    DataState(VMError.EmptyProxyList)
+                }
             }
         }
+    }
+
+    fun editConverter(converter: ConverterWithSources) {
+        _editState.update {
+            DataState(true, null, null)
+        }
+        val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+            Log.e(TAG, "editConverter exception for ${throwable.message}")
+            _editState.update {
+                DataState(throwable)
+            }
+        }
+        viewModelScope.launch(Dispatchers.Default + coroutineExceptionHandler) {
+            val file = dataRepos.suspendConvertSubscription(converter)
+            if (file != null) {
+                dbRepos.suspendUpdateConverter(converter)
+                _editState.update {
+                    DataState(isLoading = false, data = true, throwable = null)
+                }
+
+            } else {
+                _editState.update {
+                    DataState(VMError.EmptyProxyList)
+                }
+            }
+        }
+    }
+
+    fun deleteConverter(converter: ConverterWithSources) {
+        _deleteState.update {
+            DataState(true, null, null)
+        }
+        val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+            Log.e(TAG, "deleteConverter exception for ${throwable.message}")
+            _deleteState.update {
+                DataState(throwable)
+            }
+        }
+        viewModelScope.launch(Dispatchers.Main + coroutineExceptionHandler) {
+            dbRepos.suspendDeleteConverter(converter)
+            _deleteState.update {
+                DataState(isLoading = false, data = true, throwable = null)
+            }
+        }
+    }
+
+    fun updateConverter(converter: ConverterWithSources) {
+
+
     }
 
     fun _addConverter(converter: ConverterWithSources) {
@@ -260,7 +223,7 @@ class ConvertViewModel @Inject constructor(private val httpRepos: HttpRepos, pri
             flow {
                 Log.d(TAG, "addConverter()")
 
-                dbRepos.insertConverter(converter)
+                dbRepos.suspendInsertConverter(converter)
                 emit(true)
             }.onStart {
                 _addState.update {

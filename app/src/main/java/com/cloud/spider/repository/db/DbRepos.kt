@@ -17,23 +17,38 @@ class DbRepos(private val appDatabase: AppDatabase) {
     }
 
     @Transaction
-    suspend fun insertConverter(converter: ConverterWithSources) {
-        Log.d(TAG, "insertConverter()")
-        appDatabase.appDao().insertConverter(converter.converter)
+    suspend fun suspendInsertConverter(converter: ConverterWithSources) {
+        Log.d(TAG, "suspendInsertConverter()")
+        val dao = appDatabase.appDao()
+        dao.suspendInsertConverter(converter.converter)
         converter.subscriptionSourceList.forEach {
-            appDatabase.appDao().insertConverterSubscriptionSourceCrossRef(
+            dao.suspendInsertConverterSubscriptionSourceCrossRef(
                 ConverterSubscriptionSourceCrossRef(converter.converter.id, it.id)
             )
         }
     }
 
-    suspend fun updateConverter(converter: ConverterWithSources) {
-        appDatabase.appDao()
+    @Transaction
+    suspend fun suspendUpdateConverter(converter: ConverterWithSources) {
+        val dao = appDatabase.appDao()
+        dao.suspendUpdateConverter(converter.converter)
+        dao.suspendDeleteConverterSubscriptionSourceCrossRefByConverterId(converter.converter.id)
+        converter.subscriptionSourceList.forEach {
+            dao.suspendInsertConverterSubscriptionSourceCrossRef(
+                ConverterSubscriptionSourceCrossRef(converter.converter.id, it.id)
+            )
+        }
     }
 
+    @Transaction
+    suspend fun suspendDeleteConverter(converter: ConverterWithSources) {
+        val dao = appDatabase.appDao()
+        dao.suspendDeleteConverter(converter.converter)
+        dao.suspendDeleteConverterSubscriptionSourceCrossRefByConverterId(converter.converter.id)
+    }
 
     suspend fun suspendQueryConverter(name: String): ConverterWithSources? {
-        return appDatabase.appDao().suspendQueryConverter(name)
+        return appDatabase.appDao().suspendQueryConverterByName(name)
     }
 
     fun queryConverterByName(name: String): ConverterWithSources? {
