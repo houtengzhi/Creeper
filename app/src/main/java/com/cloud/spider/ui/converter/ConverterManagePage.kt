@@ -67,7 +67,12 @@ fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick
         }
     ) { contentPadding ->
         ConverterPageScreen(uiState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
-            onEditClick = {}, onDeleteClick = {})
+            onEditClick = {
+
+            },
+            onDeleteClick = {
+                viewModel.deleteConverter(it)
+            })
 
     }
 }
@@ -148,6 +153,7 @@ private fun ConverterItem(converter: ConverterWithSources,
                                    onEditClick: (converter: ConverterWithSources) -> Unit,
                                    onDeleteClick: (converter: ConverterWithSources) -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     Row(modifier = Modifier
@@ -178,7 +184,15 @@ private fun ConverterItem(converter: ConverterWithSources,
         }
     }
 
-
+    if (showDeleteDialog) {
+        DeleteConverterDialog(
+            converter = converter,
+            onDismissRequest = { showDeleteDialog = false },
+            onDeleteClick = {
+                onDeleteClick(it)
+            }
+        )
+    }
 }
 
 @Composable
@@ -200,12 +214,12 @@ private fun ConverterMenu(expanded: Boolean, onDismissRequest: () -> Unit, onEdi
 }
 
 @Composable
-private fun DeleteConverterDialog(subscriptionSource: SubscriptionSource, onDismissRequest: () -> Unit, onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit) {
+private fun DeleteConverterDialog(converter: ConverterWithSources, onDismissRequest: () -> Unit, onDeleteClick: (converter: ConverterWithSources) -> Unit) {
     AlertDialog(onDismissRequest = onDismissRequest, modifier = Modifier,
         confirmButton = {
             TextButton(onClick = {
                 onDismissRequest()
-                onDeleteClick(subscriptionSource)
+                onDeleteClick(converter)
 
             }) {
                 Text(text = stringResource(id = R.string.OK))
@@ -219,7 +233,7 @@ private fun DeleteConverterDialog(subscriptionSource: SubscriptionSource, onDism
             }
         },
         title = {
-            Text(text = stringResource(id = R.string.Delete_subscription_source))
+            Text(text = stringResource(id = R.string.Delete_converter))
         },
         text = {
             Text(text = stringResource(id = R.string.You_wont_be_able_to_recover_it_once_confirmed))

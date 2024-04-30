@@ -1,6 +1,7 @@
 package com.cloud.spider.ui.source
 
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -227,9 +229,13 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
         .clickable {
             onItemClick(subscriptionSource)
         }, verticalAlignment = Alignment.CenterVertically) {
+
+        Image(painter = painterResource(id = subscriptionSource.getClientIconResId()), contentDescription = "",
+            modifier = Modifier.padding(start = 24.dp))
+
         Column(modifier = Modifier.weight(1f)) {
             Text(text = subscriptionSource.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 6.dp), maxLines = 1)
-            Text(text = subscriptionSource.sourceUrl, modifier = Modifier.padding(start = 24.dp, bottom = 12.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = if (subscriptionSource.description.isNullOrEmpty()) subscriptionSource.sourceUrl else subscriptionSource.description!!, modifier = Modifier.padding(start = 24.dp, bottom = 12.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
 
 
@@ -303,6 +309,9 @@ private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClic
     var name by remember {
         mutableStateOf("")
     }
+    var description by remember {
+        mutableStateOf("")
+    }
     var url by remember {
         mutableStateOf("")
     }
@@ -318,9 +327,11 @@ private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClic
         confirmButton = {
             TextButton(onClick = {
                 onDismissRequest()
-                val subscriptionSource = SubscriptionSource(SystemUtil.generateSubscriptionSourceId(), name, url, sourceType)
-                subscriptionSource.createdTime = System.currentTimeMillis()
-                subscriptionSource.updatedTime = System.currentTimeMillis()
+                val subscriptionSource = SubscriptionSource(SystemUtil.generateSubscriptionSourceId(), name, url, sourceType).apply {
+                    this.description = description
+                    createdTime = System.currentTimeMillis()
+                    updatedTime = System.currentTimeMillis()
+                }
                 onSaveClick(subscriptionSource)
 
             }, enabled = isSaveBtnEnabled) {
@@ -346,6 +357,13 @@ private fun AddSubscriptionSourceDialog(onDismissRequest: () -> Unit, onSaveClic
                         name = it
                         isSaveBtnEnabled = url.isNotEmpty() && it.isNotEmpty()
                     }, label = { Text("Name")}, singleLine = true, modifier = Modifier)
+
+                TextField(value = description,
+                    onValueChange = {
+                        description = it
+                        isSaveBtnEnabled = url.isNotEmpty() && it.isNotEmpty()
+                    }, label = { Text(stringResource(id = R.string.Description))}, singleLine = true, modifier = Modifier.padding(top = 12.dp))
+
                 TextField(value = url,
                     onValueChange = {
                         url = it

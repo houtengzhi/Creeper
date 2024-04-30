@@ -72,7 +72,13 @@ fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = h
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             NewConverterTopAppBar(scrollBehavior = scrollBehavior, canSave = canSave, onUpClick = onUpClick, onSaveClick = {
-                val converter = ConverterWithSources(Converter(SystemUtil.generateConverterId(), viewModel.converterName), viewModel.subscriptionSourceList)
+                val converter = ConverterWithSources(Converter(SystemUtil.generateConverterId(), viewModel.converterName)
+                    .apply {
+                        description = viewModel.converterDescription
+                        createdTime = System.currentTimeMillis()
+                        updatedTime = System.currentTimeMillis()
+                        outputType = viewModel.outputType
+                }, viewModel.subscriptionSourceList)
                 viewModel.addConverter(converter)
             })
         }
@@ -245,7 +251,7 @@ fun NewConverterScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
                 .fillMaxWidth(), expanded = clientMenuExpanded, onExpandedChange = {
                 clientMenuExpanded = it
             }) {
-                TextField(value = viewModel.clientType.name, onValueChange = {
+                TextField(value = viewModel.outputType.name, onValueChange = {
 
                                                                              },
                     readOnly = true,

@@ -6,6 +6,7 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.cloud.spider.R
 import com.cloud.spider.protocol.ClientType
 import com.cloud.spider.util.SystemUtil
 
@@ -92,6 +93,20 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
             }
             SourceStatus.FAILED -> {
                 "Updated failed"
+            }
+        }
+    }
+
+    fun getClientIconResId():Int {
+        return when (type) {
+            ClientType.Clash -> {
+                R.drawable.ic_clashr
+            }
+            ClientType.V2Ray -> {
+                R.drawable.ic_v2ray
+            }
+            else -> {
+                R.drawable.ic_clashr
             }
         }
     }

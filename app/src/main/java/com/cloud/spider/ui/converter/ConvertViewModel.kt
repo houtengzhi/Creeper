@@ -64,11 +64,11 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
 
     val canSaveConverter get() = converterName.isNotEmpty() && subscriptionSourceList.isNotEmpty()
 
-    var clientType by mutableStateOf(ClientType.Clash)
+    var outputType by mutableStateOf(ClientType.Clash)
         private set
 
     fun updateClientType(input: ClientType) {
-        clientType = input
+        outputType = input
     }
 
     private val _addState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
