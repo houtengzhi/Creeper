@@ -19,7 +19,7 @@ class HttpRepos(private val httpClient: OkHttpClient) {
         private const val TAG = "HttpRepos"
     }
 
-    fun fetchSubscriptionContent(url: String): Flow<ApiResponse<String>> {
+    fun fetchUrl(url: String): Flow<ApiResponse<String>> {
         return flow {
             Log.d(TAG, "fetchSubscriptionContent")
             val request = Request.Builder()
@@ -37,8 +37,8 @@ class HttpRepos(private val httpClient: OkHttpClient) {
         }
     }
 
-    suspend fun suspendFetchSubscriptionContent(url: String): ApiResponse<String> {
-        Log.d(TAG, "fetchSubscriptionContent")
+    suspend fun suspendFetchUrl(url: String): ApiResponse<String> {
+        Log.d(TAG, "suspendFetchUrl(), url=${url}")
         return withContext(context = Dispatchers.IO) {
             val request = Request.Builder()
                 .url(url)
@@ -46,10 +46,12 @@ class HttpRepos(private val httpClient: OkHttpClient) {
                 .build()
             val response = httpClient.newCall(request).execute()
             (if (response.isSuccessful) {
+                Log.d(TAG, "suspendFetchUrl() successful")
                 val result = response.body!!.string()
                 response.body?.close()
                 ApiResponse.Success(result)
             } else {
+                Log.e(TAG, "suspendFetchUrl() failed")
                 ApiResponse.Error(response.code, response.message)
             })
         }

@@ -30,16 +30,17 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
     }
 
     private suspend fun suspendMergerSubscriptionSources(subscriptionSourceList: List<SubscriptionSource>): List<ProxyConfig> {
-
+        Log.d(TAG, "suspendMergerSubscriptionSources()")
         val deferredList = mutableListOf<Deferred<ProxyConfig?>>()
         val proxyConfigList = mutableListOf<ProxyConfig>()
 
         supervisorScope {
             subscriptionSourceList.forEach { source ->
                 val deferred = async {
-                    val apiResponse = httpRepos.suspendFetchSubscriptionContent(source.sourceUrl)
+                    val apiResponse = httpRepos.suspendFetchUrl(source.sourceUrl)
                     when (apiResponse) {
                         is ApiResponse.Success<String> -> {
+                            Log.d(TAG, "fetchSubscription success, sourceType=${source.type}")
                             when (source.type) {
                                 ClientType.Clash -> {
                                     withContext(Dispatchers.Default) {
@@ -56,16 +57,19 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                                 }
 
                                 else -> {
+                                    Log.e(TAG, "fetchSubscription not supported type ${source.type}")
                                     null
                                 }
                             }
                         }
 
                         is ApiResponse.Error -> {
+                            Log.e(TAG, "fetchSubscription error=${apiResponse}")
                             null
                         }
 
                         is ApiResponse.Exception -> {
+                            Log.e(TAG, "fetchSubscription exception=${apiResponse}")
                             null
                         }
 
@@ -81,7 +85,7 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    Log.w(TAG, "fetchSubscriptionContent exception for ${e.message}")
+                    Log.w(TAG, "fetchSubscription exception for: ${e.message}")
                 }
 
             }
@@ -101,11 +105,11 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                         val proxyNodeList = mutableListOf<ClashProxyNode>()
                         proxyConfigList.forEach { config ->
                             val clashConfig = config.toClashConfig()
-                            clashConfig.proxy?.let {
+                            clashConfig.proxies?.let {
                                 proxyNodeList.addAll(it)
                             }
                         }
-                        content =  ConverterUtil.serializeClashConfig(ClashConfig(proxy = proxyNodeList))
+                        content =  ConverterUtil.serializeClashConfig(ClashConfig(proxies = proxyNodeList))
                         if (converter.converter.outputFileName == null) {
                             converter.converter.outputFileName = "${converter.converter.name}.yaml"
                         }

@@ -12,6 +12,6 @@ data class ProxyGroup(
     val type: String,
     val proxies: List<String>,
     val url: String? = null,
-    val internal: Int? = null,
+    val interval: Int? = null,
     val tolerance: Int? = null
 )

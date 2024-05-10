@@ -9,11 +9,13 @@
     <string name="Add_subscription">"Add subscription"</string>
     <string name="Edit_subscription">"Edit subscription"</string>
     <string name="Select_Subscription">"Select Subscription"</string>
+    <string name="Details">"Details"</string>
     <string name="Edit">"Edit"</string>
     <string name="Delete">"Delete"</string>
     <string name="Test">"Test"</string>
     <string name="Update">"Update"</string>
     <string name="OK">"OK"</string>
+    <string name="Dismiss">"Dismiss"</string>
     <string name="Save">"Save"</string>
     <string name="Cancel">"Cancel"</string>
     <string name="Delete_subscription_source">"Delete subscription source?"</string>
@@ -24,4 +26,6 @@
     <string name="Name">"Name"</string>
     <string name="Description">"Description"</string>
     <string name="Optional">"Optional"</string>
+    <string name="Local_Address">"Local Address"</string>
+    <string name="Add_Converter">"Add Converter"</string>
 </resources>

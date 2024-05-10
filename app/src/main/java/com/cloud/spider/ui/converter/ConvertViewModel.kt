@@ -10,9 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.cloud.spider.base.DataState
 import com.cloud.spider.base.VMError
 import com.cloud.spider.protocol.ClientType
-import com.cloud.spider.protocol.ProxyConfig
-import com.cloud.spider.protocol.core.ApiResponse
-import com.cloud.spider.protocol.core.ConverterUtil
 import com.cloud.spider.repository.DataRepos
 import com.cloud.spider.repository.db.DbRepos
 import com.cloud.spider.repository.entity.ConverterWithSources
@@ -22,12 +19,9 @@ import com.cloud.spider.repository.http.HttpRepos
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -82,7 +76,7 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
 
     fun testSubscription(url: String) {
         viewModelScope.launch {
-            httpRepos.fetchSubscriptionContent(url)
+            httpRepos.fetchUrl(url)
         }
     }
 
@@ -101,11 +95,13 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
             val file = dataRepos.suspendConvertSubscription(converter)
             if (file != null) {
                 dbRepos.suspendInsertConverter(converter)
+                Log.d(TAG, "addConverter() file=${file.path}")
                 _addState.update {
                     DataState(isLoading = false, data = true, throwable = null)
                 }
 
             } else {
+                Log.e(TAG, "addConverter() proxy list is empty")
                 _addState.update {
                     DataState(VMError.EmptyProxyList)
                 }
@@ -160,97 +156,6 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
     fun updateConverter(converter: ConverterWithSources) {
 
 
-    }
-
-    fun _addConverter(converter: ConverterWithSources) {
-        viewModelScope.launch {
-            val flows = mutableListOf<Flow<ProxyConfig?>>()
-            converter.subscriptionSourceList.forEach { source ->
-                val flow = httpRepos.fetchSubscriptionContent(source.sourceUrl)
-                    .map {
-                        when (it) {
-                            is ApiResponse.Success<String> -> {
-                                when (source.type) {
-                                    ClientType.Clash -> {
-                                        val clashConfig = ConverterUtil.deserializeClashConfig(it.data)
-                                        clashConfig
-                                    }
-
-                                    ClientType.V2Ray -> {
-                                        val v2RayConfig = ConverterUtil.readV2RaySubscription(it.data)
-                                        v2RayConfig
-                                    }
-
-                                    else -> {
-                                        null
-                                    }
-                                }
-                            }
-
-                            is ApiResponse.Error -> {
-                                null
-
-                            }
-
-                            is ApiResponse.Exception -> {
-                               null
-
-                            }
-
-                        }
-
-                    }
-                    .flowOn(Dispatchers.IO)
-                flows.add(flow)
-            }
-
-            combine(*flows.toTypedArray()) {
-                it.toList().filterNotNull()
-            }
-                .map {
-                    it.forEach { proxyConfig ->
-                        if (converter.converter.outputType == ClientType.Clash) {
-                            val clashConfig = proxyConfig.toClashConfig()
-
-                        } else if (converter.converter.outputType == ClientType.V2Ray) {
-                            val v2RayConfig = proxyConfig.toV2RayConfig()
-                        }
-
-                    }
-
-
-                }
-                .onStart {  }
-                .catch {  }
-                .collect {
-
-                }
-
-
-            flow {
-                Log.d(TAG, "addConverter()")
-
-                dbRepos.suspendInsertConverter(converter)
-                emit(true)
-            }.onStart {
-                _addState.update {
-                    DataState(true, null, null)
-                }
-            }
-                .map {
-
-                }
-                .catch {throwable ->
-                    _addState.update {
-                        DataState(throwable)
-                    }
-                }
-                .collect {
-                    _addState.update {
-                        DataState(isLoading = false, data = true, throwable = null)
-                    }
-                }
-        }
     }
 
     fun subscribeConverterList() = dbRepos.subscribeConverterList()

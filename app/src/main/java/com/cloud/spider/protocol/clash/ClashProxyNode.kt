@@ -33,4 +33,10 @@ data class ClashProxyNode(
     @SerialName("skip-cert-verify") var skipCertVerify: Boolean? = null
 
     var udp: Boolean? = null
+
+    @SerialName("servername")var serverName: String? = null
+
+    var country: String? = null
+
+    var obfs: String? = null
 }

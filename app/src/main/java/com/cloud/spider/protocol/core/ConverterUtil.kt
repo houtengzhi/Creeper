@@ -24,6 +24,8 @@ object ConverterUtil {
     private val REG_SSR_PARAM = "([^/]+)/\\?(.+)".toRegex()
     private val REG_TROJAN = "([^@]+)@([^:]+):(\\d{1,5})/?(?:\\?(.+))?".toRegex()
 
+    const val TAG = "ConverterUtil"
+
     fun deserializeClashConfig(content: String): ClashConfig {
         return Yaml.default.decodeFromString(ClashConfig.serializer(), content)
     }
@@ -84,7 +86,7 @@ object ConverterUtil {
 
         val clashProxyNodeList = mutableListOf<ClashProxyNode>()
         clashConfig?.let { config ->
-            config.proxy?.let {
+            config.proxies?.let {
                 clashProxyNodeList.addAll(it)
             }
         }
@@ -136,7 +138,7 @@ object ConverterUtil {
             clashProxyNodeList.add(clashProxyNode)
 
         }
-        return ClashConfig(proxy = clashProxyNodeList)
+        return ClashConfig(proxies = clashProxyNodeList)
     }
 
 }

@@ -3,7 +3,6 @@ package com.cloud.spider.protocol
 import com.cloud.spider.protocol.clash.ClashProxyNode
 import com.cloud.spider.protocol.clash.DNS
 import com.cloud.spider.protocol.clash.ProxyGroup
-import com.cloud.spider.protocol.core.ConverterUtil.toClashConfig
 import com.cloud.spider.protocol.v2ray.Proto
 import com.cloud.spider.protocol.v2ray.SS
 import com.cloud.spider.protocol.v2ray.Trojan
@@ -39,9 +38,9 @@ data class ClashConfig(
     @SerialName("external-ui") val externalUI: String? = null,
     val hosts: Map<String, String>? = null,
     val dns: DNS? = null,
-    @SerialName("Proxy") val proxy: List<ClashProxyNode>? = null,
-    @SerialName("Proxy Group") val proxyGroup: List<ProxyGroup>? = null,
-    @SerialName("Rule") val rule: List<String>? = null
+    @SerialName("proxies") val proxies: List<ClashProxyNode>? = null,
+    @SerialName("proxy-groups") val proxyGroup: List<ProxyGroup>? = null,
+    @SerialName("rules") val rules: List<String>? = null
 ): ProxyConfig() {
 
     override fun toClashConfig(): ClashConfig {
@@ -50,7 +49,7 @@ data class ClashConfig(
 
     override fun toV2RayConfig(): V2RayConfig {
         val protoList = mutableListOf<Proto>()
-        this.proxy?.forEach { node ->
+        this.proxies?.forEach { node ->
             when(node.type) {
                 "vmess" -> {
 
@@ -118,7 +117,7 @@ data class V2RayConfig(val protoList: List<Proto>) : ProxyConfig() {
             clashProxyNodeList.add(clashProxyNode)
 
         }
-        return ClashConfig(proxy = clashProxyNodeList)
+        return ClashConfig(proxies = clashProxyNodeList)
     }
 
     override fun toV2RayConfig(): V2RayConfig {

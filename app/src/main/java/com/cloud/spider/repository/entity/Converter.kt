@@ -48,5 +48,5 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
         return "Converter(id='$id', name='$name', outputType='$outputType')"
     }
 
-
+    fun getUrlSegments() ="spider/converter/${id}/${outputFileName}"
 }

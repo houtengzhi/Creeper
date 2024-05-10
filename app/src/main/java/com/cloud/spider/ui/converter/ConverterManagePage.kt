@@ -1,10 +1,13 @@
 package com.cloud.spider.ui.converter
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -49,11 +52,15 @@ import com.cloud.spider.R
 import com.cloud.spider.base.DataState
 import com.cloud.spider.repository.entity.ConverterWithSources
 import com.cloud.spider.repository.entity.SubscriptionSource
+import com.cloud.spider.server.ServerManage
+import com.cloud.spider.util.NetUtil
 
 /**
  *
  * Created by cloud on 2024/2/5.
  */
+private const val TAG = "ConverterManagePage"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick: () -> Unit = {}, onNewClick: () -> Unit) {
@@ -108,7 +115,7 @@ private fun ConverterManageTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
 private fun MoreMenu(expanded: Boolean, onDismissRequest: () -> Unit, onNewClick: () -> Unit) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
         DropdownMenuItem(text = {
-            Text(text = "Merge Proxies")
+            Text(text = stringResource(id = R.string.Add_Converter))
         }, onClick = {
             onDismissRequest()
             onNewClick()
@@ -138,6 +145,7 @@ fun ConverterPageScreen(dataState: DataState<List<ConverterWithSources>>, modifi
 
         dataState.data != null -> {
             dataState.data.let { dataList ->
+                Log.d(TAG, "converter list size = ${dataList.size}")
                 LazyColumn(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(dataList) {
                         ConverterItem(it, onEditClick, onDeleteClick)
@@ -153,6 +161,7 @@ private fun ConverterItem(converter: ConverterWithSources,
                                    onEditClick: (converter: ConverterWithSources) -> Unit,
                                    onDeleteClick: (converter: ConverterWithSources) -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
+    var showDetailsDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -179,8 +188,11 @@ private fun ConverterItem(converter: ConverterWithSources,
             ConverterMenu(
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false },
+                onDetailsClick = {
+                                 showDetailsDialog = true
+                },
                 onEditClick = { onEditClick(converter) },
-                onDeleteClick = { onDeleteClick(converter) })
+                onDeleteClick = { showDeleteDialog = true })
         }
     }
 
@@ -193,11 +205,22 @@ private fun ConverterItem(converter: ConverterWithSources,
             }
         )
     }
+    if (showDetailsDialog) {
+        ConverterDetailsDialog(converter = converter, onDismissRequest = {
+            showDetailsDialog = false
+        })
+    }
 }
 
 @Composable
-private fun ConverterMenu(expanded: Boolean, onDismissRequest: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit) {
+private fun ConverterMenu(expanded: Boolean, onDismissRequest: () -> Unit, onDetailsClick: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest, modifier = Modifier) {
+        DropdownMenuItem(text = {
+            Text(text = stringResource(id = R.string.Details))
+        }, onClick = {
+            onDismissRequest()
+            onDetailsClick()
+        } )
         DropdownMenuItem(text = {
             Text(text = stringResource(id = R.string.Edit))
         }, onClick = {
@@ -243,6 +266,33 @@ private fun DeleteConverterDialog(converter: ConverterWithSources, onDismissRequ
 }
 
 @Composable
+private fun ConverterDetailsDialog(converter: ConverterWithSources, onDismissRequest: () -> Unit) {
+    AlertDialog(onDismissRequest = onDismissRequest, modifier = Modifier,
+        confirmButton = {
+            TextButton(onClick = {
+                onDismissRequest()
+
+            }) {
+                Text(text = stringResource(id = R.string.Dismiss))
+            }
+        },
+        title = {
+            Text(text = converter.converter.name)
+        },
+        text = {
+            Column(modifier = Modifier) {
+                Text(text = stringResource(id = R.string.Local_Address), )
+                Text(text = "http://${NetUtil.getLocalIPAddress()?.hostAddress}:${ServerManage.DEFAULT_PORT}/${converter.converter.getUrlSegments()}")
+            }
+            
+        },
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+    )
+}
+
+@Composable
 private fun LoadingIndicator() {
-    CircularProgressIndicator()
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+    }
 }

@@ -47,7 +47,7 @@ class SpiderService: Service() {
         super.onCreate()
 
         mServer = AndServer.webServer(this)
-            .port(8080)
+            .port(ServerManage.DEFAULT_PORT)
             .timeout(15, TimeUnit.SECONDS)
             .listener(object : Server.ServerListener {
                 override fun onStarted() {

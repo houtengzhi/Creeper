@@ -166,7 +166,7 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
     fun pullSubscription(source: SubscriptionSource) {
         viewModelScope.launch() {
             Log.d(TAG, "pullSubscription()")
-            httpRepos.fetchSubscriptionContent(source.sourceUrl)
+            httpRepos.fetchUrl(source.sourceUrl)
                 .flowOn(Dispatchers.IO)
                 .onStart {
                     Log.d(TAG, "pullSubscription() onStart")
