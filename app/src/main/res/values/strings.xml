@@ -28,4 +28,5 @@
     <string name="Optional">"Optional"</string>
     <string name="Local_Address">"Local Address"</string>
     <string name="Add_Converter">"Add Converter"</string>
+    <string name="Copy">"Copy"</string>
 </resources>

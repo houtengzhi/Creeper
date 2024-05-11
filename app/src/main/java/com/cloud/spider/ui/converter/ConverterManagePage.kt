@@ -22,10 +22,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -34,22 +37,28 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cloud.spider.R
 import com.cloud.spider.base.DataState
+import com.cloud.spider.repository.entity.Converter
 import com.cloud.spider.repository.entity.ConverterWithSources
 import com.cloud.spider.repository.entity.SubscriptionSource
 import com.cloud.spider.server.ServerManage
@@ -280,9 +289,30 @@ private fun ConverterDetailsDialog(converter: ConverterWithSources, onDismissReq
             Text(text = converter.converter.name)
         },
         text = {
-            Column(modifier = Modifier) {
-                Text(text = stringResource(id = R.string.Local_Address), )
-                Text(text = "http://${NetUtil.getLocalIPAddress()?.hostAddress}:${ServerManage.DEFAULT_PORT}/${converter.converter.getUrlSegments()}")
+            var selectedTabIndex by remember { mutableIntStateOf(0) }
+            val clipboardManager = LocalClipboardManager.current
+            Column(modifier = Modifier.fillMaxWidth()) {
+                ScrollableTabRow(selectedTabIndex = selectedTabIndex, modifier = Modifier.fillMaxWidth(), edgePadding = 0.dp) {
+                    Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }) {
+                        Text(text = stringResource(id = R.string.Local_Address))
+                    }
+                }
+                HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
+
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    val url = "http://${NetUtil.getLocalIPAddress()?.hostAddress}:${ServerManage.DEFAULT_PORT}/${converter.converter.getUrlSegments()}"
+                    Text(text = url, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+
+                    TextButton(onClick = {
+                        clipboardManager.setText(AnnotatedString(url))
+                    }) {
+                        Text(text = stringResource(id = R.string.Copy))
+                    }
+                }
+
             }
             
         },
@@ -294,5 +324,16 @@ private fun ConverterDetailsDialog(converter: ConverterWithSources, onDismissReq
 private fun LoadingIndicator() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+    }
+}
+
+@Preview
+@Composable
+fun PreviewDialog() {
+
+    val converter = Converter("", "Test")
+    val converterWithSources = ConverterWithSources(converter, emptyList())
+    ConverterDetailsDialog(converter = converterWithSources) {
+
     }
 }
