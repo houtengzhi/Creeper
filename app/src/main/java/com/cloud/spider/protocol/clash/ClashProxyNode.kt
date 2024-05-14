@@ -1,5 +1,7 @@
 package com.cloud.spider.protocol.clash
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -7,6 +9,7 @@ import kotlinx.serialization.Serializable
  *
  * Created by cloud on 2024/2/19.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class ClashProxyNode(
     val name: String,
@@ -14,29 +17,29 @@ data class ClashProxyNode(
     val server: String,
     val port: String
 ) {
-    var password: String? = null
+    @EncodeDefault(EncodeDefault.Mode.NEVER) var password: String? = null
 
-    var tls: Boolean? = null
+    @EncodeDefault(EncodeDefault.Mode.NEVER) var tls: Boolean? = null
 
-    var network: String? = null
+    @EncodeDefault(EncodeDefault.Mode.NEVER) var network: String? = null
 
-    var uuid: String? = null
+    @EncodeDefault(EncodeDefault.Mode.NEVER) var uuid: String? = null
 
-    var alterId: Int? = null
+    @EncodeDefault(EncodeDefault.Mode.NEVER) var alterId: Int? = null
 
-    var cipher: String? = null
+    @EncodeDefault(EncodeDefault.Mode.NEVER) var cipher: String? = null
 
-    @SerialName("ws-path") var wsPath: String? = null
+    @SerialName("ws-path") @EncodeDefault(EncodeDefault.Mode.NEVER) var wsPath: String? = null
 
-    @SerialName("ws-headers") var wsHeaders: Map<String, String>? = null
+    @SerialName("ws-headers") @EncodeDefault(EncodeDefault.Mode.NEVER) var wsHeaders: Map<String, String>? = null
 
-    @SerialName("skip-cert-verify") var skipCertVerify: Boolean? = null
+    @SerialName("skip-cert-verify") @EncodeDefault(EncodeDefault.Mode.NEVER) var skipCertVerify: Boolean? = null
 
-    var udp: Boolean? = null
+    @EncodeDefault(EncodeDefault.Mode.NEVER) var udp: Boolean? = null
 
-    @SerialName("servername")var serverName: String? = null
+    @SerialName("servername") @EncodeDefault(EncodeDefault.Mode.NEVER) var serverName: String? = null
 
-    var country: String? = null
+    @EncodeDefault(EncodeDefault.Mode.NEVER) var country: String? = null
 
-    var obfs: String? = null
+    @EncodeDefault(EncodeDefault.Mode.NEVER) var obfs: String? = null
 }

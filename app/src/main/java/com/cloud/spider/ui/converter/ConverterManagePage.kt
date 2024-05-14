@@ -276,6 +276,7 @@ private fun DeleteConverterDialog(converter: ConverterWithSources, onDismissRequ
 
 @Composable
 private fun ConverterDetailsDialog(converter: ConverterWithSources, onDismissRequest: () -> Unit) {
+    Log.d(TAG, "showConverterDetailsDialog(), ${converter.converter}")
     AlertDialog(onDismissRequest = onDismissRequest, modifier = Modifier,
         confirmButton = {
             TextButton(onClick = {
@@ -303,7 +304,7 @@ private fun ConverterDetailsDialog(converter: ConverterWithSources, onDismissReq
                     .fillMaxWidth()
                     .wrapContentHeight(),
                     verticalAlignment = Alignment.CenterVertically) {
-                    val url = "http://${NetUtil.getLocalIPAddress()?.hostAddress}:${ServerManage.DEFAULT_PORT}/${converter.converter.getUrlSegments()}"
+                    val url = converter.converter.getLocalAddress()
                     Text(text = url, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
 
                     TextButton(onClick = {

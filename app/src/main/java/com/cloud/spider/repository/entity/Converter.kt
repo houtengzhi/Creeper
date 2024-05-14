@@ -7,6 +7,8 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.cloud.spider.R
 import com.cloud.spider.protocol.ClientType
+import com.cloud.spider.server.ServerManage
+import com.cloud.spider.util.NetUtil
 
 /**
  *
@@ -45,8 +47,10 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
     }
 
     override fun toString(): String {
-        return "Converter(id='$id', name='$name', outputType='$outputType')"
+        return "Converter(id='$id', name='$name', outputType='$outputType'), localAddr='${getLocalAddress()}'"
     }
 
     fun getUrlSegments() ="spider/converter/${id}/${outputFileName}"
+
+    fun getLocalAddress() = "http://${NetUtil.getLocalIPAddress()?.hostAddress}:${ServerManage.DEFAULT_PORT}/${getUrlSegments()}"
 }
