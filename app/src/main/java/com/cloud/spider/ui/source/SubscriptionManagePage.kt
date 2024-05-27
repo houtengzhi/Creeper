@@ -35,6 +35,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -69,13 +71,13 @@ private const val TAG = "SubscriptionManagePage"
 @Composable
 fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), onUpClick: () -> Unit = {}, onNewClick: () -> Unit,
                            onResultSet: (subscriptionSource: SubscriptionSource) -> Unit) {
-    Log.d(TAG, "SubscriptionManagePage()")
+    Log.d(TAG, "SubscriptionManagePage() $currentRecomposeScope")
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     var showAddSubscriptionDialog by remember {
         mutableStateOf(false)
     }
-    val uiState = viewModel.subscribeSubscriptionSourceList().collectAsStateWithLifecycle()
+    val uiState = viewModel.subscribeSubscriptionListState.collectAsStateWithLifecycle()
 
     val deleteState = viewModel.deleteState.collectAsStateWithLifecycle()
 
@@ -90,7 +92,7 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
             })
         }
     ) { contentPadding ->
-        Log.d(TAG, "Scaffold()")
+        Log.d(TAG, "Scaffold() $currentRecomposeScope")
 
         ConverterPageScreen(uiState.value, addState.value, deleteState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
             onItemClick = onResultSet,
@@ -117,9 +119,10 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SubscriptionManageTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
+private fun SubscriptionManageTopAppBar(scrollBehavior: TopAppBarScrollBehavior?,
                                      modifier: Modifier = Modifier, onUpClick: () -> Unit, onNewClick: () -> Unit) {
     var moreMenuExpanded by remember { mutableStateOf(false) }
+    Log.d(TAG, "SubscriptionManageTopAppBar() $currentRecomposeScope")
     TopAppBar(title = {
         Text(text = stringResource(id = R.string.Subscription_Manage))
     },
@@ -231,7 +234,7 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
         }, verticalAlignment = Alignment.CenterVertically) {
 
         Image(painter = painterResource(id = subscriptionSource.getClientIconResId()), contentDescription = "",
-            modifier = Modifier.padding(start = 24.dp))
+            modifier = Modifier.padding(start = 24.dp), colorFilter = ColorFilter.tint(subscriptionSource.getClientIconColor()))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(text = subscriptionSource.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 6.dp), maxLines = 1)

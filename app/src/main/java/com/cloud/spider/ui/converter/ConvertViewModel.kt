@@ -74,6 +74,19 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
     private val _deleteState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
     val deleteState = _deleteState.stateIn(viewModelScope, SharingStarted.Lazily, _deleteState.value)
 
+    val subscribeConverterListState = dbRepos.subscribeConverterList()
+        .flowOn(Dispatchers.IO)
+        .map {
+            DataState(it)
+        }
+        .onStart {
+            emit(DataState(true, null, null))
+        }
+        .catch {
+            emit(DataState(it))
+        }
+        .stateIn(viewModelScope, started = SharingStarted.Lazily, initialValue = DataState.initial())
+
     fun testSubscription(url: String) {
         viewModelScope.launch {
             httpRepos.fetchUrl(url)

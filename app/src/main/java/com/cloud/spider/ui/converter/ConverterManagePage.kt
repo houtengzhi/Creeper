@@ -74,7 +74,7 @@ private const val TAG = "ConverterManagePage"
 @Composable
 fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick: () -> Unit = {}, onNewClick: () -> Unit) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val uiState = viewModel.subscribeConverterList().collectAsStateWithLifecycle()
+    val uiState = viewModel.subscribeConverterListState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),

@@ -3,6 +3,9 @@ package com.cloud.spider.repository.entity
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -107,6 +110,21 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
             }
             else -> {
                 R.drawable.ic_clashr
+            }
+        }
+    }
+
+    @Composable
+    fun getClientIconColor():Color {
+        return when (type) {
+            ClientType.Clash -> {
+                MaterialTheme.colorScheme.primary
+            }
+            ClientType.V2Ray -> {
+                MaterialTheme.colorScheme.primary
+            }
+            else -> {
+                MaterialTheme.colorScheme.primary
             }
         }
     }

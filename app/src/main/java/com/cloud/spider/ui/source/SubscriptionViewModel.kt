@@ -53,6 +53,25 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
     private val _subscriptionListState = MutableStateFlow(DataState<List<SubscriptionSource>>(false, null, null))
     val subscriptionListState = _subscriptionListState.stateIn(viewModelScope, SharingStarted.Eagerly, _subscriptionListState.value)
 
+    val subscribeSubscriptionListState = dbRepos.subscribeSubscriptionSourceList()
+            .flowOn(Dispatchers.IO)
+            .map {
+                Log.d(TAG, "subscribeSubscriptionSourceList map: subscription list size ${it.size}")
+                DataState(it)
+            }
+            .onStart {
+                Log.d(TAG, "subscribeSubscriptionSourceList() onStart")
+                emit(DataState(true, null, null))
+            }
+            .onEach {
+                Log.d(TAG, "subscribeSubscriptionSourceList() onEach")
+            }
+            .catch { throwable ->
+                Log.e(TAG, "subscribeSubscriptionSourceList() throwable=${throwable.message}")
+                emit(DataState(throwable))
+            }
+            .stateIn(viewModelScope, started = SharingStarted.Eagerly, initialValue = DataState.initial())
+
     init {
 
     }
@@ -143,25 +162,6 @@ class SubscriptionViewModel @Inject constructor(private val httpRepos: HttpRepos
                     }
                 }
         }
-
-    fun subscribeSubscriptionSourceList() = dbRepos.subscribeSubscriptionSourceList()
-        .flowOn(Dispatchers.IO)
-        .map {
-            Log.d(TAG, "subscribeSubscriptionSourceList map: subscription list size ${it.size}")
-            DataState(it)
-        }
-        .onStart {
-            Log.d(TAG, "subscribeSubscriptionSourceList() onStart")
-            emit(DataState(true, null, null))
-        }
-        .onEach {
-            Log.d(TAG, "subscribeSubscriptionSourceList() onEach")
-        }
-        .catch { throwable ->
-            Log.e(TAG, "subscribeSubscriptionSourceList() throwable=${throwable.message}")
-            emit(DataState(throwable))
-        }
-        .stateIn(viewModelScope, started = SharingStarted.Eagerly, initialValue = DataState.initial())
 
     fun pullSubscription(source: SubscriptionSource) {
         viewModelScope.launch() {
