@@ -18,7 +18,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object PersistanceModule {
-    const val DATABASE_NAME = "spider_db"
+    const val DATABASE_NAME = "creeper_db"
 
     @Provides
     @Singleton

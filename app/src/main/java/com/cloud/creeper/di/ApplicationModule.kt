@@ -1,7 +1,7 @@
 package com.cloud.creeper.di
 
 import android.app.Application
-import com.cloud.creeper.base.SpiderApp
+import com.cloud.creeper.base.CreeperApp
 import com.cloud.creeper.repository.DataRepos
 import com.cloud.creeper.repository.db.DbRepos
 import com.cloud.creeper.repository.file.FileRepos
@@ -22,7 +22,7 @@ object ApplicationModule {
 
     @Provides
     @Singleton
-    fun provideSpiderApplication(application: Application): SpiderApp = application as SpiderApp
+    fun provideCreeperApplication(application: Application): CreeperApp = application as CreeperApp
 
     @Provides
     @Singleton

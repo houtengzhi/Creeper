@@ -1,7 +1,7 @@
 package com.cloud.creeper.server.controller
 
 import android.util.Log
-import com.cloud.creeper.base.SpiderApp
+import com.cloud.creeper.base.CreeperApp
 import com.cloud.creeper.repository.DataRepos
 import com.cloud.creeper.repository.db.DbRepos
 import com.cloud.creeper.repository.file.FileRepos
@@ -53,10 +53,10 @@ class SubscriptionController {
         return "test"
     }
 
-    @GetMapping("/spider/converter/{converterId}/{fileName}")
+    @GetMapping("/creeper/converter/{converterId}/{fileName}")
     fun downloadConverterFile(@PathVariable("converterId") converterId: String, @PathVariable("fileName") fileName: String, httpRequest: HttpRequest, httpResponse: HttpResponse) {
         Log.d(TAG, "downloadConverterFile: converterId=${converterId}, fileName=${fileName}")
-        val provider = EntryPoints.get(SpiderApp.INSTANCE, EntryProvider::class.java)
+        val provider = EntryPoints.get(CreeperApp.INSTANCE, EntryProvider::class.java)
         val fileRepos = provider.getFileRepos()
         val dbRepos = provider.getDbRepos()
         val dataRepos = provider.getDataRepos()

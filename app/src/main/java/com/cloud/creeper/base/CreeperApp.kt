@@ -8,10 +8,10 @@ import dagger.hilt.android.HiltAndroidApp
  * Created by cloud on 2024/1/26.
  */
 @HiltAndroidApp
-class SpiderApp: Application() {
+class CreeperApp: Application() {
 
     companion object {
-        lateinit var INSTANCE: SpiderApp
+        lateinit var INSTANCE: CreeperApp
     }
 
     override fun onCreate() {

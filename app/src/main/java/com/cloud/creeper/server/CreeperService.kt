@@ -28,14 +28,14 @@ import java.util.concurrent.TimeUnit
  * Created by cloud on 2024/1/30.
  */
 @AndroidEntryPoint
-class SpiderService: Service() {
+class CreeperService: Service() {
 
     companion object {
-        const val TAG = "SpiderService"
+        const val TAG = "CreeperService"
 
-        const val NOTIFICATION_CHANNEL_NAME = "Spider"
+        const val NOTIFICATION_CHANNEL_NAME = "Creeper"
 
-        const val NOTIFICATION_CHANNEL_ID = "com.cloud.spider"
+        const val NOTIFICATION_CHANNEL_ID = "com.cloud.creeper"
     }
 
     private val mBinder = SBinder()
@@ -76,7 +76,7 @@ class SpiderService: Service() {
         builder.setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setOngoing(true)
             .setSmallIcon(R.mipmap.ic_launcher_round)
-            .setContentTitle("Spider")
+            .setContentTitle("Creeper")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             ServiceCompat.startForeground(this,100, builder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
@@ -123,6 +123,6 @@ class SpiderService: Service() {
     fun isRunning() = mServer.isRunning
 
     inner class SBinder: Binder() {
-        val service: SpiderService get() = this@SpiderService
+        val service: CreeperService get() = this@CreeperService
     }
 }

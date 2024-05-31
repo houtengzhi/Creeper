@@ -49,7 +49,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.cloud.creeper.R
-import com.cloud.creeper.server.SpiderService
+import com.cloud.creeper.server.CreeperService
 import com.cloud.creeper.util.SystemUtil
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -137,9 +137,9 @@ private fun HomePageScreen(modifier: Modifier = Modifier, onConvertClick: () -> 
         .fillMaxHeight()) {
 
         val context = LocalContext.current
-        var serverStarted by remember { mutableStateOf(SystemUtil.isServiceRunning(context, SpiderService::class.java.name)) }
+        var serverStarted by remember { mutableStateOf(SystemUtil.isServiceRunning(context, CreeperService::class.java.name)) }
 
-        val intent = Intent(context, SpiderService::class.java)
+        val intent = Intent(context, CreeperService::class.java)
         CardItem(
             iconResId = if (serverStarted) R.drawable.ic_running else R.drawable.ic_stopped,
             title = if (serverStarted) "Running" else "Stopped",
