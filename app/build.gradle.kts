@@ -6,9 +6,20 @@ plugins {
     kotlin("kapt")
     id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
+
+    // Add the Google services Gradle plugin
+    id("com.google.gms.google-services")
 }
 
 android {
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("creeper_debug_keystore.jks")
+            storePassword = "Moxtr@12"
+            keyAlias = "key0"
+            keyPassword = "Moxtr@12"
+        }
+    }
     namespace = "com.cloud.creeper"
     compileSdk = 34
 
@@ -20,9 +31,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        signingConfig = signingConfigs.getByName("debug")
     }
 
     buildTypes {
+        debug {
+
+            signingConfig = signingConfigs.getByName("debug")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -117,4 +133,11 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-process:$lifecycle_version")
 
     implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+
+    // Import the BoM for the Firebase platform
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+
+    // Add the dependency for the Firebase Authentication library
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation("com.google.firebase:firebase-auth")
 }

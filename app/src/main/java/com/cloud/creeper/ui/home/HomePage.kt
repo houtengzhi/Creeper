@@ -62,7 +62,7 @@ import com.google.accompanist.permissions.shouldShowRationale
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
-fun HomePage(onConvertClick: () -> Unit = {}, onSubscriptionSourceManageClick: () -> Unit = {}) {
+fun HomePage(onConvertClick: () -> Unit = {}, onSubscriptionSourceManageClick: () -> Unit = {}, onCloudIntegrationClick: () -> Unit = {}) {
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -73,7 +73,8 @@ fun HomePage(onConvertClick: () -> Unit = {}, onSubscriptionSourceManageClick: (
         }
     ) { contentPadding ->
         HomePageScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
-            onConvertClick = onConvertClick, onSubscriptionSourceManageClick = onSubscriptionSourceManageClick)
+            onConvertClick = onConvertClick, onSubscriptionSourceManageClick = onSubscriptionSourceManageClick,
+            onCloudIntegrationClick = onCloudIntegrationClick)
 
         var showRationableDialog by remember {
             mutableStateOf(false)
@@ -130,7 +131,8 @@ private fun HomeTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
 }
 
 @Composable
-private fun HomePageScreen(modifier: Modifier = Modifier, onConvertClick: () -> Unit, onSubscriptionSourceManageClick: () -> Unit) {
+private fun HomePageScreen(modifier: Modifier = Modifier, onConvertClick: () -> Unit, onSubscriptionSourceManageClick: () -> Unit,
+                           onCloudIntegrationClick: () -> Unit) {
 
     Column(modifier = modifier
         .fillMaxWidth()
@@ -181,6 +183,13 @@ private fun HomePageScreen(modifier: Modifier = Modifier, onConvertClick: () -> 
             iconResId = R.drawable.ic_source,
             title = stringResource(id = R.string.Subscription_Manage),
             onClick = onSubscriptionSourceManageClick,
+            modifier = Modifier
+        )
+
+        CommonItem(
+            iconResId = R.drawable.ic_cloud,
+            title = stringResource(id = R.string.Cloud_Integration),
+            onClick = onCloudIntegrationClick,
             modifier = Modifier
         )
 

@@ -29,4 +29,6 @@
     <string name="Local_Address">"Local Address"</string>
     <string name="Add_Converter">"Add Converter"</string>
     <string name="Copy">"Copy"</string>
+    <string name="Authorize">"Authorize"</string>
+    <string name="Cloud_Integration">"Cloud Integration"</string>
 </resources>

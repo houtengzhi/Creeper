@@ -14,6 +14,7 @@ import com.cloud.creeper.ui.converter.NewConverterPage
 import com.cloud.creeper.ui.home.HomePage
 import com.cloud.creeper.ui.source.SubscriptionManagePage
 import com.cloud.creeper.compose.AppTheme
+import com.cloud.creeper.ui.integration.AuthorizationPage
 import com.cloud.creeper.util.clearForResult
 import com.cloud.creeper.util.navigateForResult
 import com.cloud.creeper.util.setResult
@@ -38,6 +39,9 @@ fun AppMain() {
                 },
                     onSubscriptionSourceManageClick = {
                         navController.navigate(Screen.SubscriptionManage.createRoute())
+                    },
+                    onCloudIntegrationClick = {
+                        navController.navigate(Screen.Authorization.route)
                     })
             }
             composable(Screen.ConverterManage.route) {
@@ -86,6 +90,12 @@ fun AppMain() {
                     })
             }
 
+            composable(route = Screen.Authorization.route) {
+                AuthorizationPage {
+                    navController.navigateUp()
+                }
+            }
+
             composable(route = Screen.Gallery.route,
                 arguments = Screen.Gallery.navArguments
             ) {
@@ -115,6 +125,8 @@ sealed class Screen(val route: String, val navArguments: List<NamedNavArgument> 
             return "SubscriptionManage?requestCode=${requestCode}"
         }
     }
+
+    data object Authorization: Screen("Authorization")
 
     data object Gallery: Screen(route = "Gallery/{sourceId}",
         navArguments = listOf(navArgument("sourceId") {type = NavType.IntType})
