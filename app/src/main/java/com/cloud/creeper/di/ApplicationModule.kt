@@ -3,9 +3,11 @@ package com.cloud.creeper.di
 import android.app.Application
 import com.cloud.creeper.base.CreeperApp
 import com.cloud.creeper.repository.DataRepos
+import com.cloud.creeper.repository.auth.AuthRepos
 import com.cloud.creeper.repository.db.DbRepos
 import com.cloud.creeper.repository.file.FileRepos
 import com.cloud.creeper.repository.http.HttpRepos
+import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,5 +30,17 @@ object ApplicationModule {
     @Singleton
     fun provideDataRepos(httpRepos: HttpRepos, dbRepos: DbRepos, fileRepos: FileRepos): DataRepos {
         return DataRepos(httpRepos, dbRepos, fileRepos)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth {
+        return FirebaseAuth.getInstance()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthRepos(auth: FirebaseAuth): AuthRepos {
+        return AuthRepos(auth)
     }
 }

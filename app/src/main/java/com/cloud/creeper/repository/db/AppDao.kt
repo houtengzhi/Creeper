@@ -10,6 +10,7 @@ import androidx.room.Update
 import com.cloud.creeper.repository.entity.Converter
 import com.cloud.creeper.repository.entity.ConverterSubscriptionSourceCrossRef
 import com.cloud.creeper.repository.entity.ConverterWithSources
+import com.cloud.creeper.repository.entity.ServiceAuth
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import kotlinx.coroutines.flow.Flow
 
@@ -76,4 +77,17 @@ interface AppDao {
 
     @Query("SELECT * FROM subscription_source ORDER BY updated_time DESC")
     fun subscribeSubscriptionSourceList(): Flow<List<SubscriptionSource>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun suspendInsertServiceAuth(auth: ServiceAuth)
+
+    @Update
+    suspend fun suspendUpdateServiceAuth(auth: ServiceAuth)
+
+    @Delete
+    suspend fun suspendDeleteServiceAuth(auth: ServiceAuth)
+
+    @Transaction
+    @Query("SELECT * FROM service_auth WHERE service_name = :name")
+    suspend fun suspendQueryServiceAuthByName(name: String): ServiceAuth?
 }

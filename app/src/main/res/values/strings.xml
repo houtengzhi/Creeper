@@ -31,4 +31,7 @@
     <string name="Copy">"Copy"</string>
     <string name="Authorize">"Authorize"</string>
     <string name="Cloud_Integration">"Cloud Integration"</string>
+    <string name="Github">"Github"</string>
+    <string name="Connected">"Connected"</string>
+    <string name="Disconnect">"Disconnect"</string>
 </resources>

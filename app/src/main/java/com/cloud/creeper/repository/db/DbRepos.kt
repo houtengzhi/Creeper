@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.room.Transaction
 import com.cloud.creeper.repository.entity.ConverterSubscriptionSourceCrossRef
 import com.cloud.creeper.repository.entity.ConverterWithSources
+import com.cloud.creeper.repository.entity.ServiceAuth
 import com.cloud.creeper.repository.entity.SubscriptionSource
 
 /**
@@ -81,4 +82,21 @@ class DbRepos(private val appDatabase: AppDatabase) {
     suspend fun querySubscriptionSourceList() = appDatabase.appDao().querySubscriptionSourceList()
 
     fun subscribeSubscriptionSourceList() = appDatabase.appDao().subscribeSubscriptionSourceList()
+
+
+    suspend fun suspendInsertServiceAuth(auth: ServiceAuth) {
+        appDatabase.appDao().suspendInsertServiceAuth(auth)
+    }
+
+    suspend fun suspendUpdateServiceAuth(auth: ServiceAuth) {
+        appDatabase.appDao().suspendUpdateServiceAuth(auth)
+    }
+
+    suspend fun suspendDeleteServiceAuth(auth: ServiceAuth) {
+        appDatabase.appDao().suspendDeleteServiceAuth(auth)
+    }
+
+    suspend fun suspendQueryServiceAuth(name: String): ServiceAuth? {
+        return appDatabase.appDao().suspendQueryServiceAuthByName(name)
+    }
 }
