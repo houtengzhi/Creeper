@@ -35,7 +35,7 @@ class AuthViewModel @Inject constructor(private val authRepos: AuthRepos, privat
     private val _saveTokenState = MutableStateFlow<DataState<ServiceAuth>>(DataState.initial())
     val saveTokenState = _saveTokenState.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), _saveTokenState.value)
 
-    private val _deleteTokenState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
+    private val _deleteTokenState = MutableStateFlow<DataState<ServiceAuth>>(DataState.initial())
     val deleteTokenState = _deleteTokenState.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), _deleteTokenState.value)
 
     init {
@@ -92,7 +92,7 @@ class AuthViewModel @Inject constructor(private val authRepos: AuthRepos, privat
         viewModelScope.launch(Dispatchers.Default + coroutineExceptionHandler) {
             dbRepos.suspendDeleteServiceAuth(auth)
             _deleteTokenState.update {
-                DataState(isLoading = false, data = true, throwable = null)
+                DataState(isLoading = false, data = auth, throwable = null)
             }
         }
     }

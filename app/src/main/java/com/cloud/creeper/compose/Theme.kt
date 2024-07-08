@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -80,6 +81,18 @@ private val DarkColors = darkColorScheme(
     scrim = md_theme_dark_scrim,
 )
 
+private val LightMyColors = MyColors(
+    colorPositive = color_light_positive
+)
+
+private val DarkMyColors = MyColors(
+    colorPositive = color_dark_positive
+)
+
+private val LocalMyColors = compositionLocalOf {
+    LightMyColors
+}
+
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -97,10 +110,18 @@ fun AppTheme(
         else -> LightColors
     }
 
+    val myColors = if (darkTheme) DarkMyColors else LightMyColors
+
     MaterialTheme(
         colorScheme = colorScheme,
         shapes = Shapes,
         typography = Typography,
         content = content
     )
+}
+
+object AppTheme {
+    val colors: MyColors
+        @Composable
+        get() = LocalMyColors.current
 }
