@@ -10,3 +10,8 @@ val SUPPORTED_SOURCE_TYPE_LIST = mutableListOf<ClientType>(ClientType.Clash, Cli
 val SUPPORTED_OUTPUT_TYPE_LIST = mutableListOf<ClientType>(ClientType.Clash, ClientType.V2Ray)
 
 const val SERVICE_GITHUB = "github"
+
+const val GITHUB_BASE_URL = "https://api.github.com"
+
+const val REPOSITORY_LOCAL = "local"
+const val REPOSITORY_GITHUB = "github"

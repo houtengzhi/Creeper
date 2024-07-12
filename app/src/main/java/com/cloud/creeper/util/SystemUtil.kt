@@ -41,6 +41,10 @@ object SystemUtil {
         return "co${UUID.randomUUID().toString().replace("-", "").lowercase()}"
     }
 
+    fun generateCloudRepositoryId(): String {
+        return "cr${UUID.randomUUID().toString().replace("-", "").lowercase()}"
+    }
+
     fun getPulledTimeText(context: Context, millis: Long): String {
         val now = System.currentTimeMillis()
         val offset = now - millis

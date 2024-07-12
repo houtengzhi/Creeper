@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.cloud.creeper.repository.entity.CloudRepository
 import com.cloud.creeper.repository.entity.Converter
 import com.cloud.creeper.repository.entity.ConverterSubscriptionSourceCrossRef
 import com.cloud.creeper.repository.entity.ConverterWithSources
@@ -90,4 +91,17 @@ interface AppDao {
     @Transaction
     @Query("SELECT * FROM service_auth WHERE service_name = :name")
     suspend fun suspendQueryServiceAuthByName(name: String): ServiceAuth?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun suspendInsertCloudRepository(repository: CloudRepository)
+
+    @Update
+    suspend fun suspendUpdateCloudRepository(repository: CloudRepository)
+
+    @Delete
+    suspend fun suspendDeleteCloudRepository(repository: CloudRepository)
+
+    @Transaction
+    @Query("SELECT * FROM cloud_repository WHERE repos_id = :reposId")
+    suspend fun suspendQueryCloudRepositoryById(reposId: String): CloudRepository?
 }

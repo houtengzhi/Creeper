@@ -2,6 +2,7 @@ package com.cloud.creeper.repository.db
 
 import android.util.Log
 import androidx.room.Transaction
+import com.cloud.creeper.repository.entity.CloudRepository
 import com.cloud.creeper.repository.entity.ConverterSubscriptionSourceCrossRef
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
@@ -99,4 +100,21 @@ class DbRepos(private val appDatabase: AppDatabase) {
     suspend fun suspendQueryServiceAuth(name: String): ServiceAuth? {
         return appDatabase.appDao().suspendQueryServiceAuthByName(name)
     }
+
+    suspend fun suspendInsertCloudRepository(repository: CloudRepository) {
+        appDatabase.appDao().suspendInsertCloudRepository(repository)
+    }
+
+    suspend fun suspendUpdateCloudRepository(repository: CloudRepository) {
+        appDatabase.appDao().suspendUpdateCloudRepository(repository)
+    }
+
+    suspend fun suspendDeleteCloudRepository(repository: CloudRepository) {
+        appDatabase.appDao().suspendDeleteCloudRepository(repository)
+    }
+
+    suspend fun suspendQueryCloudRepository(reposId: String): CloudRepository? {
+        return appDatabase.appDao().suspendQueryCloudRepositoryById(reposId)
+    }
+
 }

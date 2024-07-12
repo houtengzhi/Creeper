@@ -74,8 +74,11 @@ dependencies {
     implementation("com.yanzhenjie.andserver:api:2.1.12")
     kapt("com.yanzhenjie.andserver:processor:2.1.12")
 
-    implementation("com.squareup.okhttp3:okhttp:4.2.1")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.2.1")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.github.JessYanCoding:RetrofitUrlManager:v1.4.0")
+    implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0")
 
     implementation("com.google.dagger:hilt-android:2.50")
     kapt("com.google.dagger:hilt-android-compiler:2.50")
