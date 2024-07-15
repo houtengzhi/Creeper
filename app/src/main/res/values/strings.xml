@@ -36,4 +36,5 @@
     <string name="Disconnect">"Disconnect"</string>
     <string name="Prompt">"Prompt"</string>
     <string name="Logout_from_x">"Logout from %1$S?"</string>
+    <string name="Gists" translatable="false">"Gists"</string>
 </resources>

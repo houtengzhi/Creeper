@@ -328,7 +328,7 @@ private fun LoadingIndicator() {
 fun PreviewDialog() {
 
     val converter = Converter("", "Test")
-    val converterWithSources = ConverterWithSources(converter, emptyList())
+    val converterWithSources = ConverterWithSources(converter, emptyList(), emptyList())
     ConverterDetailsDialog(converter = converterWithSources) {
 
     }

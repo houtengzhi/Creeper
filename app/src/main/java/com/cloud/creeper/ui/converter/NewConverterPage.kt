@@ -25,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -51,6 +52,7 @@ import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.repository.entity.Converter
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.SubscriptionSource
+import com.cloud.creeper.util.REPOSITORY_GITHUB
 import com.cloud.creeper.util.SystemUtil
 import com.cloud.creeper.util.parcelable
 import kotlinx.coroutines.CoroutineScope
@@ -80,7 +82,8 @@ fun NewConverterPage(onUpClick: () -> Unit = {}, viewModel: ConvertViewModel = h
                         createdTime = System.currentTimeMillis()
                         updatedTime = System.currentTimeMillis()
                         outputType = viewModel.outputType
-                }, viewModel.subscriptionSourceList)
+                }, viewModel.subscriptionSourceList, emptyList()
+                )
                 viewModel.addConverter(converter)
             })
         }
@@ -272,6 +275,22 @@ fun NewConverterScreen(modifier: Modifier = Modifier, viewModel: ConvertViewMode
                         })
                     }
                 }
+            }
+
+            Text(text = "Save to Cloud", modifier = Modifier
+                .padding(start = 20.dp, top = 24.dp))
+            Row(modifier = Modifier
+                .padding(start = 12.dp, end = 12.dp, top = 12.dp)
+                .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(text = stringResource(id = R.string.Gists))
+                Switch(checked = viewModel.supportedCloudRepositories.contains(REPOSITORY_GITHUB), onCheckedChange = {
+                    if (it) {
+                        viewModel.supportedCloudRepositories.add(REPOSITORY_GITHUB)
+
+                    } else {
+                        viewModel.supportedCloudRepositories.remove(REPOSITORY_GITHUB)
+                    }
+                })
             }
 
         }

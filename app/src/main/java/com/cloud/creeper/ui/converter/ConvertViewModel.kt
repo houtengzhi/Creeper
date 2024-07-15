@@ -65,6 +65,8 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
         outputType = input
     }
 
+    val supportedCloudRepositories = mutableStateListOf<String>()
+
     private val _addState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
     val addState = _addState.stateIn(viewModelScope, SharingStarted.Lazily, _addState.value)
 
