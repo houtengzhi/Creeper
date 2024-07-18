@@ -3,6 +3,7 @@ package com.cloud.creeper.ui.integration
 import android.app.Activity
 import android.util.Log
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,11 +12,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -23,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -45,8 +53,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cloud.creeper.R
 import com.cloud.creeper.compose.AppTheme
 import com.cloud.creeper.repository.entity.ServiceAuth
-import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.util.SERVICE_GITHUB
+import com.cloud.creeper.util.SUPPORTED_SOURCE_TYPE_LIST
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.OAuthCredential
@@ -128,6 +136,10 @@ fun AuthorizeScreen(modifier: Modifier = Modifier, auth: ServiceAuth?, saveAuth:
     val isAuthenticated = auth != null && !auth.isExpired()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
+    var showAddTokenDialog by remember { mutableStateOf(false) }
+
+    var menuExpanded by remember { mutableStateOf(false) }
+
     Column {
 
         val context = LocalContext.current
@@ -136,11 +148,50 @@ fun AuthorizeScreen(modifier: Modifier = Modifier, auth: ServiceAuth?, saveAuth:
             modifier = modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(start = 24.dp, top = 12.dp, end = 24.dp)
+                .padding(top = 12.dp)
                 .clickable(onClick = {
-                    if (isAuthenticated) {
-                        showLogoutDialog = true
-                    } else {
+
+                }), horizontalArrangement = Arrangement.SpaceBetween) {
+
+            Row(modifier = Modifier.wrapContentWidth().wrapContentHeight().padding(start = 12.dp, top = 12.dp, bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(painter = painterResource(R.drawable.github_mark),
+                    contentDescription = "stopped icon",
+                    modifier = Modifier
+                        .padding(start = 12.dp)
+                        .size(24.dp, 24.dp),
+                    tint = LocalContentColor.current
+                )
+
+                Text(text = "Github",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .padding(start = 12.dp))
+            }
+
+            if (isAuthenticated) {
+                Text(text = stringResource(id = R.string.Connected), color = AppTheme.colors.colorPositive,
+                    modifier = Modifier
+                        .padding(end = 24.dp)
+                        .weight(1f),
+                    textAlign = TextAlign.Center)
+            } else {
+                Text(text = stringResource(id = R.string.Disconnected), 
+                    modifier = Modifier
+                        .padding(end = 24.dp)
+                        .weight(1f),
+                    textAlign = TextAlign.Center)
+            }
+
+            IconButton(onClick = {
+                menuExpanded = true
+            }, modifier = Modifier.padding(end = 12.dp)) {
+                Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More Menu")
+
+                AuthItemMenu(
+                    expanded = menuExpanded,
+                    collected = isAuthenticated,
+                    onDismissRequest = { menuExpanded = false },
+                    onLoginClick = {
                         authorize(context as Activity, {
                             saveAuth(it)
                         }, {
@@ -148,30 +199,21 @@ fun AuthorizeScreen(modifier: Modifier = Modifier, auth: ServiceAuth?, saveAuth:
                         }, {
                             Log.i(TAG, "authorize canceled")
                         })
-                    }
-                })) {
-            Icon(painter = painterResource(R.drawable.github_mark),
-                contentDescription = "stopped icon",
-                modifier = Modifier
-                    .padding(start = 24.dp, top = 12.dp, bottom = 12.dp)
-                    .size(24.dp, 24.dp),
-                tint = LocalContentColor.current
-            )
-
-            Text(text = "Github",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier
-                    .padding(start = 24.dp, top = 12.dp, bottom = 12.dp)
-                    .weight(1f),
-                textAlign = TextAlign.Center)
-
-            if (isAuthenticated) {
-                Text(text = stringResource(id = R.string.Connected), color = AppTheme.colors.colorPositive,
-                    modifier = Modifier.padding(end = 24.dp))
+                    },
+                    onAddClick = {
+                                 showAddTokenDialog = true
+                    },
+                    onLogoutClick = { showLogoutDialog = true })
             }
 
         }
 
+    }
+
+    if (showAddTokenDialog) {
+        ConfigureTokenDialog(onDismissRequest = { showAddTokenDialog = false }) {
+
+        }
     }
 
     if (showLogoutDialog) {
@@ -259,6 +301,33 @@ fun authorize(activity: Activity, onAuthorizeSuccess: (auth: ServiceAuth) -> Uni
 }
 
 @Composable
+private fun AuthItemMenu(expanded: Boolean, collected: Boolean, onDismissRequest: () -> Unit, onLoginClick: () -> Unit, onAddClick: () -> Unit, onLogoutClick: () -> Unit) {
+    DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest, modifier = Modifier) {
+        if (collected) {
+            DropdownMenuItem(text = {
+                Text(text = stringResource(id = R.string.Logout))
+            }, onClick = {
+                onDismissRequest()
+                onLogoutClick()
+            })
+        } else {
+            DropdownMenuItem(text = {
+                Text(text = stringResource(id = R.string.Login))
+            }, onClick = {
+                onDismissRequest()
+                onLoginClick()
+            } )
+            DropdownMenuItem(text = {
+                Text(text = stringResource(id = R.string.Add_Token))
+            }, onClick = {
+                onDismissRequest()
+                onAddClick()
+            })
+        }
+    }
+}
+
+@Composable
 private fun LogoutDialog(serviceAuth: ServiceAuth, onDismissRequest: () -> Unit, onLogoutClick: (serviceAuth: ServiceAuth) -> Unit) {
     AlertDialog(onDismissRequest = onDismissRequest, modifier = Modifier,
         confirmButton = {
@@ -282,6 +351,49 @@ private fun LogoutDialog(serviceAuth: ServiceAuth, onDismissRequest: () -> Unit,
         },
         text = {
             Text(text = stringResource(id = R.string.Logout_from_x, serviceAuth.serviceName))
+        },
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+    )
+}
+
+@Composable
+private fun ConfigureTokenDialog(onDismissRequest: () -> Unit, onSaveClick: (token: String) -> Unit) {
+    var token by remember {
+        mutableStateOf("")
+    }
+    var isSaveBtnEnabled by remember {
+        mutableStateOf(false)
+    }
+
+    AlertDialog(onDismissRequest = onDismissRequest, modifier = Modifier,
+        confirmButton = {
+            TextButton(onClick = {
+                onDismissRequest()
+                onSaveClick(token)
+
+            }, enabled = isSaveBtnEnabled) {
+                Text(text = stringResource(id = R.string.Save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = {
+                onDismissRequest()
+            }) {
+                Text(text = stringResource(id = R.string.Cancel))
+            }
+        },
+        title = {
+            Text(text = stringResource(id = R.string.Configure_token_manually))
+        },
+        text = {
+            Column(modifier = Modifier) {
+
+                TextField(value = token,
+                    onValueChange = {
+                        token = it
+                        isSaveBtnEnabled = it.isNotEmpty()
+                    }, label = { Text("Name")}, singleLine = true, modifier = Modifier)
+            }
         },
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
     )

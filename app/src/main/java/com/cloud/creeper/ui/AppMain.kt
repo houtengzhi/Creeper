@@ -56,7 +56,11 @@ fun AppMain() {
                     navController.navigateUp()
                 }, onSubscriptionClick = {
 
-                }, navForResult = { coroutineScope, requestCode, onResult ->
+                },
+                    onCloudIntegrationClick = {
+                        navController.navigate(Screen.Authorize.route)
+                    },
+                    navForResult = { coroutineScope, requestCode, onResult ->
                     val resultFlow = navController.navigateForResult(Screen.SubscriptionManage.createRouteForResult(requestCode))
                     Log.d(TAG, "navigateForResult(), initialValue=${resultFlow?.value}")
                     coroutineScope.launch {
