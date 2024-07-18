@@ -12,7 +12,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "service_auth", indices = [Index(value = ["service_name"], unique = true)])
 data class ServiceAuth(@PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Int = 0,
                        @ColumnInfo(name = "service_name")val serviceName: String,
-                       val accessToken: String) {
+                       val accessToken: String,
+                       @ColumnInfo(name = "auth_type") val authType: String) {
     @ColumnInfo(name = "created_time")
     var createdTime: Long = 0
 

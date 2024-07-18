@@ -43,17 +43,19 @@ class AuthViewModel @Inject constructor(private val authRepos: AuthRepos, privat
     }
 
     fun getAuthInfo(serviceName: String) {
+        Log.d(TAG, "getAuthInfo()")
         _getTokenState.update {
             DataState(true, null, null)
         }
         val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-            Log.e(TAG, "getAccessToken() exception for ${throwable.message}")
+            Log.e(TAG, "getAuthInfo() exception for ${throwable.message}")
             _getTokenState.update {
                 DataState(throwable)
             }
         }
         viewModelScope.launch(Dispatchers.Default + coroutineExceptionHandler) {
             val auth = dbRepos.suspendQueryServiceAuth(serviceName)
+            Log.d(TAG, "getAuthInfo() auth=$auth")
             _getTokenState.update {
                 DataState(isLoading = false, data = auth, throwable = null)
             }

@@ -196,7 +196,7 @@ fun NewConverterScreen(
     var gistsOn by remember {
         mutableStateOf(viewModel.supportedCloudRepositories.contains(REPOSITORY_GITHUB))
     }
-    val isAuthenticated = auth != null && !auth.isExpired()
+    val isAuthorized = auth != null && !auth.isExpired()
 
     val supportedClientList = mutableListOf<ClientType>()
     supportedClientList.add(ClientType.Clash)
@@ -362,6 +362,11 @@ fun NewConverterScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(text = stringResource(id = R.string.Gists))
+            if (!isAuthorized) {
+                TextButton(onClick = {  onCloudIntegrationClick() }) {
+                    Text(text = stringResource(id = R.string.Authorize))
+                }
+            }
             Switch(
                 checked = viewModel.supportedCloudRepositories.contains(REPOSITORY_GITHUB),
                 onCheckedChange = {
@@ -372,7 +377,7 @@ fun NewConverterScreen(
                     } else {
                         viewModel.supportedCloudRepositories.remove(REPOSITORY_GITHUB)
                     }
-                })
+                }, enabled = isAuthorized)
         }
         AnimatedVisibility(visible = gistsOn) {
             Row( modifier = Modifier
@@ -380,17 +385,19 @@ fun NewConverterScreen(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .clickable {
-                    onCloudIntegrationClick()
+
                 },
                 horizontalArrangement = Arrangement.SpaceBetween) {
-                if (isAuthenticated) {
+                if (isAuthorized) {
                     Text(text = auth?.userName!!)
                     Text(text = stringResource(id = R.string.Connected), color = AppTheme.colors.colorPositive,
                         modifier = Modifier.padding(end = 24.dp))
 
                 } else {
                     Text(text = stringResource(id = R.string.Disconnected),
-                        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 8.dp).wrapContentWidth())
+                        modifier = Modifier
+                            .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 8.dp)
+                            .wrapContentWidth())
                 }
             }
         }

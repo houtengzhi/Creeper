@@ -53,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cloud.creeper.R
 import com.cloud.creeper.compose.AppTheme
 import com.cloud.creeper.repository.entity.ServiceAuth
+import com.cloud.creeper.util.AuthType
 import com.cloud.creeper.util.SERVICE_GITHUB
 import com.cloud.creeper.util.SUPPORTED_SOURCE_TYPE_LIST
 import com.google.firebase.auth.AuthResult
@@ -265,7 +266,7 @@ fun authorize(activity: Activity, onAuthorizeSuccess: (auth: ServiceAuth) -> Uni
         }
 
         accessToken?.let {
-            val auth = ServiceAuth(serviceName = SERVICE_GITHUB, accessToken = accessToken)
+            val auth = ServiceAuth(serviceName = SERVICE_GITHUB, accessToken = accessToken, authType = AuthType.OAUTH2)
             auth.userName = profile?.get("login").toString()
             auth.email = profile?.get("email").toString()
 

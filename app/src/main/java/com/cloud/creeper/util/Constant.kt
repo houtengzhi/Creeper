@@ -15,3 +15,8 @@ const val GITHUB_BASE_URL = "https://api.github.com"
 
 const val REPOSITORY_LOCAL = "local"
 const val REPOSITORY_GITHUB = "github"
+
+object AuthType {
+    const val MANUALLY = "manually"
+    const val OAUTH2 = "oauth2"
+}
