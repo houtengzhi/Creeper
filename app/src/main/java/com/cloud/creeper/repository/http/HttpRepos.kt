@@ -64,6 +64,10 @@ class HttpRepos(private val httpClient: OkHttpClient, private val githubService:
         }
     }
 
+    suspend fun suspendGetGistList(accessToken: String): List<Gist> {
+        return githubService.getGistList("Bearer $accessToken")
+    }
+
     suspend fun suspendGetGist(gistId: String, accessToken: String): Gist {
         return githubService.getGist(gistId, "Bearer $accessToken")
     }

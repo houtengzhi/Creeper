@@ -54,6 +54,7 @@ import androidx.lifecycle.viewModelScope
 import com.cloud.creeper.R
 import com.cloud.creeper.compose.AppTheme
 import com.cloud.creeper.protocol.ClientType
+import com.cloud.creeper.repository.Gist
 import com.cloud.creeper.repository.entity.Converter
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
@@ -70,6 +71,9 @@ import kotlinx.coroutines.CoroutineScope
  */
 private const val TAG = "NewConverterPage"
 
+const val REQUEST_CODE_SELECT_SUBSCRIPTION = "select_subscription"
+const val REQUEST_CODE_SELECT_GIST = "select_gist"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewConverterPage(
@@ -78,7 +82,8 @@ fun NewConverterPage(
     authViewModel: AuthViewModel = hiltViewModel(),
     onSubscriptionClick: () -> Unit,
     onCloudIntegrationClick: () -> Unit,
-    navForResult: (coroutineScope: CoroutineScope, requestCode: String, onResult: (data: Bundle) -> Unit) -> Unit
+    navForResult: (coroutineScope: CoroutineScope, requestCode: String, onResult: (data: Bundle) -> Unit) -> Unit,
+    navToSelectGist: (coroutineScope: CoroutineScope, requestCode: String, auth: ServiceAuth, onResult: (data: Bundle) -> Unit) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var canSave by remember {
@@ -119,7 +124,8 @@ fun NewConverterPage(
             onDataChanged = {
                 canSave = it
             },
-            navForResult
+            navForResult,
+            navToSelectGist
         )
 
     }
@@ -184,7 +190,8 @@ fun NewConverterScreen(
     onSubscriptionClick: () -> Unit,
     onCloudIntegrationClick: () -> Unit,
     onDataChanged: (canSave: Boolean) -> Unit,
-    navForResult: (coroutineScope: CoroutineScope, requestCode: String, onResult: (data: Bundle) -> Unit) -> Unit
+    navForResult: (coroutineScope: CoroutineScope, requestCode: String, onResult: (data: Bundle) -> Unit) -> Unit,
+    navToSelectGist: (coroutineScope: CoroutineScope, requestCode: String, auth: ServiceAuth, onResult: (data: Bundle) -> Unit) -> Unit
 ) {
 
     var clientMenuExpanded by remember { mutableStateOf(false) }
@@ -383,22 +390,20 @@ fun NewConverterScreen(
             Row( modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp)
                 .fillMaxWidth()
-                .wrapContentHeight()
-                .clickable {
+                .wrapContentHeight(),
+                horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(text = auth?.userName!!)
+                Text(text = stringResource(id = R.string.Create_a_new),
+                        modifier = Modifier.padding(end = 24.dp).clickable {
 
-                },
-                horizontalArrangement = Arrangement.SpaceBetween) {
-                if (isAuthorized) {
-                    Text(text = auth?.userName!!)
-                    Text(text = stringResource(id = R.string.Connected), color = AppTheme.colors.colorPositive,
-                        modifier = Modifier.padding(end = 24.dp))
+                            navToSelectGist(viewModel.viewModelScope, REQUEST_CODE_SELECT_GIST, auth) { data ->
+                                val requestCode = data.getString("REQUEST_CODE")
+                                Log.d(TAG, "onResult(), requestCode=${requestCode}")
+                                if (REQUEST_CODE_SELECT_GIST == requestCode) {
 
-                } else {
-                    Text(text = stringResource(id = R.string.Disconnected),
-                        modifier = Modifier
-                            .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 8.dp)
-                            .wrapContentWidth())
-                }
+                                }
+                            }
+                        }, style = MaterialTheme.typography.labelMedium)
             }
         }
 

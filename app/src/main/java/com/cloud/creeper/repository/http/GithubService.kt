@@ -21,6 +21,12 @@ interface GithubService {
     @Headers(*arrayOf("Domain-Name: $SERVICE_GITHUB",
         "Accept: application/vnd.github+json",
         "X-GitHub-Api-Version: 2022-11-28"))
+    @GET("gists")
+    suspend fun getGistList(@Header("Authorization") bearerToken: String): List<Gist>
+
+    @Headers(*arrayOf("Domain-Name: $SERVICE_GITHUB",
+        "Accept: application/vnd.github+json",
+        "X-GitHub-Api-Version: 2022-11-28"))
     @GET("gists/{gist_id}")
     suspend fun getGist(@Path("gist_id") gistId: String, @Header("Authorization") bearerToken: String): Gist
 
