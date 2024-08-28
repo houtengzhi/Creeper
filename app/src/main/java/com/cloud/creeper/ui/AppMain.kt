@@ -16,6 +16,7 @@ import com.cloud.creeper.ui.home.HomePage
 import com.cloud.creeper.ui.source.SubscriptionManagePage
 import com.cloud.creeper.compose.AppTheme
 import com.cloud.creeper.repository.entity.ServiceAuth
+import com.cloud.creeper.ui.converter.KEY_GIST_FILE
 import com.cloud.creeper.ui.converter.REQUEST_CODE_SELECT_GIST
 import com.cloud.creeper.ui.converter.REQUEST_CODE_SELECT_SUBSCRIPTION
 import com.cloud.creeper.ui.gists.GistsPage
@@ -134,7 +135,15 @@ fun AppMain() {
                 },
                     onUpClick = {
                     navController.navigateUp()
-                })
+                },
+                    onResultSet = { gistFile ->
+                        val data = Bundle()
+                        data.putString("REQUEST_CODE", requestCode)
+                        data.putParcelable(KEY_GIST_FILE, gistFile)
+                        Log.d(TAG, "setResult(), data=${data}")
+                        navController.setResult(data)
+                        navController.popBackStack()
+                    })
             }
 
 

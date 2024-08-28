@@ -1,5 +1,6 @@
 package com.cloud.creeper.ui.gists
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cloud.creeper.R
 import com.cloud.creeper.base.DataState
 import com.cloud.creeper.repository.Gist
+import com.cloud.creeper.repository.GistFile
 
 /**
  *
@@ -47,7 +49,7 @@ import com.cloud.creeper.repository.Gist
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GistsPage(viewModel: GistsViewModel = hiltViewModel(), onUpClick: () -> Unit) {
+fun GistsPage(viewModel: GistsViewModel = hiltViewModel(), onUpClick: () -> Unit, onResultSet: (gistFile: GistFile) -> Unit) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val gistListState = viewModel.fetchGistsState.collectAsStateWithLifecycle()
@@ -58,16 +60,16 @@ fun GistsPage(viewModel: GistsViewModel = hiltViewModel(), onUpClick: () -> Unit
             TopAppBar(scrollBehavior = scrollBehavior, onUpClick = onUpClick)
         }
     ) { contentPadding ->
-        GistsScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), gistListState.value, {
-
-        })
+        GistsScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), gistListState.value) {
+            onResultSet(it)
+        }
 
     }
 
 }
 
 @Composable
-fun GistsScreen(modifier: Modifier = Modifier, dataState: DataState<List<Gist>>, onItemClick: (gist: Gist) -> Unit) {
+fun GistsScreen(modifier: Modifier = Modifier, dataState: DataState<List<Gist>>, onItemClick: (gist: GistFile) -> Unit) {
     when {
         dataState.isLoading -> {
 
@@ -91,17 +93,19 @@ fun GistsScreen(modifier: Modifier = Modifier, dataState: DataState<List<Gist>>,
 }
 
 @Composable
-private fun GistItem(gist: Gist, onItemClick: (gist: Gist) -> Unit) {
+private fun GistItem(gist: Gist, onItemClick: (gistFile: GistFile) -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    var showSubItems by remember { mutableStateOf(false) }
+
     Row(modifier = Modifier
         .fillMaxWidth()
         .wrapContentHeight()
         .clickable {
-            onItemClick(gist)
+            showSubItems = !showSubItems
         }, verticalAlignment = Alignment.CenterVertically) {
 
 
@@ -119,10 +123,38 @@ private fun GistItem(gist: Gist, onItemClick: (gist: Gist) -> Unit) {
         }
     }
 
+    AnimatedVisibility(visible = showSubItems) {
+        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+           gist.files.values.forEach {
+               GistFileItem(it, onItemClick)
+           }
+        }
+    }
+
 
     if (showEditDialog) {
 
     }
+
+}
+
+@Composable
+private fun GistFileItem(gistFile: GistFile, onItemClick: (gistFile: GistFile) -> Unit) {
+
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .wrapContentHeight()
+        .clickable {
+            onItemClick(gistFile)
+        }, verticalAlignment = Alignment.CenterVertically) {
+
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = gistFile.fileName, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 6.dp), maxLines = 1)
+        }
+
+    }
+
 
 }
 

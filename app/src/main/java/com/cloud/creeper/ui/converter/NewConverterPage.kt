@@ -55,6 +55,7 @@ import com.cloud.creeper.R
 import com.cloud.creeper.compose.AppTheme
 import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.repository.Gist
+import com.cloud.creeper.repository.GistFile
 import com.cloud.creeper.repository.entity.Converter
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
@@ -73,6 +74,9 @@ private const val TAG = "NewConverterPage"
 
 const val REQUEST_CODE_SELECT_SUBSCRIPTION = "select_subscription"
 const val REQUEST_CODE_SELECT_GIST = "select_gist"
+
+const val KEY_SUBSCRIPTION_SOURCE = "subscription_source"
+const val KEY_GIST_FILE = "gist_file"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -395,11 +399,11 @@ fun NewConverterScreen(
                 Text(text = auth?.userName!!)
                 Text(text = stringResource(id = R.string.Create_a_new),
                         modifier = Modifier.padding(end = 24.dp).clickable {
-
                             navToSelectGist(viewModel.viewModelScope, REQUEST_CODE_SELECT_GIST, auth) { data ->
                                 val requestCode = data.getString("REQUEST_CODE")
                                 Log.d(TAG, "onResult(), requestCode=${requestCode}")
                                 if (REQUEST_CODE_SELECT_GIST == requestCode) {
+                                    val gistFile = data.parcelable<GistFile>(KEY_GIST_FILE)
 
                                 }
                             }
