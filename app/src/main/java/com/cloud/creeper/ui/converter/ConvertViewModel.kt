@@ -11,6 +11,7 @@ import com.cloud.creeper.base.DataState
 import com.cloud.creeper.base.VMError
 import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.repository.DataRepos
+import com.cloud.creeper.repository.GistFile
 import com.cloud.creeper.repository.db.DbRepos
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.SubscriptionSource
@@ -63,6 +64,13 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
 
     fun updateClientType(input: ClientType) {
         outputType = input
+    }
+
+    var gistFile: GistFile? by mutableStateOf(null)
+        private set
+
+    fun updateGistFile(gistFile: GistFile?) {
+        this.gistFile = gistFile
     }
 
     val supportedCloudRepositories = mutableStateListOf<String>()

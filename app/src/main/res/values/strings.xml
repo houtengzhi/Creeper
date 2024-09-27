@@ -45,4 +45,5 @@
     <string name="Gists" translatable="false">"Gists"</string>
     <string name="Token">"Token"</string>
     <string name="Create_a_new">"Create a new"</string>
+    <string name="Overwrite_the_existing">"Overwrite the existing"</string>
 </resources>

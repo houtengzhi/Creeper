@@ -390,6 +390,7 @@ fun NewConverterScreen(
                     }
                 }, enabled = isAuthorized)
         }
+
         AnimatedVisibility(visible = gistsOn) {
             Row( modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp)
@@ -397,17 +398,59 @@ fun NewConverterScreen(
                 .wrapContentHeight(),
                 horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(text = auth?.userName!!)
-                Text(text = stringResource(id = R.string.Create_a_new),
-                        modifier = Modifier.padding(end = 24.dp).clickable {
-                            navToSelectGist(viewModel.viewModelScope, REQUEST_CODE_SELECT_GIST, auth) { data ->
-                                val requestCode = data.getString("REQUEST_CODE")
-                                Log.d(TAG, "onResult(), requestCode=${requestCode}")
-                                if (REQUEST_CODE_SELECT_GIST == requestCode) {
-                                    val gistFile = data.parcelable<GistFile>(KEY_GIST_FILE)
 
+                var gistMenuExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(modifier = Modifier
+                    .padding(end = 12.dp), expanded = gistMenuExpanded, onExpandedChange = {
+                    gistMenuExpanded = it
+                }) {
+//                    TextField(
+//                        value = if (viewModel.gistFile == null) stringResource(id = R.string.Create_a_new) else viewModel.gistFile!!.fileName, onValueChange = {
+//
+//                        },
+//                        readOnly = true,
+//                        trailingIcon = {
+//                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = gistMenuExpanded)
+//                        },
+//                        placeholder = { Text(stringResource(id = R.string.Create_a_new)) },
+//                        modifier = Modifier
+//                            .menuAnchor()
+//                            .fillMaxWidth()
+//                    )
+                    Text(text = if (viewModel.gistFile == null) stringResource(id = R.string.Create_a_new) else viewModel.gistFile!!.fileName,
+                        modifier = Modifier
+                            .padding(end = 24.dp)
+                            .menuAnchor()
+                            , style = MaterialTheme.typography.labelMedium)
+
+                    ExposedDropdownMenu(
+                        expanded = gistMenuExpanded,
+                        onDismissRequest = { gistMenuExpanded = false }) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.Create_a_new)) },
+                            onClick = {
+                                gistMenuExpanded = false
+                                viewModel.updateGistFile(null)
+                            })
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.Overwrite_the_existing)) },
+                            onClick = {
+                                gistMenuExpanded = false
+                                navToSelectGist(
+                                    viewModel.viewModelScope,
+                                    REQUEST_CODE_SELECT_GIST,
+                                    auth
+                                ) { data ->
+                                    val requestCode = data.getString("REQUEST_CODE")
+                                    Log.d(TAG, "onResult(), requestCode=${requestCode}")
+                                    if (REQUEST_CODE_SELECT_GIST == requestCode) {
+                                        val gistFile = data.parcelable<GistFile>(KEY_GIST_FILE)
+                                        viewModel.updateGistFile(gistFile)
+                                    }
                                 }
-                            }
-                        }, style = MaterialTheme.typography.labelMedium)
+                            })
+                    }
+                }
             }
         }
 
