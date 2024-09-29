@@ -4,6 +4,7 @@ import android.util.Log
 import com.cloud.creeper.protocol.core.ApiResponse
 import com.cloud.creeper.repository.Gist
 import com.cloud.creeper.repository.GistInput
+import com.cloud.creeper.repository.GithubUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -128,7 +129,7 @@ class HttpRepos(private val httpClient: OkHttpClient, private val githubService:
         githubService.deleteGist(gistId, "Bearer $accessToken")
     }
 
-    suspend fun suspendVerifyUser(token: String) {
-        githubService.getAuthenticatedUser("Bearer $token")
+    suspend fun suspendVerifyAuthenticatedUser(token: String): GithubUser {
+        return githubService.getAuthenticatedUser("Bearer $token")
     }
 }

@@ -21,8 +21,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -55,7 +53,6 @@ import com.cloud.creeper.compose.AppTheme
 import com.cloud.creeper.repository.entity.ServiceAuth
 import com.cloud.creeper.util.AuthType
 import com.cloud.creeper.util.SERVICE_GITHUB
-import com.cloud.creeper.util.SUPPORTED_SOURCE_TYPE_LIST
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.OAuthCredential
@@ -78,6 +75,7 @@ fun AuthorizePage(viewModel: AuthViewModel = hiltViewModel(), onUpClick: () -> U
     val getAuthState = viewModel.getTokenState.collectAsStateWithLifecycle()
     val saveAuthState = viewModel.saveTokenState.collectAsStateWithLifecycle()
     val deleteAuthState = viewModel.deleteTokenState.collectAsStateWithLifecycle()
+    val verifyTokenState = viewModel.verifyTokenState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -88,8 +86,15 @@ fun AuthorizePage(viewModel: AuthViewModel = hiltViewModel(), onUpClick: () -> U
         AuthorizeScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), getAuthState.value.data, {
             viewModel.saveAuthInfo(it)
         }, {
-            viewModel.deleteAccessToken(it)
-            Firebase.auth.signOut()
+            if (it.authType == AuthType.OAUTH2) {
+                viewModel.deleteAuthInfo(it)
+                Firebase.auth.signOut()
+
+            } else if (it.authType == AuthType.MANUALLY) {
+                viewModel.deleteAuthInfo(it)
+            }
+        }, {
+            viewModel.verifyAuthenticatedUser(it)
         })
 
     }
@@ -129,10 +134,30 @@ fun AuthorizePage(viewModel: AuthViewModel = hiltViewModel(), onUpClick: () -> U
 
         }
     }
+
+    Log.v(TAG, "verify token state: ${verifyTokenState.value}")
+    when {
+        verifyTokenState.value.isLoading -> {
+            LoadingIndicator()
+        }
+        verifyTokenState.value.throwable != null -> {
+
+        }
+        verifyTokenState.value.error != null -> {
+
+        }
+        verifyTokenState.value.data != null -> {
+            Log.d(TAG, "saveAuthInfo()")
+            viewModel.saveAuthInfo(verifyTokenState.value.data!!)
+        }
+        else -> {
+
+        }
+    }
 }
 
 @Composable
-fun AuthorizeScreen(modifier: Modifier = Modifier, auth: ServiceAuth?, saveAuth: (auth: ServiceAuth) -> Unit, logout: (auth: ServiceAuth) -> Unit) {
+fun AuthorizeScreen(modifier: Modifier = Modifier, auth: ServiceAuth?, saveAuth: (auth: ServiceAuth) -> Unit, logout: (auth: ServiceAuth) -> Unit, verifyToken: (token: String) -> Unit) {
 
     val isAuthenticated = auth != null && !auth.isExpired()
     var showLogoutDialog by remember { mutableStateOf(false) }
@@ -154,7 +179,10 @@ fun AuthorizeScreen(modifier: Modifier = Modifier, auth: ServiceAuth?, saveAuth:
 
                 }), horizontalArrangement = Arrangement.SpaceBetween) {
 
-            Row(modifier = Modifier.wrapContentWidth().wrapContentHeight().padding(start = 12.dp, top = 12.dp, bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier
+                .wrapContentWidth()
+                .wrapContentHeight()
+                .padding(start = 12.dp, top = 12.dp, bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(painter = painterResource(R.drawable.github_mark),
                     contentDescription = "stopped icon",
                     modifier = Modifier
@@ -213,7 +241,7 @@ fun AuthorizeScreen(modifier: Modifier = Modifier, auth: ServiceAuth?, saveAuth:
 
     if (showAddTokenDialog) {
         ConfigureTokenDialog(onDismissRequest = { showAddTokenDialog = false }) {
-
+            verifyToken(it)
         }
     }
 
