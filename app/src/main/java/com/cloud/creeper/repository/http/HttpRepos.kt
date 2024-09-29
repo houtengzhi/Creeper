@@ -74,14 +74,16 @@ class HttpRepos(private val httpClient: OkHttpClient, private val githubService:
 
     suspend fun suspendCreateGist(gistInput: GistInput, accessToken: String): Gist {
         val jsonObject = JSONObject()
-        jsonObject.put("description", gistInput.description)
+        gistInput.description?.let {
+            jsonObject.put("description", it)
+        }
         jsonObject.put("public", gistInput.public)
         val fileJsonObject = JSONObject()
 
         gistInput.files.forEach {
             val obj = JSONObject()
-            obj.put("content", it.value.content)
-            fileJsonObject.put(it.key, obj)
+            obj.put("content", it.content)
+            fileJsonObject.put(it.fileName, obj)
         }
         jsonObject.put("files", fileJsonObject)
 
@@ -91,14 +93,30 @@ class HttpRepos(private val httpClient: OkHttpClient, private val githubService:
 
     suspend fun suspendUpdateGist(gistId: String, gistInput: GistInput, accessToken: String): Gist {
         val jsonObject = JSONObject()
-        jsonObject.put("description", gistInput.description)
-        jsonObject.put("public", gistInput.public)
+        gistInput.description?.let {
+            jsonObject.put("description", it)
+        }
+
         val fileJsonObject = JSONObject()
 
         gistInput.files.forEach {
             val obj = JSONObject()
-            obj.put("content", it.value.content)
-            fileJsonObject.put(it.key, obj)
+            obj.put("content", it.content)
+            obj.put("filename", it.fileName)
+            fileJsonObject.put(it.fileName, obj)
+        }
+        jsonObject.put("files", fileJsonObject)
+
+        val requestBody = jsonObject.toString().toRequestBody("application/json".toMediaTypeOrNull())
+        return githubService.updateGist(gistId, requestBody, "Bearer $accessToken")
+    }
+
+    suspend fun suspendDeleteGistFile(gistId: String, gistInput: GistInput, accessToken: String): Gist {
+        val jsonObject = JSONObject()
+        val fileJsonObject = JSONObject()
+
+        gistInput.files.forEach {
+            fileJsonObject.put(it.fileName, null)
         }
         jsonObject.put("files", fileJsonObject)
 
@@ -108,5 +126,9 @@ class HttpRepos(private val httpClient: OkHttpClient, private val githubService:
 
     suspend fun suspendDeleteGist(gistId: String, accessToken: String) {
         githubService.deleteGist(gistId, "Bearer $accessToken")
+    }
+
+    suspend fun suspendVerifyUser(token: String) {
+        githubService.getAuthenticatedUser("Bearer $token")
     }
 }

@@ -72,7 +72,8 @@ class SubscriptionController {
             val dispatcher = CurrentDispatcher()
             val job = SupervisorJob()
             CoroutineScope(Dispatchers.Default + job).launch {
-                val file1 = dataRepos.suspendConvertSubscription(converter)
+                val result = dataRepos.suspendConvertSubscription(converter)
+                val file1 = result?.converter?.outputFile
 
                 withContext(dispatcher) {
                     if (file1 != null && file1.exists()) {

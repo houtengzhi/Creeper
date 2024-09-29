@@ -13,6 +13,7 @@ import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.repository.DataRepos
 import com.cloud.creeper.repository.GistFile
 import com.cloud.creeper.repository.db.DbRepos
+import com.cloud.creeper.repository.entity.CloudRepository
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.repository.file.FileRepos
@@ -73,6 +74,8 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
         this.gistFile = gistFile
     }
 
+    val cloudRepositoryList = mutableStateListOf<CloudRepository>()
+
     val supportedCloudRepositories = mutableStateListOf<String>()
 
     private val _addState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
@@ -115,10 +118,10 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
         }
         viewModelScope.launch(Dispatchers.Default + coroutineExceptionHandler) {
 
-            val file = dataRepos.suspendConvertSubscription(converter)
-            if (file != null) {
-                dbRepos.suspendInsertConverter(converter)
-                Log.d(TAG, "addConverter() file=${file.path}")
+            val newConverter = dataRepos.suspendConvertSubscription(converter)
+            if (newConverter != null) {
+                dbRepos.suspendInsertConverter(newConverter)
+                Log.d(TAG, "addConverter() success")
                 _addState.update {
                     DataState(isLoading = false, data = true, throwable = null)
                 }

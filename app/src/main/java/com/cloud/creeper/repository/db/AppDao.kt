@@ -9,6 +9,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.cloud.creeper.repository.entity.CloudRepository
 import com.cloud.creeper.repository.entity.Converter
+import com.cloud.creeper.repository.entity.ConverterCloudRepositoryCrossRef
 import com.cloud.creeper.repository.entity.ConverterSubscriptionSourceCrossRef
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
@@ -42,6 +43,18 @@ interface AppDao {
 
     @Query("DELETE FROM converter_subscription_source_cross_ref WHERE converter_id =:converterId")
     suspend fun suspendDeleteConverterSubscriptionSourceCrossRefByConverterId(converterId: String)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun suspendInsertConverterCloudRepositoryCrossRef(crossRef: ConverterCloudRepositoryCrossRef)
+
+    @Update
+    suspend fun suspendUpdateConverterCloudRepositoryCrossRef(crossRef: ConverterCloudRepositoryCrossRef)
+
+    @Delete
+    suspend fun suspendDeleteConverterCloudRepositoryCrossRef(crossRef: ConverterCloudRepositoryCrossRef)
+
+    @Query("DELETE FROM converter_cloud_repository_cross_ref WHERE converter_id =:converterId")
+    suspend fun suspendDeleteConverterCloudRepositoryCrossRefByConverterId(converterId: String)
 
     @Transaction
     @Query("SELECT * FROM converter WHERE name = :name")

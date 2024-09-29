@@ -3,6 +3,7 @@ package com.cloud.creeper.repository.db
 import android.util.Log
 import androidx.room.Transaction
 import com.cloud.creeper.repository.entity.CloudRepository
+import com.cloud.creeper.repository.entity.ConverterCloudRepositoryCrossRef
 import com.cloud.creeper.repository.entity.ConverterSubscriptionSourceCrossRef
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
@@ -28,6 +29,9 @@ class DbRepos(private val appDatabase: AppDatabase) {
                 ConverterSubscriptionSourceCrossRef(converter.converter.id, it.id)
             )
         }
+        converter.cloudRepositoryList?.forEach {
+            dao.suspendInsertConverterCloudRepositoryCrossRef(ConverterCloudRepositoryCrossRef(converter.converter.id, it.id))
+        }
     }
 
     @Transaction
@@ -40,6 +44,9 @@ class DbRepos(private val appDatabase: AppDatabase) {
                 ConverterSubscriptionSourceCrossRef(converter.converter.id, it.id)
             )
         }
+        converter.cloudRepositoryList?.forEach {
+            dao.suspendUpdateConverterCloudRepositoryCrossRef(ConverterCloudRepositoryCrossRef(converter.converter.id, it.id))
+        }
     }
 
     @Transaction
@@ -47,6 +54,7 @@ class DbRepos(private val appDatabase: AppDatabase) {
         val dao = appDatabase.appDao()
         dao.suspendDeleteConverter(converter.converter)
         dao.suspendDeleteConverterSubscriptionSourceCrossRefByConverterId(converter.converter.id)
+        dao.suspendDeleteConverterCloudRepositoryCrossRefByConverterId(converter.converter.id)
     }
 
     suspend fun suspendQueryConverter(name: String): ConverterWithSources? {

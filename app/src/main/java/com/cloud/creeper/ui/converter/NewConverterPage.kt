@@ -3,7 +3,6 @@ package com.cloud.creeper.ui.converter
 import android.os.Bundle
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
@@ -52,16 +50,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.cloud.creeper.R
-import com.cloud.creeper.compose.AppTheme
 import com.cloud.creeper.protocol.ClientType
-import com.cloud.creeper.repository.Gist
 import com.cloud.creeper.repository.GistFile
+import com.cloud.creeper.repository.entity.CloudRepository
 import com.cloud.creeper.repository.entity.Converter
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.ui.integration.AuthViewModel
-import com.cloud.creeper.util.REPOSITORY_GITHUB
+import com.cloud.creeper.util.RepositoryType
 import com.cloud.creeper.util.SystemUtil
 import com.cloud.creeper.util.parcelable
 import kotlinx.coroutines.CoroutineScope
@@ -105,6 +102,14 @@ fun NewConverterPage(
                 canSave = canSave,
                 onUpClick = onUpClick,
                 onSaveClick = {
+                    val cloudRepositoryList = mutableListOf<CloudRepository>()
+                    viewModel.supportedCloudRepositories.forEach {
+                        val cloudRepository = CloudRepository(SystemUtil.generateCloudRepositoryId(), it)
+                        cloudRepository.accessToken = getAuthState.value.data?.accessToken
+                        cloudRepository.gistId = viewModel.gistFile?.gistId
+                        cloudRepository.gistFileName = viewModel.gistFile?.fileName
+                        cloudRepositoryList.add(cloudRepository)
+                    }
                     val converter = ConverterWithSources(
                         Converter(SystemUtil.generateConverterId(), viewModel.converterName)
                             .apply {
@@ -112,7 +117,7 @@ fun NewConverterPage(
                                 createdTime = System.currentTimeMillis()
                                 updatedTime = System.currentTimeMillis()
                                 outputType = viewModel.outputType
-                            }, viewModel.subscriptionSourceList, emptyList()
+                            }, viewModel.subscriptionSourceList, cloudRepositoryList
                     )
                     viewModel.addConverter(converter)
                 })
@@ -205,7 +210,7 @@ fun NewConverterScreen(
     }
 
     var gistsOn by remember {
-        mutableStateOf(viewModel.supportedCloudRepositories.contains(REPOSITORY_GITHUB))
+        mutableStateOf(viewModel.supportedCloudRepositories.contains(RepositoryType.REPOSITORY_GITHUB))
     }
     val isAuthorized = auth != null && !auth.isExpired()
 
@@ -379,14 +384,14 @@ fun NewConverterScreen(
                 }
             }
             Switch(
-                checked = viewModel.supportedCloudRepositories.contains(REPOSITORY_GITHUB),
+                checked = viewModel.supportedCloudRepositories.contains(RepositoryType.REPOSITORY_GITHUB),
                 onCheckedChange = {
                     gistsOn = it
-                    if (it) {
-                        viewModel.supportedCloudRepositories.add(REPOSITORY_GITHUB)
+                    if (gistsOn) {
+                        viewModel.supportedCloudRepositories.add(RepositoryType.REPOSITORY_GITHUB)
 
                     } else {
-                        viewModel.supportedCloudRepositories.remove(REPOSITORY_GITHUB)
+                        viewModel.supportedCloudRepositories.remove(RepositoryType.REPOSITORY_GITHUB)
                     }
                 }, enabled = isAuthorized)
         }
@@ -401,7 +406,9 @@ fun NewConverterScreen(
 
                 var gistMenuExpanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(modifier = Modifier
-                    .padding(end = 12.dp), expanded = gistMenuExpanded, onExpandedChange = {
+                    .padding(end = 12.dp)
+                    .fillMaxWidth()
+                    , expanded = gistMenuExpanded, onExpandedChange = {
                     gistMenuExpanded = it
                 }) {
 //                    TextField(
@@ -419,7 +426,8 @@ fun NewConverterScreen(
 //                    )
                     Text(text = if (viewModel.gistFile == null) stringResource(id = R.string.Create_a_new) else viewModel.gistFile!!.fileName,
                         modifier = Modifier
-                            .padding(end = 24.dp)
+                            .fillMaxWidth()
+                            .padding(start = 12.dp, end = 12.dp)
                             .menuAnchor()
                             , style = MaterialTheme.typography.labelMedium)
 

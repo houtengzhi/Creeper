@@ -16,4 +16,13 @@ data class CloudRepository(@PrimaryKey @ColumnInfo(name = "repos_id") val id: St
     @ColumnInfo(name = "service_id")
     var serviceId: String? = null
 
+    @ColumnInfo(name = "access_token")
+    var accessToken: String? = null
+
+    @ColumnInfo(name = "gist_id")
+    var gistId: String? = null
+
+    @ColumnInfo(name = "gist_file_name")
+    var gistFileName: String? = null
+
 }

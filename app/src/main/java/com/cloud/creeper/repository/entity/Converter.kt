@@ -2,12 +2,14 @@ package com.cloud.creeper.repository.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.cloud.creeper.R
 import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.server.ServerManage
 import com.cloud.creeper.util.NetUtil
+import java.io.File
 
 /**
  *
@@ -30,6 +32,9 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
 
     @ColumnInfo(name = "output_file_name")
     var outputFileName: String? = null
+
+    @Ignore
+    var outputFile: File? = null
 
     fun getClientIconResId():Int {
         return when (outputType) {

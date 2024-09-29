@@ -12,6 +12,7 @@ import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.repository.file.FileRepos
 import com.cloud.creeper.repository.http.HttpRepos
+import com.cloud.creeper.util.RepositoryType
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -93,7 +94,7 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
         return proxyConfigList
     }
 
-    suspend fun suspendConvertSubscription(converter: ConverterWithSources): File? {
+    suspend fun suspendConvertSubscription(converter: ConverterWithSources): ConverterWithSources? {
         Log.d(TAG, "suspendConvertSubscription(), converter=${converter.converter}")
         return withContext(Dispatchers.Default) {
             val proxyConfigList = suspendMergerSubscriptionSources(converter.subscriptionSourceList)
@@ -122,8 +123,25 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                         content = ""
                     }
                 }
+                converter.cloudRepositoryList?.let { dataList ->
+                    dataList.forEach {
+                        if (it.type == RepositoryType.REPOSITORY_GITHUB) {
+                            val gistFileInput = GistFileInput(converter.converter.name, content)
+                            val des = converter.converter.description
+                            val gistInput = GistInput(des, false, mutableListOf(gistFileInput))
+
+                            val gist = if (it.gistId == null) {
+                                httpRepos.suspendCreateGist(gistInput, it.accessToken!!)
+                            } else {
+                                httpRepos.suspendUpdateGist(it.gistId!!, gistInput, it.accessToken!!)
+                            }
+                            it.url = gist.url
+                        }
+                    }
+                }
                 val file = fileRepos.suspendSaveConverter(converter.converter.outputFileName!!, content)
-               file
+                converter.converter.outputFile = file
+               converter
 
             } else {
                 null

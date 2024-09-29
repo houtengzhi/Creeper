@@ -98,4 +98,8 @@ class AuthViewModel @Inject constructor(private val authRepos: AuthRepos, privat
             }
         }
     }
+
+    fun verifyAuthenticatedUser() {
+
+    }
 }

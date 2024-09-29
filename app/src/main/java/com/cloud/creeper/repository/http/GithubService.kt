@@ -1,6 +1,7 @@
 package com.cloud.creeper.repository.http
 
 import com.cloud.creeper.repository.Gist
+import com.cloud.creeper.repository.GithubUser
 import com.cloud.creeper.util.SERVICE_GITHUB
 import okhttp3.RequestBody
 import retrofit2.http.Body
@@ -47,4 +48,10 @@ interface GithubService {
         "X-GitHub-Api-Version: 2022-11-28"))
     @DELETE("gists/{gist_id}")
     suspend fun deleteGist(@Path("gist_id") gistId: String, @Header("Authorization") bearerToken: String)
+
+    @Headers(*arrayOf("Domain-Name: $SERVICE_GITHUB",
+        "Accept: application/vnd.github+json",
+        "X-GitHub-Api-Version: 2022-11-28"))
+    @GET("user")
+    suspend fun getAuthenticatedUser(@Header("Authorization") bearerToken: String): GithubUser
 }

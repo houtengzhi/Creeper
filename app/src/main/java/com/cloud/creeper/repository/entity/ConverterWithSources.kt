@@ -12,5 +12,5 @@ data class ConverterWithSources(@Embedded val converter: Converter,
                                 @Relation(parentColumn = "converter_id", entityColumn = "source_id", associateBy = Junction(ConverterSubscriptionSourceCrossRef::class))
                                 val subscriptionSourceList: List<SubscriptionSource>,
                                 @Relation(parentColumn = "converter_id", entityColumn = "repos_id", associateBy = Junction(ConverterCloudRepositoryCrossRef::class))
-                                val cloudRepositoryList: List<CloudRepository>
+                                val cloudRepositoryList: List<CloudRepository>?
 )
