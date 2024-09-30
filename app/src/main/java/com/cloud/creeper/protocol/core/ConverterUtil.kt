@@ -40,7 +40,7 @@ object ConverterUtil {
         Base64.decode(content).decodeToString().split("\n")
             .map { split ->
                 if (split.startsWith("vmess://")) {
-                    val json = Base64.decode(split.removePrefix("vmess://")).decodeToString()
+                    val json = Base64.decode(split.removePrefix("vmess://").trim()).decodeToString()
                     val vmess = Json.decodeFromString<VMess>(json)
                     protoList.add(vmess)
 
@@ -60,7 +60,7 @@ object ConverterUtil {
 
                 } else if (split.startsWith("ss://")) {
                     REG_SCHEMA_HASH.matchEntire(split)?.run {
-                        val name = URLDecoder.decode(groupValues[3], "UTF-8")
+                        val name = URLDecoder.decode(groupValues[3], "UTF-8").trim()
                         val decoded =
                             groupValues[2].takeUnless { it.contains("@") }?.b64Decode()
                             // 兼容异常

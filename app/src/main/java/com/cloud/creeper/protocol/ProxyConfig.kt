@@ -89,7 +89,7 @@ data class V2RayConfig(val protoList: List<Proto>) : ProxyConfig() {
                         network = if (proto.net == "ws") "ws" else null
                         wsPath = if (proto.net == "ws") proto.path else null
                         wsHeaders = mapOf("Host" to proto.host)
-                        skipCertVerify = true
+                        skipCertVerify = false
                     }
                 }
 

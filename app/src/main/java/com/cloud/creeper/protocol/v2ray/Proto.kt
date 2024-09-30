@@ -23,8 +23,10 @@ data class VMess(
     val id: String,
     //alertId
     val aid: String,
+    val scy: String?,
     val net: String,
     val type: String,
+    val fp: String?,
     @SerialName("inside_port") val insidePort: String? = null,
     @SerialName("") val unknown: String? = null
 ): Proto() {
