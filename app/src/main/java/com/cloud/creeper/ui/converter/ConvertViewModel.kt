@@ -74,15 +74,15 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
         this.gistFile = gistFile
     }
 
-    val cloudRepositoryList = mutableStateListOf<CloudRepository>()
-
     val supportedCloudRepositories = mutableStateListOf<String>()
+
+
 
     private val _addState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
     val addState = _addState.stateIn(viewModelScope, SharingStarted.Lazily, _addState.value)
 
-    private val _editState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
-    val editState = _editState.stateIn(viewModelScope, SharingStarted.Lazily, _editState.value)
+    private val _updateState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
+    val updateState = _updateState.stateIn(viewModelScope, SharingStarted.Lazily, _updateState.value)
 
     private val _deleteState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
     val deleteState = _deleteState.stateIn(viewModelScope, SharingStarted.Lazily, _deleteState.value)
@@ -135,13 +135,13 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
         }
     }
 
-    fun editConverter(converter: ConverterWithSources) {
-        _editState.update {
+    fun updateConverter(converter: ConverterWithSources) {
+        _updateState.update {
             DataState(true, null, null)
         }
         val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
             Log.e(TAG, "editConverter exception for ${throwable.message}")
-            _editState.update {
+            _updateState.update {
                 DataState(throwable)
             }
         }
@@ -149,12 +149,12 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
             val file = dataRepos.suspendConvertSubscription(converter)
             if (file != null) {
                 dbRepos.suspendUpdateConverter(converter)
-                _editState.update {
+                _updateState.update {
                     DataState(isLoading = false, data = true, throwable = null)
                 }
 
             } else {
-                _editState.update {
+                _updateState.update {
                     DataState(VMError.EmptyProxyList)
                 }
             }
@@ -177,11 +177,6 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
                 DataState(isLoading = false, data = true, throwable = null)
             }
         }
-    }
-
-    fun updateConverter(converter: ConverterWithSources) {
-
-
     }
 
     fun subscribeConverterList() = dbRepos.subscribeConverterList()

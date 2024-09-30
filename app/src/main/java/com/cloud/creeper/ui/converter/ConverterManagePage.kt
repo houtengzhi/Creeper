@@ -67,7 +67,7 @@ private const val TAG = "ConverterManagePage"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick: () -> Unit = {}, onNewClick: () -> Unit) {
+fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick: () -> Unit = {}, onNewClick: () -> Unit, onEditClick: (converter : ConverterWithSources) -> Unit) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val uiState = viewModel.subscribeConverterListState.collectAsStateWithLifecycle()
 
@@ -78,9 +78,7 @@ fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick
         }
     ) { contentPadding ->
         ConverterPageScreen(uiState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
-            onEditClick = {
-
-            },
+            onEditClick = onEditClick,
             onDeleteClick = {
                 viewModel.deleteConverter(it)
             })
@@ -92,7 +90,6 @@ fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick
 @Composable
 private fun ConverterManageTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
                                      modifier: Modifier = Modifier, onUpClick: () -> Unit, onNewClick: () -> Unit) {
-    var moreMenuExpanded by remember { mutableStateOf(false) }
     TopAppBar(title = {
         Text(text = stringResource(id = R.string.Converter_Manage))
     },
@@ -104,13 +101,10 @@ private fun ConverterManageTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
         },
         actions = {
             IconButton(onClick = {
-                      moreMenuExpanded = true
+                      onNewClick()
                   }) {
                       Icon(imageVector = Icons.Filled.Add, contentDescription = "Add converter")
                   }
-            MoreMenu(expanded = moreMenuExpanded, onDismissRequest = {
-                moreMenuExpanded = false
-            }, onNewClick = onNewClick)
         },
         scrollBehavior = scrollBehavior)
 }

@@ -1,5 +1,7 @@
 package com.cloud.creeper.repository.entity
 
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -16,7 +18,7 @@ import java.io.File
  * Created by cloud on 2024/2/27.
  */
 @Entity(tableName = "converter", indices = [Index(value = ["name"], unique = true)])
-data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: String, val name: String) {
+data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: String, val name: String): Parcelable {
 
     @ColumnInfo(name = "description")
     var description: String? = null
@@ -35,6 +37,18 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
 
     @Ignore
     var outputFile: File? = null
+
+    constructor(parcel: Parcel) : this(
+        parcel.readString()!!,
+        parcel.readString()!!
+    ) {
+        description = parcel.readString()
+        createdTime = parcel.readLong()
+        updatedTime = parcel.readLong()
+        outputType = ClientType.valueOf(parcel.readString()!!)
+        outputFileName = parcel.readString()
+    }
+
 
     fun getClientIconResId():Int {
         return when (outputType) {
@@ -57,4 +71,28 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
     private fun getUrlSegments() ="creeper/converter/${id}/${outputFileName}"
 
     fun getLocalAddress() = "http://${NetUtil.getLocalIPAddress()?.hostAddress}:${ServerManage.DEFAULT_PORT}/${getUrlSegments()}"
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(id)
+        parcel.writeString(name)
+        parcel.writeString(description)
+        parcel.writeLong(createdTime)
+        parcel.writeLong(updatedTime)
+        parcel.writeString(outputType.name)
+        parcel.writeString(outputFileName)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<Converter> {
+        override fun createFromParcel(parcel: Parcel): Converter {
+            return Converter(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Converter?> {
+            return arrayOfNulls(size)
+        }
+    }
 }

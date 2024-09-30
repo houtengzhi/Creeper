@@ -30,7 +30,7 @@ fun NavController.navigateForResult(route: String, args: Bundle,
                                     navOptions: NavOptions? = null,
                                     navigatorExtras: Navigator.Extras? = null): StateFlow<Bundle>? {
     val stateHandle = this.currentBackStackEntry?.savedStateHandle
-    navigate(route, args, navOptions, navigatorExtras)
+    navigateWithArgs(route, args, navOptions, navigatorExtras)
     Log.d("NavController", "navigateForResult(), currentBackStackEntry=${this.currentBackStackEntry}, stateHandle=${stateHandle}")
     return stateHandle?.getStateFlow<Bundle>(NavResultKey, Bundle.EMPTY)
 }
@@ -50,7 +50,7 @@ fun NavController.clearForResult() {
     }
 }
 
-fun NavController.navigate(route: String, args: Bundle, navOptions: NavOptions? = null, navigatorExtras: Navigator.Extras? = null) {
+fun NavController.navigateWithArgs(route: String, args: Bundle, navOptions: NavOptions? = null, navigatorExtras: Navigator.Extras? = null) {
     val nodeId = graph.findNode(route)?.id
     Log.d(TAG, "navigate() route=$route, nodeId=$nodeId, graph=${graph.nodes.valueIterator().asSequence().joinToString()}")
     nodeId?.let {

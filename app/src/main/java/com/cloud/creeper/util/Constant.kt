@@ -23,3 +23,6 @@ object RepositoryType {
     const val REPOSITORY_LOCAL = "local"
     const val REPOSITORY_GITHUB = "github"
 }
+
+const val KEY_SERVICE_AUTH = "service_auth"
+const val KEY_CONVERTER = "converter"

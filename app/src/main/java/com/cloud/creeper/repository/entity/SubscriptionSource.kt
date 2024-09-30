@@ -128,6 +128,20 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
             }
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as SubscriptionSource
+
+        return id == other.id
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+
 }
 
 enum class SourceStatus() {

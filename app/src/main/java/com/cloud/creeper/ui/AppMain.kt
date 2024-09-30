@@ -15,7 +15,9 @@ import com.cloud.creeper.ui.converter.NewConverterPage
 import com.cloud.creeper.ui.home.HomePage
 import com.cloud.creeper.ui.source.SubscriptionManagePage
 import com.cloud.creeper.compose.AppTheme
+import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
+import com.cloud.creeper.ui.converter.EditConverterPage
 import com.cloud.creeper.ui.converter.KEY_GIST_FILE
 import com.cloud.creeper.ui.converter.REQUEST_CODE_SELECT_GIST
 import com.cloud.creeper.ui.converter.REQUEST_CODE_SELECT_SUBSCRIPTION
@@ -23,8 +25,10 @@ import com.cloud.creeper.ui.gists.GistsPage
 import com.cloud.creeper.ui.gists.GistsScreen
 import com.cloud.creeper.ui.gists.GistsViewModel
 import com.cloud.creeper.ui.integration.AuthorizePage
+import com.cloud.creeper.util.KEY_CONVERTER
 import com.cloud.creeper.util.clearForResult
 import com.cloud.creeper.util.navigateForResult
+import com.cloud.creeper.util.navigateWithArgs
 import com.cloud.creeper.util.setResult
 import kotlinx.coroutines.launch
 
@@ -57,6 +61,10 @@ fun AppMain() {
                     navController.navigateUp()
                 }, onNewClick = {
                     navController.navigate(Screen.NewConverter.route)
+                }, onEditClick = {
+                    val args = Bundle()
+                    args.putParcelable(KEY_CONVERTER, it)
+                    navController.navigateWithArgs(Screen.EditConverterScreen.route, args, null, null)
                 })
             }
             composable(Screen.NewConverter.route) { navBackStackEntry ->
@@ -98,6 +106,49 @@ fun AppMain() {
                             }
                         }
                     })
+            }
+            composable(Screen.EditConverterScreen.route) {
+                val converter = it.arguments?.getParcelable<ConverterWithSources>(KEY_CONVERTER)
+                EditConverterPage(
+                    converterWithSources = converter!!,
+                    onUpClick = {
+                        navController.navigateUp()
+                    },
+                    onCloudIntegrationClick = {
+                        navController.navigate(Screen.Authorize.route)
+                    },
+                    navForResult = { coroutineScope, requestCode, onResult ->
+                        val resultFlow = navController.navigateForResult(Screen.SubscriptionManage.createRouteForResult(requestCode))
+                        Log.d(TAG, "navigateForResult(), initialValue=${resultFlow?.value}")
+                        coroutineScope.launch {
+                            resultFlow?.collect { data ->
+                                Log.d(TAG, "collect(), data=${data}")
+                                if (!data.isEmpty) {
+                                    onResult(data)
+                                    Log.d(TAG, "clearForResult()")
+                                    navController.clearForResult()
+                                }
+                            }
+                        }
+
+                    },
+                    navToSelectGist = { coroutineScope, requestCode, auth, onResult ->
+                        Log.d(TAG, "navToSelectGist(), requestCode=${requestCode}, auth=${auth}")
+                        val args = Bundle()
+                        args.putParcelable("serviceAuth", auth)
+                        val resultFlow = navController.navigateForResult(Screen.GistsScreen.createRoute(), args)
+                        coroutineScope.launch {
+                            resultFlow?.collect { data ->
+                                Log.d(TAG, "collect(), data=${data}")
+                                if (!data.isEmpty) {
+                                    onResult(data)
+                                    Log.d(TAG, "clearForResult()")
+                                    navController.clearForResult()
+                                }
+                            }
+                        }
+                    }
+                )
             }
             composable(route = Screen.SubscriptionManage.route, arguments = Screen.SubscriptionManage.navArguments ) {
                 val requestCode = it.arguments?.getString("requestCode")
@@ -163,6 +214,8 @@ sealed class Screen(val route: String, val navArguments: List<NamedNavArgument> 
     data object ConverterManage: Screen("ConverterManage")
 
     data object NewConverter: Screen("NewConverter")
+
+    data object EditConverterScreen: Screen("EditConverterScreen")
 
     data object SubscriptionManage: Screen(route = "SubscriptionManage?requestCode={requestCode}",
         navArguments = listOf(navArgument("requestCode") {
