@@ -35,6 +35,11 @@ class FileRepos(private val cacheDirectory: String, private val fileDirectory: S
         return readFile(path, fileName)
     }
 
+    fun deleteConverter(fileName: String): Boolean {
+        val path = "${fileDirectory}/converter"
+        return deleteFile(path, fileName)
+    }
+
     fun readConverterFile(fileName: String): File {
         val path = "${fileDirectory}/converter"
         return File(path, fileName)
@@ -52,6 +57,12 @@ class FileRepos(private val cacheDirectory: String, private val fileDirectory: S
         }
     }
 
+    suspend fun suspendDeleteConverter(fileName: String) {
+        return withContext(Dispatchers.IO) {
+            deleteConverter(fileName)
+        }
+    }
+
     private fun saveAsFile(parentPath: String, fileName: String, content: String): File {
         Log.d(TAG, "saveAsFile(), parentPath=${parentPath}, name=${fileName}")
         val parentDir = File(parentPath)
@@ -66,5 +77,14 @@ class FileRepos(private val cacheDirectory: String, private val fileDirectory: S
     private fun readFile(parentPath: String, fileName: String): String {
         Log.d(TAG, "readFile(), parentPath=${parentPath}, name=${fileName}")
         return File(parentPath, fileName).readText()
+    }
+
+    private fun deleteFile(parentPath: String, fileName: String): Boolean {
+        Log.d(TAG, "deleteFile(), parentPath=${parentPath}, name=${fileName}")
+        val file = File(parentPath, fileName)
+        if (file.exists()) {
+            return file.delete()
+        }
+        return true
     }
 }

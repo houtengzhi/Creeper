@@ -172,7 +172,7 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
             }
         }
         viewModelScope.launch(Dispatchers.Main + coroutineExceptionHandler) {
-            dbRepos.suspendDeleteConverter(converter)
+            dataRepos.suspendDeleteConverter(converter)
             _deleteState.update {
                 DataState(isLoading = false, data = true, throwable = null)
             }

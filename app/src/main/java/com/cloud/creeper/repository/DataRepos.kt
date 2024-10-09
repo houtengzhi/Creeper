@@ -148,4 +148,18 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
             }
         }
     }
+
+    suspend fun suspendDeleteConverter(converter: ConverterWithSources) {
+        return withContext(Dispatchers.Default) {
+            fileRepos.suspendDeleteConverter(converter.converter.outputFileName!!)
+            converter.cloudRepositoryList?.forEach {
+                if (it.type == RepositoryType.REPOSITORY_GITHUB) {
+                    httpRepos.suspendDeleteGistFile(it.gistId!!, it.gistFileName!!, it.accessToken!!)
+                } else {
+
+                }
+            }
+            dbRepos.suspendDeleteConverter(converter)
+        }
+    }
 }

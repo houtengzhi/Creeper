@@ -126,6 +126,7 @@ private fun GistItem(gist: Gist, onItemClick: (gistFile: GistFile) -> Unit) {
     AnimatedVisibility(visible = showSubItems) {
         Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
            gist.files.values.forEach {
+               it.gistId = gist.id
                GistFileItem(it, onItemClick)
            }
         }

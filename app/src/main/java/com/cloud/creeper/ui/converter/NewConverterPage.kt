@@ -74,6 +74,7 @@ const val REQUEST_CODE_SELECT_GIST = "select_gist"
 
 const val KEY_SUBSCRIPTION_SOURCE = "subscription_source"
 const val KEY_GIST_FILE = "gist_file"
+const val KEY_REQUEST_CODE = "request_code"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -272,7 +273,7 @@ fun NewConverterScreen(
 
             IconButton(modifier = Modifier.padding(end = 20.dp), onClick = {
                 navForResult(viewModel.viewModelScope, "SELECT_SUBSCRIPTION") { data ->
-                    val requestCode = data.getString("REQUEST_CODE")
+                    val requestCode = data.getString(KEY_REQUEST_CODE)
                     Log.d(TAG, "onResult(), requestCode=${requestCode}")
                     if ("SELECT_SUBSCRIPTION" == requestCode) {
                         val subscriptionSource =
@@ -449,10 +450,11 @@ fun NewConverterScreen(
                                     REQUEST_CODE_SELECT_GIST,
                                     auth
                                 ) { data ->
-                                    val requestCode = data.getString("REQUEST_CODE")
+                                    val requestCode = data.getString(KEY_REQUEST_CODE)
                                     Log.d(TAG, "onResult(), requestCode=${requestCode}")
                                     if (REQUEST_CODE_SELECT_GIST == requestCode) {
                                         val gistFile = data.parcelable<GistFile>(KEY_GIST_FILE)
+                                        Log.d(TAG, "gistFile=${gistFile}")
                                         viewModel.updateGistFile(gistFile)
                                     }
                                 }
