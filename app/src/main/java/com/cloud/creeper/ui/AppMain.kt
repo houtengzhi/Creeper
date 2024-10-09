@@ -19,6 +19,7 @@ import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
 import com.cloud.creeper.ui.converter.EditConverterPage
 import com.cloud.creeper.ui.converter.KEY_GIST_FILE
+import com.cloud.creeper.ui.converter.KEY_REQUEST_CODE
 import com.cloud.creeper.ui.converter.REQUEST_CODE_SELECT_GIST
 import com.cloud.creeper.ui.converter.REQUEST_CODE_SELECT_SUBSCRIPTION
 import com.cloud.creeper.ui.gists.GistsPage
@@ -94,6 +95,7 @@ fun AppMain() {
                         Log.d(TAG, "navToSelectGist(), requestCode=${requestCode}, auth=${auth}")
                         val args = Bundle()
                         args.putParcelable("serviceAuth", auth)
+                        args.putString(KEY_REQUEST_CODE, requestCode)
                         val resultFlow = navController.navigateForResult(Screen.GistsScreen.createRoute(), args)
                         coroutineScope.launch {
                             resultFlow?.collect { data ->
@@ -136,6 +138,7 @@ fun AppMain() {
                         Log.d(TAG, "navToSelectGist(), requestCode=${requestCode}, auth=${auth}")
                         val args = Bundle()
                         args.putParcelable("serviceAuth", auth)
+                        args.putString(KEY_REQUEST_CODE, requestCode)
                         val resultFlow = navController.navigateForResult(Screen.GistsScreen.createRoute(), args)
                         coroutineScope.launch {
                             resultFlow?.collect { data ->
@@ -160,7 +163,7 @@ fun AppMain() {
                     onResultSet = { subscriptionSource ->
                         if ("SELECT_SUBSCRIPTION" == requestCode) {
                             val data = Bundle()
-                            data.putString("REQUEST_CODE", requestCode)
+                            data.putString(KEY_REQUEST_CODE, requestCode)
                             data.putParcelable("SUBSCRIPTION_SOURCE", subscriptionSource)
                             Log.d(TAG, "setResult(), data=${data}")
                             navController.setResult(data)
@@ -179,7 +182,7 @@ fun AppMain() {
 
             composable(route = Screen.GistsScreen.route) {
                 val serviceAuth = it.arguments?.getParcelable<ServiceAuth>("serviceAuth")
-                val requestCode = it.arguments?.getString("requestCode")
+                val requestCode = it.arguments?.getString(KEY_REQUEST_CODE)
                 Log.d(TAG, "serviceAuth=${serviceAuth}, requestCode=${requestCode}")
                 GistsPage(viewModel = hiltViewModel<GistsViewModel, GistsViewModel.GistViewModelFactory> { factory ->
                                                                                                          factory.create(serviceAuth)
@@ -189,7 +192,7 @@ fun AppMain() {
                 },
                     onResultSet = { gistFile ->
                         val data = Bundle()
-                        data.putString("REQUEST_CODE", requestCode)
+                        data.putString(KEY_REQUEST_CODE, requestCode)
                         data.putParcelable(KEY_GIST_FILE, gistFile)
                         Log.d(TAG, "setResult(), data=${data}")
                         navController.setResult(data)
