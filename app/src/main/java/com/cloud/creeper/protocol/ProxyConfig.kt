@@ -3,6 +3,7 @@ package com.cloud.creeper.protocol
 import com.cloud.creeper.protocol.clash.ClashProxyNode
 import com.cloud.creeper.protocol.clash.DNS
 import com.cloud.creeper.protocol.clash.ProxyGroup
+import com.cloud.creeper.protocol.clash.VmessWsOpts
 import com.cloud.creeper.protocol.v2ray.Proto
 import com.cloud.creeper.protocol.v2ray.SS
 import com.cloud.creeper.protocol.v2ray.Trojan
@@ -70,6 +71,7 @@ data class ClashConfig(
 }
 
 data class V2RayConfig(val protoList: List<Proto>) : ProxyConfig() {
+
     override fun toClashConfig(): ClashConfig {
         val clashProxyNodeList = mutableListOf<ClashProxyNode>()
         this.protoList.forEach {proto ->
@@ -85,10 +87,11 @@ data class V2RayConfig(val protoList: List<Proto>) : ProxyConfig() {
                         tls = proto.tls != ""
                         uuid = proto.id
                         alterId = proto.aid.toInt()
-                        cipher = proto.type
+                        cipher = if (proto.type == "none") "auto" else null
                         network = if (proto.net == "ws") "ws" else null
-                        wsPath = if (proto.net == "ws") proto.path else null
-                        wsHeaders = mapOf("Host" to proto.host)
+//                        wsPath = if (proto.net == "ws") proto.path else null
+//                        wsHeaders = mapOf("Host" to proto.host)
+                        wsOpts = VmessWsOpts(if (proto.net == "ws") proto.path else "", mapOf("Host" to proto.host))
                         skipCertVerify = false
                     }
                 }

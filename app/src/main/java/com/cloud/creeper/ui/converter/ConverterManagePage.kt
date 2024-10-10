@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -79,8 +80,8 @@ fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick
     ) { contentPadding ->
         ConverterPageScreen(uiState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
             onEditClick = onEditClick,
-            onDeleteClick = {
-                viewModel.deleteConverter(it)
+            onDeleteClick = { converterWithSources, deleteRemoteRepos ->
+                viewModel.deleteConverter(converterWithSources, deleteRemoteRepos)
             })
 
     }
@@ -128,7 +129,7 @@ private fun MoreMenu(expanded: Boolean, onDismissRequest: () -> Unit, onNewClick
 
 @Composable
 fun ConverterPageScreen(dataState: DataState<List<ConverterWithSources>>, modifier: Modifier = Modifier,  onEditClick: (converter: ConverterWithSources) -> Unit,
-                        onDeleteClick: (converter: ConverterWithSources) -> Unit) {
+                        onDeleteClick: (converter: ConverterWithSources, deleteRemoteRepos: Boolean) -> Unit) {
     when {
         dataState.isLoading -> {
         }
@@ -157,7 +158,7 @@ fun ConverterPageScreen(dataState: DataState<List<ConverterWithSources>>, modifi
 @Composable
 private fun ConverterItem(converter: ConverterWithSources,
                                    onEditClick: (converter: ConverterWithSources) -> Unit,
-                                   onDeleteClick: (converter: ConverterWithSources) -> Unit) {
+                                   onDeleteClick: (converter: ConverterWithSources, deleteRemoteRepos: Boolean) -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -198,8 +199,8 @@ private fun ConverterItem(converter: ConverterWithSources,
         DeleteConverterDialog(
             converter = converter,
             onDismissRequest = { showDeleteDialog = false },
-            onDeleteClick = {
-                onDeleteClick(it)
+            onDeleteClick = { converterWithSources, deleteRemoteRepos ->
+                onDeleteClick(converterWithSources, deleteRemoteRepos)
             }
         )
     }
@@ -235,12 +236,13 @@ private fun ConverterMenu(expanded: Boolean, onDismissRequest: () -> Unit, onDet
 }
 
 @Composable
-private fun DeleteConverterDialog(converter: ConverterWithSources, onDismissRequest: () -> Unit, onDeleteClick: (converter: ConverterWithSources) -> Unit) {
+private fun DeleteConverterDialog(converter: ConverterWithSources, onDismissRequest: () -> Unit, onDeleteClick: (converter: ConverterWithSources, deleteRemoteRepos: Boolean) -> Unit) {
+    var checked by remember { mutableStateOf(false) }
     AlertDialog(onDismissRequest = onDismissRequest, modifier = Modifier,
         confirmButton = {
             TextButton(onClick = {
                 onDismissRequest()
-                onDeleteClick(converter)
+                onDeleteClick(converter, checked)
 
             }) {
                 Text(text = stringResource(id = R.string.OK))
@@ -257,7 +259,19 @@ private fun DeleteConverterDialog(converter: ConverterWithSources, onDismissRequ
             Text(text = stringResource(id = R.string.Delete_converter))
         },
         text = {
-            Text(text = stringResource(id = R.string.You_wont_be_able_to_recover_it_once_confirmed))
+            Column {
+                Text(text = stringResource(id = R.string.You_wont_be_able_to_recover_it_once_confirmed))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Checkbox(
+                        checked = checked,
+                        onCheckedChange = { checked = it }
+                    )
+                    Text(text = stringResource(id = R.string.Delete_remote_repos))
+                }
+            }
+
         },
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
     )

@@ -126,10 +126,11 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                 converter.cloudRepositoryList?.let { dataList ->
                     dataList.forEach {
                         if (it.type == RepositoryType.REPOSITORY_GITHUB) {
-                            val gistFileInput = GistFileInput(converter.converter.name, content)
+                            val gistFileInput = GistFileInput(if (it.gistFileName == null) converter.converter.name else it.gistFileName!!, content)
                             val des = converter.converter.description
                             val gistInput = GistInput(des, false, mutableListOf(gistFileInput))
 
+                            Log.d(TAG, "Push to github, gistId=${it.gistId}, fileName=${it.gistFileName}")
                             val gist = if (it.gistId == null) {
                                 httpRepos.suspendCreateGist(gistInput, it.accessToken!!)
                             } else {
@@ -149,14 +150,21 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
         }
     }
 
-    suspend fun suspendDeleteConverter(converter: ConverterWithSources) {
+    suspend fun suspendDeleteConverter(converter: ConverterWithSources, deleteRemoteRepos: Boolean) {
+        Log.d(TAG, "suspendDeleteConverter(), deleteRemoteRepos=${deleteRemoteRepos}")
         return withContext(Dispatchers.Default) {
             fileRepos.suspendDeleteConverter(converter.converter.outputFileName!!)
-            converter.cloudRepositoryList?.forEach {
-                if (it.type == RepositoryType.REPOSITORY_GITHUB) {
-                    httpRepos.suspendDeleteGistFile(it.gistId!!, it.gistFileName!!, it.accessToken!!)
-                } else {
+            if (deleteRemoteRepos) {
+                converter.cloudRepositoryList?.forEach {
+                    if (it.type == RepositoryType.REPOSITORY_GITHUB) {
+                        httpRepos.suspendDeleteGistFile(
+                            it.gistId!!,
+                            it.gistFileName!!,
+                            it.accessToken!!
+                        )
+                    } else {
 
+                    }
                 }
             }
             dbRepos.suspendDeleteConverter(converter)

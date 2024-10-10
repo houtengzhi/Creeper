@@ -161,7 +161,7 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
         }
     }
 
-    fun deleteConverter(converter: ConverterWithSources) {
+    fun deleteConverter(converter: ConverterWithSources, deleteRemoteRepos: Boolean) {
         _deleteState.update {
             DataState(true, null, null)
         }
@@ -172,7 +172,7 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
             }
         }
         viewModelScope.launch(Dispatchers.Main + coroutineExceptionHandler) {
-            dataRepos.suspendDeleteConverter(converter)
+            dataRepos.suspendDeleteConverter(converter, deleteRemoteRepos)
             _deleteState.update {
                 DataState(isLoading = false, data = true, throwable = null)
             }

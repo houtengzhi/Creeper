@@ -33,6 +33,8 @@ data class ClashProxyNode(
 
     @SerialName("ws-headers") @EncodeDefault(EncodeDefault.Mode.NEVER) var wsHeaders: Map<String, String>? = null
 
+    @SerialName("ws-opts") @EncodeDefault(EncodeDefault.Mode.NEVER) var wsOpts: VmessWsOpts? = null
+
     @SerialName("skip-cert-verify") @EncodeDefault(EncodeDefault.Mode.NEVER) var skipCertVerify: Boolean? = null
 
     @EncodeDefault(EncodeDefault.Mode.NEVER) var udp: Boolean? = null
