@@ -2,12 +2,16 @@ package com.cloud.creeper.protocol.core
 
 import com.charleskorn.kaml.Yaml
 import com.cloud.creeper.protocol.ClashConfig
+import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.protocol.V2RayConfig
+import com.cloud.creeper.protocol.base.ProxyNode
 import com.cloud.creeper.protocol.clash.ClashProxyNode
 import com.cloud.creeper.protocol.v2ray.Proto
 import com.cloud.creeper.protocol.v2ray.SS
 import com.cloud.creeper.protocol.v2ray.Trojan
 import com.cloud.creeper.protocol.v2ray.VMess
+import com.cloud.creeper.repository.entity.SubscriptionDetails
+import com.cloud.creeper.repository.entity.SubscriptionSource
 import kotlinx.serialization.json.Json
 import java.net.URLDecoder
 import kotlin.io.encoding.Base64
@@ -80,6 +84,20 @@ object ConverterUtil {
                 }
             }
         return V2RayConfig(protoList)
+    }
+
+    fun parseToClashConfig(type: ClientType, content: String): ClashConfig {
+        return when (type) {
+            ClientType.Clash -> {
+                 deserializeClashConfig(content)
+            }
+            ClientType.V2Ray -> {
+                readV2RaySubscription(content).toClashConfig()
+            }
+            else -> {
+                throw Exception("Not support client type")
+            }
+        }
     }
 
     fun toClashConfig(clashConfig: ClashConfig?, v2rayProtoList: List<Proto>?): ClashConfig {

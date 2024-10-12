@@ -7,14 +7,17 @@
     <string name="Edit_Converter">"Edit Converter"</string>
     <string name="Subscription_Source_Manage">"Subscription Source Manage"</string>
     <string name="Subscription_Manage">"Subscription Manage"</string>
+    <string name="Subscription_Details">"Subscription Details"</string>
     <string name="Add_subscription">"Add subscription"</string>
     <string name="Edit_subscription">"Edit subscription"</string>
     <string name="Select_Subscription">"Select Subscription"</string>
+    <string name="Update_Subscription">"Update Subscription"</string>
     <string name="Details">"Details"</string>
     <string name="Edit">"Edit"</string>
     <string name="Delete">"Delete"</string>
     <string name="Test">"Test"</string>
     <string name="Update">"Update"</string>
+    <string name="Refresh">"Refresh"</string>
     <string name="OK">"OK"</string>
     <string name="Dismiss">"Dismiss"</string>
     <string name="Save">"Save"</string>

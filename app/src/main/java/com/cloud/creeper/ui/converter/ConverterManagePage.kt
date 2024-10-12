@@ -138,7 +138,7 @@ fun ConverterPageScreen(dataState: DataState<List<ConverterWithSources>>, modifi
 
         }
 
-        dataState.error != null -> {
+        dataState.vmError != null -> {
 
         }
 

@@ -149,7 +149,7 @@ fun NewConverterPage(
 
         }
 
-        addState.value.error != null -> {
+        addState.value.vmError != null -> {
 
         }
 

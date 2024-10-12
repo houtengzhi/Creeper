@@ -38,9 +38,6 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
     @ColumnInfo(name = "pull_status")
     var pullStatus: SourceStatus = SourceStatus.IDLE
 
-    @ColumnInfo(name = "cache_file_name")
-    var cacheFileName: String? = null
-
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readString()!!,
@@ -52,7 +49,6 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
         updatedTime = parcel.readLong()
         pulledTime = parcel.readLong()
         pullStatus = SourceStatus.valueOf(parcel.readString()!!)
-        cacheFileName = parcel.readString()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -67,9 +63,6 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
         parcel.writeLong(updatedTime)
         parcel.writeLong(pulledTime)
         parcel.writeString(pullStatus.name)
-        cacheFileName?.let {
-            parcel.writeString(it)
-        }
     }
 
     override fun describeContents(): Int {
@@ -126,6 +119,14 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
             else -> {
                 MaterialTheme.colorScheme.primary
             }
+        }
+    }
+
+    fun getCacheFileName(): String {
+        return if (type == ClientType.Clash) {
+            "${id}.yaml"
+        } else {
+            "${id}.txt"
         }
     }
 

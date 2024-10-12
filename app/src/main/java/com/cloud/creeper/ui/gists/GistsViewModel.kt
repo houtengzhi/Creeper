@@ -57,10 +57,9 @@ class GistsViewModel @AssistedInject constructor(@Assisted private val auth: Ser
             }
         }
         viewModelScope.launch(Dispatchers.Default + coroutineExceptionHandler) {
-            val auth = httpRepos.suspendGetGistList(accessToken)
-            Log.d(TAG, "getAuthInfo() auth=$auth")
+            val gistList = httpRepos.suspendGetGistList(accessToken)
             _fetchGistsState.update {
-                DataState(isLoading = false, data = auth, throwable = null)
+                DataState(isLoading = false, data = gistList, throwable = null)
             }
         }
     }

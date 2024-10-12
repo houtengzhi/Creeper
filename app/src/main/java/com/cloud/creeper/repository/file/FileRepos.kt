@@ -25,6 +25,11 @@ class FileRepos(private val cacheDirectory: String, private val fileDirectory: S
         return readFile(path, fileName)
     }
 
+    fun readSubscriptionSourceFile(fileName: String): File {
+        val path = "${cacheDirectory}/subscription-source"
+        return File(path, fileName)
+    }
+
     fun saveConverter(fileName: String, content: String): File {
         val path = "${fileDirectory}/converter"
         return saveAsFile(path, fileName, content)

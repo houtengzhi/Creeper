@@ -17,6 +17,7 @@ import com.cloud.creeper.ui.source.SubscriptionManagePage
 import com.cloud.creeper.compose.AppTheme
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
+import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.ui.converter.EditConverterPage
 import com.cloud.creeper.ui.converter.KEY_GIST_FILE
 import com.cloud.creeper.ui.converter.KEY_REQUEST_CODE
@@ -26,7 +27,10 @@ import com.cloud.creeper.ui.gists.GistsPage
 import com.cloud.creeper.ui.gists.GistsScreen
 import com.cloud.creeper.ui.gists.GistsViewModel
 import com.cloud.creeper.ui.integration.AuthorizePage
+import com.cloud.creeper.ui.source.SubscriptionDetailsPage
+import com.cloud.creeper.ui.source.SubscriptionViewModel
 import com.cloud.creeper.util.KEY_CONVERTER
+import com.cloud.creeper.util.KEY_SUBSCRIPTION_SOURCE
 import com.cloud.creeper.util.clearForResult
 import com.cloud.creeper.util.navigateForResult
 import com.cloud.creeper.util.navigateWithArgs
@@ -155,7 +159,9 @@ fun AppMain() {
             }
             composable(route = Screen.SubscriptionManage.route, arguments = Screen.SubscriptionManage.navArguments ) {
                 val requestCode = it.arguments?.getString("requestCode")
-                SubscriptionManagePage(onUpClick = {
+                SubscriptionManagePage(viewModel = hiltViewModel<SubscriptionViewModel, SubscriptionViewModel.SubscriptionViewModelFactory> { factory ->
+                    factory.create(null)
+                }, onUpClick = {
                     navController.navigateUp()
                 }, onNewClick = {
 
@@ -169,7 +175,21 @@ fun AppMain() {
                             navController.setResult(data)
                             navController.popBackStack()
                         }
+                    },
+                    onDetailsClick = { subscriptionSource ->
+                        val args = Bundle()
+                        args.putParcelable(KEY_SUBSCRIPTION_SOURCE, subscriptionSource)
+                        navController.navigateWithArgs(Screen.SubscriptionDetailsScreen.createRoute(), args)
                     })
+            }
+            composable(route = Screen.SubscriptionDetailsScreen.route) {
+                val subscriptionSource = it.arguments?.getParcelable<SubscriptionSource>(
+                    KEY_SUBSCRIPTION_SOURCE)
+                SubscriptionDetailsPage(viewModel = hiltViewModel<SubscriptionViewModel, SubscriptionViewModel.SubscriptionViewModelFactory> { factory ->
+                    factory.create(subscriptionSource)
+                }, onUpClick = {
+                    navController.navigateUp()
+                })
             }
 
             composable(route = Screen.Authorize.route) {
@@ -232,6 +252,10 @@ sealed class Screen(val route: String, val navArguments: List<NamedNavArgument> 
         fun createRouteForResult(requestCode: String): String {
             return "SubscriptionManage?requestCode=${requestCode}"
         }
+    }
+
+    data object SubscriptionDetailsScreen: Screen(route = "SubscriptionDetailsScreen") {
+        fun createRoute(): String = "SubscriptionDetailsScreen"
     }
 
     data object Authorize: Screen("Authorize")

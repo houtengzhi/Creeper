@@ -65,8 +65,8 @@ import com.cloud.creeper.util.SystemUtil
 private const val TAG = "SubscriptionManagePage"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), onUpClick: () -> Unit = {}, onNewClick: () -> Unit,
-                           onResultSet: (subscriptionSource: SubscriptionSource) -> Unit) {
+fun SubscriptionManagePage(viewModel: SubscriptionViewModel, onUpClick: () -> Unit = {}, onNewClick: () -> Unit,
+                           onResultSet: (subscriptionSource: SubscriptionSource) -> Unit, onDetailsClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     Log.d(TAG, "SubscriptionManagePage() $currentRecomposeScope")
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -99,7 +99,7 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel = hiltViewModel(), o
                 viewModel.deleteSubscriptionSource(it)
         }, onUpdateClick = {
             viewModel.pullSubscription(it)
-        })
+        }, onDetailsClick = onDetailsClick)
 
         when {
             showAddSubscriptionDialog -> {
@@ -158,7 +158,8 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
                         onItemClick: (subscriptionSource: SubscriptionSource) -> Unit,
                         onEditClick: (subscriptionSource: SubscriptionSource) -> Unit,
                         onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit,
-                        onUpdateClick: (subscriptionSource: SubscriptionSource) -> Unit) {
+                        onUpdateClick: (subscriptionSource: SubscriptionSource) -> Unit,
+                        onDetailsClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     Log.d(TAG, "ConverterPageScreen(), dataState=${dataState}")
     when {
         dataState.isLoading -> {
@@ -166,14 +167,14 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
         dataState.throwable != null -> {
 
         }
-        dataState.error != null -> {
+        dataState.vmError != null -> {
 
         }
         dataState.data != null -> {
             dataState.data.let { dataList ->
                 LazyColumn(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(dataList) {
-                        SubscriptionSourceItem(it, onItemClick, onEditClick, onDeleteClick, onUpdateClick)
+                        SubscriptionSourceItem(it, onItemClick, onEditClick, onDeleteClick, onUpdateClick, onDetailsClick)
                     }
                 }
             }
@@ -188,7 +189,7 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
         addState.throwable != null -> {
 
         }
-        addState.error != null -> {
+        addState.vmError != null -> {
 
         }
         else -> {
@@ -203,7 +204,7 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
         deleteState.throwable != null -> {
 
         }
-        deleteState.error != null -> {
+        deleteState.vmError != null -> {
 
         }
         else -> {
@@ -216,7 +217,8 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
 private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onItemClick: (subscriptionSource: SubscriptionSource) -> Unit,
                                    onEditClick: (subscriptionSource: SubscriptionSource) -> Unit,
                                    onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit,
-                                   onUpdateClick: (subscriptionSource: SubscriptionSource) -> Unit) {
+                                   onUpdateClick: (subscriptionSource: SubscriptionSource) -> Unit,
+                                   onDetailsClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
@@ -252,7 +254,10 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
                 onDismissRequest = { menuExpanded = false },
                 onEditClick = { showEditDialog = true },
                 onDeleteClick = { showDeleteDialog = true },
-                onUpdateClick = { onUpdateClick(subscriptionSource)})
+                onUpdateClick = { onUpdateClick(subscriptionSource)},
+                onDetailsClick = {
+                    onDetailsClick(subscriptionSource)
+                })
         }
     }
 
@@ -279,7 +284,7 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
 }
 
 @Composable
-private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit, onUpdateClick: () -> Unit) {
+private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit, onUpdateClick: () -> Unit, onDetailsClick: () -> Unit) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest, modifier = Modifier) {
         DropdownMenuItem(text = {
             Text(text = stringResource(id = R.string.Edit))
@@ -299,6 +304,12 @@ private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Un
             onDismissRequest()
             onUpdateClick()
         })
+        DropdownMenuItem(text = {
+            Text(text = stringResource(id = R.string.Details))
+        }, onClick = {
+            onDismissRequest()
+            onDetailsClick()
+        } )
     }
 }
 

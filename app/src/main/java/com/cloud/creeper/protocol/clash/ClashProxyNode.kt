@@ -1,5 +1,6 @@
 package com.cloud.creeper.protocol.clash
 
+import com.cloud.creeper.protocol.base.ProxyNode
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -11,12 +12,10 @@ import kotlinx.serialization.Serializable
  */
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
-data class ClashProxyNode(
-    val name: String,
-    val type: String,
-    val server: String,
-    val port: String
-) {
+data class ClashProxyNode(override val name : String, override val type: String, val server: String,
+                          val port: String) : ProxyNode {
+
+
     @EncodeDefault(EncodeDefault.Mode.NEVER) var password: String? = null
 
     @EncodeDefault(EncodeDefault.Mode.NEVER) var tls: Boolean? = null

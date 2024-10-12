@@ -106,7 +106,7 @@ fun AuthorizePage(viewModel: AuthViewModel = hiltViewModel(), onUpClick: () -> U
         saveAuthState.value.throwable != null -> {
 
         }
-        saveAuthState.value.error != null -> {
+        saveAuthState.value.vmError != null -> {
 
         }
         saveAuthState.value.data != null -> {
@@ -124,7 +124,7 @@ fun AuthorizePage(viewModel: AuthViewModel = hiltViewModel(), onUpClick: () -> U
         deleteAuthState.value.throwable != null -> {
 
         }
-        deleteAuthState.value.error != null -> {
+        deleteAuthState.value.vmError != null -> {
 
         }
         deleteAuthState.value.data != null -> {
@@ -143,7 +143,7 @@ fun AuthorizePage(viewModel: AuthViewModel = hiltViewModel(), onUpClick: () -> U
         verifyTokenState.value.throwable != null -> {
 
         }
-        verifyTokenState.value.error != null -> {
+        verifyTokenState.value.vmError != null -> {
 
         }
         verifyTokenState.value.data != null -> {
