@@ -17,7 +17,7 @@ open class DataState<T>(val isLoading: Boolean,
     constructor(data: T) : this(false, data, null)
     constructor(throwable: Throwable) : this(false, null, throwable)
     constructor(error: VMError) : this(false, null, null) {
-        this.vmError = error
+        this.error = ApiResponse.Error(error)
     }
     constructor(error: ApiResponse.Error) : this(false, null, null) {
         this.error = error
@@ -32,7 +32,7 @@ open class DataState<T>(val isLoading: Boolean,
     }
 
     override fun toString(): String {
-        return "DataState(isLoading=$isLoading, data=$data, throwable=$throwable, error=$vmError)"
+        return "DataState(isLoading=$isLoading, data=$data, throwable=$throwable, error=$error)"
     }
 
 }

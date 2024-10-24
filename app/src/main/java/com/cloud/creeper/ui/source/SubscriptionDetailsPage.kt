@@ -129,7 +129,8 @@ fun SubscriptionDetailsScreen(dataState: DataState<SubscriptionDetails>, modifie
         dataState.data != null -> {
             dataState.data.let { details ->
 
-                LazyVerticalGrid(columns = GridCells.Fixed(2),
+                LazyVerticalGrid(modifier = modifier,
+                    columns = GridCells.Fixed(2),
                     contentPadding = PaddingValues(5.dp)
                 ) {
                     items(details.nodeList) {
@@ -155,7 +156,7 @@ private fun NodeItem(proxyNode: ProxyNode) {
         Column {
             Text(
                 text = proxyNode.name,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(start = 24.dp, top = 12.dp),
                 textAlign = TextAlign.Center
             )

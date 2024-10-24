@@ -95,10 +95,6 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
             }
             .stateIn(viewModelScope, started = SharingStarted.Eagerly, initialValue = DataState.initial())
 
-    init {
-
-    }
-
     fun addSubscriptionSource(source: SubscriptionSource) {
         viewModelScope.launch {
             flow {
@@ -233,6 +229,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
     }
 
     fun fetchSubscriptionDetails(subscriptionSource: SubscriptionSource, forceRefresh: Boolean) {
+        Log.d(TAG, "fetchSubscriptionDetails()")
         _subscriptionDetailsState.update {
             DataState(true, null, null)
         }
@@ -273,20 +270,27 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
 
             content?.let {
                 val clashConfig = ConverterUtil.parseToClashConfig(subscriptionSource.type, it)
+                Log.d(TAG, "fetchSubscriptionDetails(), proxies size=${clashConfig.proxies?.size}")
                 if (!clashConfig.proxies.isNullOrEmpty()) {
                     subscriptionDetails = SubscriptionDetails(subscriptionSource, clashConfig.proxies)
                 }
             }
 
             withContext(Dispatchers.Main) {
+                Log.d(TAG, "fetchSubscriptionDetails() subscriptionDetails=${subscriptionDetails}")
                 if (subscriptionDetails != null) {
-                    DataState(
-                        false,
-                        subscriptionDetails,
-                        null
-                    )
+                    _subscriptionDetailsState.update {
+                        DataState(
+                            false,
+                            subscriptionDetails,
+                            null
+                        )
+                    }
+
                 } else {
-                    DataState(VMError.EmptyProxyList)
+                    _subscriptionDetailsState.update {
+                        DataState(VMError.EmptyProxyList)
+                    }
                 }
             }
         }

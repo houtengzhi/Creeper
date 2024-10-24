@@ -18,7 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
-import java.io.File
 
 /**
  *
@@ -52,7 +51,7 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
 
                                 ClientType.V2Ray -> {
                                     withContext(Dispatchers.Default) {
-                                        val v2RayConfig = ConverterUtil.readV2RaySubscription(apiResponse.data)
+                                        val v2RayConfig = ConverterUtil.deserializeV2RaySubscription(apiResponse.data)
                                         v2RayConfig
                                     }
                                 }

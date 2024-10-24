@@ -28,7 +28,8 @@ data class VMess(
     val type: String,
     val fp: String?,
     @SerialName("inside_port") val insidePort: String? = null,
-    @SerialName("") val unknown: String? = null
+    @SerialName("") val unknown: String? = null,
+    val sni: String? = null
 ): Proto() {
     var displayName get() = ps.ifBlank { "${add}:${port}-SS-${hashCode()}" }
         set(value) {
