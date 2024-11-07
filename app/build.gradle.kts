@@ -58,7 +58,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 }
 
@@ -93,7 +93,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     //yaml
-    implementation("com.charleskorn.kaml:kaml:0.57.0")
+    implementation("com.charleskorn.kaml:kaml:0.59.0")
 
     //compose
     val composeBom = platform("androidx.compose:compose-bom:2024.02.01")

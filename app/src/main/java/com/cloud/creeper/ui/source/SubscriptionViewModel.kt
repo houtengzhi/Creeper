@@ -235,6 +235,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
         }
         val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
             Log.e(TAG, "fetchSubscriptionDetails() exception for ${throwable.message}")
+            throwable.printStackTrace()
             _subscriptionDetailsState.update {
                 DataState(throwable)
             }

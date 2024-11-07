@@ -52,12 +52,11 @@ private const val TAG = "SubscriptionDetailsPage"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionDetailsPage(viewModel: SubscriptionViewModel, onUpClick: () -> Unit = {}) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val uiState = viewModel.subscriptionDetailsState.collectAsStateWithLifecycle()
 
     val deleteState = viewModel.deleteState.collectAsStateWithLifecycle()
-
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -131,7 +130,7 @@ fun SubscriptionDetailsScreen(dataState: DataState<SubscriptionDetails>, modifie
 
                 LazyVerticalGrid(modifier = modifier,
                     columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(5.dp)
+                    contentPadding = PaddingValues(bottom = 12.dp)
                 ) {
                     items(details.nodeList) {
                         NodeItem(proxyNode = it)
@@ -148,7 +147,7 @@ fun SubscriptionDetailsScreen(dataState: DataState<SubscriptionDetails>, modifie
 private fun NodeItem(proxyNode: ProxyNode) {
 
     ElevatedCard(modifier = Modifier
-        .padding(start = 24.dp, end = 24.dp, top = 12.dp)
+        .padding(start = 12.dp, end = 12.dp, top = 12.dp)
         .fillMaxWidth()
         .wrapContentHeight(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
@@ -157,8 +156,10 @@ private fun NodeItem(proxyNode: ProxyNode) {
             Text(
                 text = proxyNode.name,
                 style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(start = 24.dp, top = 12.dp),
-                textAlign = TextAlign.Center
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp, top = 12.dp),
+                textAlign = TextAlign.Start
             )
 
             Text(

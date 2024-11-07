@@ -43,4 +43,8 @@ data class ClashProxyNode(override val name : String, override val type: String,
     @EncodeDefault(EncodeDefault.Mode.NEVER) var country: String? = null
 
     @EncodeDefault(EncodeDefault.Mode.NEVER) var obfs: String? = null
+
+    @EncodeDefault(EncodeDefault.Mode.NEVER) var sni: String? = null
+
+    @EncodeDefault(EncodeDefault.Mode.NEVER) var smux: Smux? = null
 }
