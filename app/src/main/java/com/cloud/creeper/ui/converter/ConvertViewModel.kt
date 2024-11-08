@@ -107,6 +107,7 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
     }
 
     fun addConverter(converter: ConverterWithSources) {
+        Log.d(TAG, "addConverter()")
         _addState.update {
             DataState(true, null, null)
         }
@@ -136,18 +137,20 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
     }
 
     fun updateConverter(converter: ConverterWithSources) {
+        Log.d(TAG, "updateConverter()")
         _updateState.update {
             DataState(true, null, null)
         }
         val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-            Log.e(TAG, "editConverter exception for ${throwable.message}")
+            Log.e(TAG, "updateConverter exception for ${throwable.message}")
             _updateState.update {
                 DataState(throwable)
             }
         }
         viewModelScope.launch(Dispatchers.Default + coroutineExceptionHandler) {
-            val file = dataRepos.suspendConvertSubscription(converter)
-            if (file != null) {
+            val newConverter = dataRepos.suspendConvertSubscription(converter)
+            if (newConverter != null) {
+                converter.converter.updatedTime = System.currentTimeMillis()
                 dbRepos.suspendUpdateConverter(converter)
                 _updateState.update {
                     DataState(isLoading = false, data = true, throwable = null)

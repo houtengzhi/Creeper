@@ -10,7 +10,8 @@ import kotlinx.serialization.json.JsonNames
 @Serializable
 data class Smux(val enabled: Boolean) {
     @EncodeDefault(EncodeDefault.Mode.NEVER) var protocol: String? = null
-    @EncodeDefault(EncodeDefault.Mode.NEVER) @SerialName("max-connections") @JsonNames("max_connections") var maxConnections: Int? = null
+    @EncodeDefault(EncodeDefault.Mode.NEVER) @SerialName("max-connections") var maxConnections: Int? = null
+    @EncodeDefault(EncodeDefault.Mode.NEVER) @SerialName("max_connections") var maxConnections2: Int? = null
     @EncodeDefault(EncodeDefault.Mode.NEVER) @SerialName("min-streams") var minStreams: Int? = null
     @EncodeDefault(EncodeDefault.Mode.NEVER) @SerialName("max-streams") var maxStreams: Int? = null
     @EncodeDefault(EncodeDefault.Mode.NEVER) var statistic: Boolean? = null

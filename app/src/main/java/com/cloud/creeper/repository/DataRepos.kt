@@ -122,6 +122,9 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                         content = ""
                     }
                 }
+                if (converter.cloudRepositoryList.isNullOrEmpty()) {
+                    Log.i(TAG, "suspendConvertSubscription() cloud repository list is empty")
+                }
                 converter.cloudRepositoryList?.let { dataList ->
                     dataList.forEach {
                         if (it.type == RepositoryType.REPOSITORY_GITHUB) {
@@ -144,6 +147,7 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                converter
 
             } else {
+                Log.w(TAG, "suspendConvertSubscription() merged proxyConfigList is empty")
                 null
             }
         }

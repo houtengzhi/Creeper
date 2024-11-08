@@ -1,5 +1,6 @@
 package com.cloud.creeper.repository.entity
 
+import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.ColumnInfo
@@ -11,6 +12,7 @@ import com.cloud.creeper.R
 import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.server.ServerManage
 import com.cloud.creeper.util.NetUtil
+import com.cloud.creeper.util.SystemUtil
 import java.io.File
 
 /**
@@ -71,6 +73,10 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
     private fun getUrlSegments() ="creeper/converter/${id}/${outputFileName}"
 
     fun getLocalAddress() = "http://${NetUtil.getLocalIPAddress()?.hostAddress}:${ServerManage.DEFAULT_PORT}/${getUrlSegments()}"
+
+    fun getUpdatedTimeText(context: Context): String {
+        return SystemUtil.getPulledTimeText(context, updatedTime)
+    }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(id)

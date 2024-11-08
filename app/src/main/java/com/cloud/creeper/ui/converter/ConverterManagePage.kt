@@ -82,6 +82,9 @@ fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick
             onEditClick = onEditClick,
             onDeleteClick = { converterWithSources, deleteRemoteRepos ->
                 viewModel.deleteConverter(converterWithSources, deleteRemoteRepos)
+            },
+            onUpdateClick = { converterWithSources ->
+                viewModel.updateConverter(converterWithSources)
             })
 
     }
@@ -129,7 +132,8 @@ private fun MoreMenu(expanded: Boolean, onDismissRequest: () -> Unit, onNewClick
 
 @Composable
 fun ConverterPageScreen(dataState: DataState<List<ConverterWithSources>>, modifier: Modifier = Modifier,  onEditClick: (converter: ConverterWithSources) -> Unit,
-                        onDeleteClick: (converter: ConverterWithSources, deleteRemoteRepos: Boolean) -> Unit) {
+                        onDeleteClick: (converter: ConverterWithSources, deleteRemoteRepos: Boolean) -> Unit,
+                        onUpdateClick: (converter: ConverterWithSources) -> Unit) {
     when {
         dataState.isLoading -> {
         }
@@ -147,7 +151,7 @@ fun ConverterPageScreen(dataState: DataState<List<ConverterWithSources>>, modifi
                 Log.d(TAG, "converter list size = ${dataList.size}")
                 LazyColumn(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(dataList) {
-                        ConverterItem(it, onEditClick, onDeleteClick)
+                        ConverterItem(it, onEditClick, onDeleteClick, onUpdateClick)
                     }
                 }
             }
@@ -158,7 +162,8 @@ fun ConverterPageScreen(dataState: DataState<List<ConverterWithSources>>, modifi
 @Composable
 private fun ConverterItem(converter: ConverterWithSources,
                                    onEditClick: (converter: ConverterWithSources) -> Unit,
-                                   onDeleteClick: (converter: ConverterWithSources, deleteRemoteRepos: Boolean) -> Unit) {
+                                   onDeleteClick: (converter: ConverterWithSources, deleteRemoteRepos: Boolean) -> Unit,
+                          onUpdateClick: (converter: ConverterWithSources) -> Unit,) {
     var menuExpanded by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -178,6 +183,9 @@ private fun ConverterItem(converter: ConverterWithSources,
             Text(text = converter.converter.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
 
+        Text(text = converter.converter.getUpdatedTimeText(context),
+            modifier = Modifier.padding(end = 12.dp),
+            style = MaterialTheme.typography.labelMedium)
 
         IconButton(onClick = {
             menuExpanded = true
@@ -191,7 +199,9 @@ private fun ConverterItem(converter: ConverterWithSources,
                                  showDetailsDialog = true
                 },
                 onEditClick = { onEditClick(converter) },
-                onDeleteClick = { showDeleteDialog = true })
+                onDeleteClick = { showDeleteDialog = true },
+                onUpdateClick = { onUpdateClick(converter) }
+            )
         }
     }
 
@@ -212,7 +222,7 @@ private fun ConverterItem(converter: ConverterWithSources,
 }
 
 @Composable
-private fun ConverterMenu(expanded: Boolean, onDismissRequest: () -> Unit, onDetailsClick: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit) {
+private fun ConverterMenu(expanded: Boolean, onDismissRequest: () -> Unit, onDetailsClick: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit, onUpdateClick: () -> Unit) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest, modifier = Modifier) {
         DropdownMenuItem(text = {
             Text(text = stringResource(id = R.string.Details))
@@ -231,6 +241,12 @@ private fun ConverterMenu(expanded: Boolean, onDismissRequest: () -> Unit, onDet
         }, onClick = {
             onDismissRequest()
             onDeleteClick()
+        })
+        DropdownMenuItem(text = {
+            Text(text = stringResource(id = R.string.Update))
+        }, onClick = {
+            onDismissRequest()
+            onUpdateClick()
         })
     }
 }

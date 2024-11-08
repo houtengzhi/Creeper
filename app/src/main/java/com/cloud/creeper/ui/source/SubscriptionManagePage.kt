@@ -235,14 +235,15 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
             modifier = Modifier.padding(start = 24.dp), colorFilter = ColorFilter.tint(subscriptionSource.getClientIconColor()))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = subscriptionSource.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 6.dp), maxLines = 1)
+
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(text = subscriptionSource.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp), maxLines = 1)
+                Text(text = subscriptionSource.getPulledTimeText(context),
+                    modifier = Modifier.padding(end = 12.dp),
+                    style = MaterialTheme.typography.labelMedium)
+            }
             Text(text = if (subscriptionSource.description.isNullOrEmpty()) subscriptionSource.sourceUrl else subscriptionSource.description!!, modifier = Modifier.padding(start = 24.dp, bottom = 12.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-
-
-        Text(text = subscriptionSource.getPulledTimeText(context),
-                modifier = Modifier.padding(start = 12.dp, end = 12.dp),
-                style = MaterialTheme.typography.labelMedium)
 
         IconButton(onClick = {
             menuExpanded = true
