@@ -21,8 +21,6 @@ import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.ui.converter.EditConverterPage
 import com.cloud.creeper.ui.converter.KEY_GIST_FILE
 import com.cloud.creeper.ui.converter.KEY_REQUEST_CODE
-import com.cloud.creeper.ui.converter.REQUEST_CODE_SELECT_GIST
-import com.cloud.creeper.ui.converter.REQUEST_CODE_SELECT_SUBSCRIPTION
 import com.cloud.creeper.ui.gists.GistsPage
 import com.cloud.creeper.ui.gists.GistsScreen
 import com.cloud.creeper.ui.gists.GistsViewModel

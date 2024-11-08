@@ -33,6 +33,10 @@ data class ConverterWithSources(@Embedded val converter: Converter,
         return 0
     }
 
+    override fun toString(): String {
+        return "ConverterWithSources(converter=${converter.toSimpleString()}, subscriptionSourceList size=${subscriptionSourceList.size}, cloudRepositoryList size=${cloudRepositoryList?.size})"
+    }
+
     companion object CREATOR : Parcelable.Creator<ConverterWithSources> {
         override fun createFromParcel(parcel: Parcel): ConverterWithSources {
             return ConverterWithSources(parcel)
@@ -42,5 +46,7 @@ data class ConverterWithSources(@Embedded val converter: Converter,
             return arrayOfNulls(size)
         }
     }
+
+
 
 }

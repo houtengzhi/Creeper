@@ -69,10 +69,8 @@ import kotlinx.coroutines.CoroutineScope
  */
 private const val TAG = "NewConverterPage"
 
-const val REQUEST_CODE_SELECT_SUBSCRIPTION = "select_subscription"
 const val REQUEST_CODE_SELECT_GIST = "select_gist"
 
-const val KEY_SUBSCRIPTION_SOURCE = "subscription_source"
 const val KEY_GIST_FILE = "gist_file"
 const val KEY_REQUEST_CODE = "request_code"
 

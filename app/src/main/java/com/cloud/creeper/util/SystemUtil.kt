@@ -34,15 +34,21 @@ object SystemUtil {
     }
 
     fun generateSubscriptionSourceId(): String {
-        return "ss${UUID.randomUUID().toString().replace("-", "").lowercase()}"
+        return "SS${generateCharUUIDWithTimestamp(8)}"
     }
 
     fun generateConverterId(): String {
-        return "co${UUID.randomUUID().toString().replace("-", "").lowercase()}"
+        return "CO${generateCharUUIDWithTimestamp(8)}"
     }
 
     fun generateCloudRepositoryId(): String {
-        return "cr${UUID.randomUUID().toString().replace("-", "").lowercase()}"
+        return "CR${generateCharUUIDWithTimestamp(8)}"
+    }
+
+    fun generateCharUUIDWithTimestamp(n: Int): String {
+        val uuid = UUID.randomUUID().toString().replace("-", "")
+        val timestamp = System.currentTimeMillis().toString(16).takeLast(4)
+        return (uuid.substring(0, n) + timestamp).take(n + 4)
     }
 
     fun getPulledTimeText(context: Context, millis: Long): String {

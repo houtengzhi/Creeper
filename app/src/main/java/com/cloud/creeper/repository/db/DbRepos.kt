@@ -21,7 +21,7 @@ class DbRepos(private val appDatabase: AppDatabase) {
 
     @Transaction
     suspend fun suspendInsertConverter(converter: ConverterWithSources) {
-        Log.d(TAG, "suspendInsertConverter()")
+        Log.d(TAG, "suspendInsertConverter() $converter")
         val dao = appDatabase.appDao()
         dao.suspendInsertConverter(converter.converter)
         converter.subscriptionSourceList.forEach {
@@ -30,12 +30,14 @@ class DbRepos(private val appDatabase: AppDatabase) {
             )
         }
         converter.cloudRepositoryList?.forEach {
+            dao.suspendInsertCloudRepository(it)
             dao.suspendInsertConverterCloudRepositoryCrossRef(ConverterCloudRepositoryCrossRef(converter.converter.id, it.id))
         }
     }
 
     @Transaction
     suspend fun suspendUpdateConverter(converter: ConverterWithSources) {
+        Log.d(TAG, "suspendUpdateConverter() $converter")
         val dao = appDatabase.appDao()
         dao.suspendUpdateConverter(converter.converter)
         dao.suspendDeleteConverterSubscriptionSourceCrossRefByConverterId(converter.converter.id)
@@ -44,17 +46,24 @@ class DbRepos(private val appDatabase: AppDatabase) {
                 ConverterSubscriptionSourceCrossRef(converter.converter.id, it.id)
             )
         }
+        dao.suspendDeleteConverterCloudRepositoryCrossRefByConverterId(converter.converter.id)
         converter.cloudRepositoryList?.forEach {
-            dao.suspendUpdateConverterCloudRepositoryCrossRef(ConverterCloudRepositoryCrossRef(converter.converter.id, it.id))
+            //todo
+            dao.suspendUpdateCloudRepository(it)
+            dao.suspendInsertConverterCloudRepositoryCrossRef(ConverterCloudRepositoryCrossRef(converter.converter.id, it.id))
         }
     }
 
     @Transaction
     suspend fun suspendDeleteConverter(converter: ConverterWithSources) {
+        Log.d(TAG, "suspendDeleteConverter() $converter")
         val dao = appDatabase.appDao()
         dao.suspendDeleteConverter(converter.converter)
         dao.suspendDeleteConverterSubscriptionSourceCrossRefByConverterId(converter.converter.id)
         dao.suspendDeleteConverterCloudRepositoryCrossRefByConverterId(converter.converter.id)
+        converter.cloudRepositoryList?.forEach {
+            dao.suspendDeleteCloudRepository(it)
+        }
     }
 
     suspend fun suspendQueryConverter(name: String): ConverterWithSources? {

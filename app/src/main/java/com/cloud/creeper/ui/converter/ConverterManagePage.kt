@@ -314,22 +314,43 @@ private fun ConverterDetailsDialog(converter: ConverterWithSources, onDismissReq
             Column(modifier = Modifier.fillMaxWidth()) {
                 ScrollableTabRow(selectedTabIndex = selectedTabIndex, modifier = Modifier.fillMaxWidth(), edgePadding = 0.dp) {
                     Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }) {
-                        Text(text = stringResource(id = R.string.Local_Address))
+                        Text(text = stringResource(id = R.string.Statistics))
+                    }
+                    Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }) {
+                        Text(text = stringResource(id = R.string.Address))
                     }
                 }
                 HorizontalDivider(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
 
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                    verticalAlignment = Alignment.CenterVertically) {
-                    val url = converter.converter.getLocalAddress()
-                    Text(text = url, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                        verticalAlignment = Alignment.CenterVertically) {
+                        val url = converter.converter.getLocalAddress()
+                        Text(text = url, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
 
-                    TextButton(onClick = {
-                        clipboardManager.setText(AnnotatedString(url))
-                    }) {
-                        Text(text = stringResource(id = R.string.Copy))
+                        TextButton(onClick = {
+                            clipboardManager.setText(AnnotatedString(url))
+                        }) {
+                            Text(text = stringResource(id = R.string.Copy))
+                        }
+                    }
+
+                    converter.cloudRepositoryList?.forEach {
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                            verticalAlignment = Alignment.CenterVertically) {
+                            val url = it.url
+                            Text(text = url!!, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+
+                            TextButton(onClick = {
+                                clipboardManager.setText(AnnotatedString(url))
+                            }) {
+                                Text(text = stringResource(id = R.string.Copy))
+                            }
+                        }
                     }
                 }
 

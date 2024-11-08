@@ -31,6 +31,8 @@
     <string name="Description">"Description"</string>
     <string name="Optional">"Optional"</string>
     <string name="Local_Address">"Local Address"</string>
+    <string name="Address">"Address"</string>
+    <string name="Statistics">"Statistics"</string>
     <string name="Add_Converter">"Add Converter"</string>
     <string name="Copy">"Copy"</string>
     <string name="Authorize">"Authorize"</string>

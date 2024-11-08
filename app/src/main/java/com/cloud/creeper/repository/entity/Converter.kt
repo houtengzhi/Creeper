@@ -70,6 +70,10 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
         return "Converter(id='$id', name='$name', outputType='$outputType'), localAddr='${getLocalAddress()}'"
     }
 
+    fun toSimpleString(): String {
+        return "Converter(id='$id', name='$name', outputType='$outputType')"
+    }
+
     private fun getUrlSegments() ="creeper/converter/${id}/${outputFileName}"
 
     fun getLocalAddress() = "http://${NetUtil.getLocalIPAddress()?.hostAddress}:${ServerManage.DEFAULT_PORT}/${getUrlSegments()}"
