@@ -18,6 +18,7 @@ import com.cloud.creeper.compose.AppTheme
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
 import com.cloud.creeper.repository.entity.SubscriptionSource
+import com.cloud.creeper.ui.converter.ConverterDetailsPage
 import com.cloud.creeper.ui.converter.EditConverterPage
 import com.cloud.creeper.ui.converter.KEY_GIST_FILE
 import com.cloud.creeper.ui.converter.KEY_REQUEST_CODE
@@ -68,7 +69,12 @@ fun AppMain() {
                     val args = Bundle()
                     args.putParcelable(KEY_CONVERTER, it)
                     navController.navigateWithArgs(Screen.EditConverterScreen.route, args, null, null)
-                })
+                },
+                    onDetailsClick = {
+                        val args = Bundle()
+                        args.putParcelable(KEY_CONVERTER, it)
+                        navController.navigateWithArgs(Screen.ConverterDetailsScreen.route, args, null, null)
+                    })
             }
             composable(Screen.NewConverter.route) { navBackStackEntry ->
                 NewConverterPage(onUpClick = {
@@ -155,6 +161,15 @@ fun AppMain() {
                     }
                 )
             }
+            composable(Screen.ConverterDetailsScreen.route) {
+                val converter = it.arguments?.getParcelable<ConverterWithSources>(KEY_CONVERTER)
+                ConverterDetailsPage(
+                    converterWithSources = converter!!,
+                    onUpClick = {
+                        navController.navigateUp()
+                    }
+                )
+            }
             composable(route = Screen.SubscriptionManage.route, arguments = Screen.SubscriptionManage.navArguments ) {
                 val requestCode = it.arguments?.getString("requestCode")
                 SubscriptionManagePage(viewModel = hiltViewModel<SubscriptionViewModel, SubscriptionViewModel.SubscriptionViewModelFactory> { factory ->
@@ -237,6 +252,8 @@ sealed class Screen(val route: String, val navArguments: List<NamedNavArgument> 
     data object NewConverter: Screen("NewConverter")
 
     data object EditConverterScreen: Screen("EditConverterScreen")
+
+    data object ConverterDetailsScreen: Screen("ConverterDetailsScreen")
 
     data object SubscriptionManage: Screen(route = "SubscriptionManage?requestCode={requestCode}",
         navArguments = listOf(navArgument("requestCode") {

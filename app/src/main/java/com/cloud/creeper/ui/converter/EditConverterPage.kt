@@ -475,7 +475,9 @@ fun EditConverterScreen(
                 .fillMaxWidth()
                 .wrapContentHeight(),
                 horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = auth?.userName!!)
+
+                val name = auth?.userName?:"null"
+                Text(text = name)
 
                 var gistMenuExpanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(modifier = Modifier
@@ -510,7 +512,7 @@ fun EditConverterScreen(
                                 navToSelectGist(
                                     viewModel.viewModelScope,
                                     REQUEST_CODE_SELECT_GIST,
-                                    auth
+                                    auth!!
                                 ) { data ->
                                     val requestCode = data.getString("REQUEST_CODE")
                                     Log.d(TAG, "onResult(), requestCode=${requestCode}")

@@ -68,7 +68,7 @@ private const val TAG = "ConverterManagePage"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick: () -> Unit = {}, onNewClick: () -> Unit, onEditClick: (converter : ConverterWithSources) -> Unit) {
+fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick: () -> Unit = {}, onNewClick: () -> Unit, onEditClick: (converter : ConverterWithSources) -> Unit, onDetailsClick: (converter : ConverterWithSources) -> Unit) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val uiState = viewModel.subscribeConverterListState.collectAsStateWithLifecycle()
 
@@ -85,7 +85,8 @@ fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick
             },
             onUpdateClick = { converterWithSources ->
                 viewModel.updateConverter(converterWithSources)
-            })
+            },
+            onDetailsClick = onDetailsClick)
 
     }
 }
@@ -133,7 +134,8 @@ private fun MoreMenu(expanded: Boolean, onDismissRequest: () -> Unit, onNewClick
 @Composable
 fun ConverterPageScreen(dataState: DataState<List<ConverterWithSources>>, modifier: Modifier = Modifier,  onEditClick: (converter: ConverterWithSources) -> Unit,
                         onDeleteClick: (converter: ConverterWithSources, deleteRemoteRepos: Boolean) -> Unit,
-                        onUpdateClick: (converter: ConverterWithSources) -> Unit) {
+                        onUpdateClick: (converter: ConverterWithSources) -> Unit,
+                        onDetailsClick: (converter : ConverterWithSources) -> Unit) {
     when {
         dataState.isLoading -> {
         }
@@ -151,7 +153,7 @@ fun ConverterPageScreen(dataState: DataState<List<ConverterWithSources>>, modifi
                 Log.d(TAG, "converter list size = ${dataList.size}")
                 LazyColumn(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(dataList) {
-                        ConverterItem(it, onEditClick, onDeleteClick, onUpdateClick)
+                        ConverterItem(it, onEditClick, onDeleteClick, onUpdateClick, onDetailsClick)
                     }
                 }
             }
@@ -163,7 +165,8 @@ fun ConverterPageScreen(dataState: DataState<List<ConverterWithSources>>, modifi
 private fun ConverterItem(converter: ConverterWithSources,
                                    onEditClick: (converter: ConverterWithSources) -> Unit,
                                    onDeleteClick: (converter: ConverterWithSources, deleteRemoteRepos: Boolean) -> Unit,
-                          onUpdateClick: (converter: ConverterWithSources) -> Unit,) {
+                          onUpdateClick: (converter: ConverterWithSources) -> Unit,
+                          onDetailsClick: (converter : ConverterWithSources) -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
     var showDetailsDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -196,7 +199,7 @@ private fun ConverterItem(converter: ConverterWithSources,
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false },
                 onDetailsClick = {
-                                 showDetailsDialog = true
+                                 onDetailsClick(converter)
                 },
                 onEditClick = { onEditClick(converter) },
                 onDeleteClick = { showDeleteDialog = true },
