@@ -5,12 +5,17 @@ import com.cloud.creeper.base.CreeperApp
 import com.cloud.creeper.repository.DataRepos
 import com.cloud.creeper.repository.db.DbRepos
 import com.cloud.creeper.repository.file.FileRepos
+import com.cloud.creeper.server.model.SubscriptionInput
+import com.cloud.creeper.server.model.SubscriptionOutput
 import com.cloud.creeper.util.CurrentDispatcher
 import com.yanzhenjie.andserver.annotation.Controller
 import com.yanzhenjie.andserver.annotation.GetMapping
 import com.yanzhenjie.andserver.annotation.PathVariable
+import com.yanzhenjie.andserver.annotation.PostMapping
+import com.yanzhenjie.andserver.annotation.RequestBody
 import com.yanzhenjie.andserver.annotation.ResponseBody
 import com.yanzhenjie.andserver.framework.body.FileBody
+import com.yanzhenjie.andserver.framework.body.JsonBody
 import com.yanzhenjie.andserver.http.HttpHeaders
 import com.yanzhenjie.andserver.http.HttpRequest
 import com.yanzhenjie.andserver.http.HttpResponse
@@ -23,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
 
@@ -51,6 +57,32 @@ class SubscriptionController {
     @GetMapping("/subscription")
     fun getSubscription(): String {
         return "test"
+    }
+
+    @PostMapping("/creeper/subscriptions")
+    fun addSubscriptionSources(@RequestBody subscriptionInput: SubscriptionInput, httpRequest: HttpRequest, httpResponse: HttpResponse) {
+        Log.d(TAG, "addSubscriptionSources() ${subscriptionInput}")
+        httpResponse.status = HttpURLConnection.HTTP_OK
+        val jsonObject : JSONObject  = JSONObject()
+        jsonObject.put("code", "RESPONSE_SUCCESS")
+        jsonObject.put("data", "")
+        httpResponse.setBody(JsonBody(jsonObject))
+    }
+
+    @GetMapping("/creeper/subscriptions")
+    fun listSubscriptionSources(httpRequest: HttpRequest, httpResponse: HttpResponse) {
+        Log.d(TAG, "listSubscriptionSources()")
+        val provider = EntryPoints.get(CreeperApp.INSTANCE, EntryProvider::class.java)
+        val dbRepos = provider.getDbRepos()
+        val sourceList = dbRepos.querySubscriptionSourceList()
+        val data = sourceList.map {
+            SubscriptionOutput(it.name, it.sourceUrl, it.type.name)
+        }
+        httpResponse.status = HttpURLConnection.HTTP_OK
+        val jsonObject = JSONObject()
+        jsonObject.put("code", "RESPONSE_SUCCESS")
+        jsonObject.put("data", data)
+        httpResponse.setBody(JsonBody(jsonObject))
     }
 
     @GetMapping("/creeper/converter/{converterId}/{fileName}")

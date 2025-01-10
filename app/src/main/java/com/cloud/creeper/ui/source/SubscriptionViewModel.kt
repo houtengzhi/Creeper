@@ -7,8 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloud.creeper.base.DataState
 import com.cloud.creeper.base.VMError
-import com.cloud.creeper.protocol.ClientType
-import com.cloud.creeper.protocol.base.ProxyNode
 import com.cloud.creeper.protocol.core.ConverterUtil
 import com.cloud.creeper.protocol.core.onError
 import com.cloud.creeper.protocol.core.onSuccess
@@ -19,8 +17,6 @@ import com.cloud.creeper.repository.entity.SubscriptionDetails
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.repository.file.FileRepos
 import com.cloud.creeper.repository.http.HttpRepos
-import com.cloud.creeper.ui.gists.GistsViewModel
-import com.cloud.creeper.ui.gists.GistsViewModel.Companion
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -39,7 +35,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 /**
  *
@@ -162,7 +157,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
     fun getSubscriptionSourceList() =
         viewModelScope.launch {
             flow {
-                val list = dbRepos.querySubscriptionSourceList()
+                val list = dbRepos.suspendQuerySubscriptionSourceList()
                 emit(list)
             }
                 .onStart {
