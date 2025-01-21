@@ -1,21 +1,29 @@
 package com.cloud.creeper.server
 
 import android.util.Log
+import com.cloud.creeper.server.model.ApiResult
 import com.yanzhenjie.andserver.annotation.Converter
 import com.yanzhenjie.andserver.framework.MessageConverter
 import com.yanzhenjie.andserver.framework.body.JsonBody
+import com.yanzhenjie.andserver.framework.body.StringBody
 import com.yanzhenjie.andserver.http.ResponseBody
 import com.yanzhenjie.andserver.util.IOUtils
 import com.yanzhenjie.andserver.util.MediaType
 import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.serializer
+import kotlinx.serialization.serializerOrNull
 import java.io.InputStream
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.createType
+import kotlin.reflect.jvm.internal.impl.resolve.calls.inference.CapturedType
 import kotlin.reflect.jvm.jvmErasure
 
 @OptIn(InternalSerializationApi::class)
@@ -27,7 +35,28 @@ class ServerMessageConverter: MessageConverter {
 
     override fun convert(output: Any?, mediaType: MediaType?): ResponseBody {
         Log.v(TAG, "serialize ${output}")
-        return JsonBody(Json.Default.encodeToString(output))
+        if (output is ApiResult<*>) {
+            try {
+                val json = Json { encodeDefaults = true }
+                val data = output.data
+                if (data != null) {
+                    val dataSerializer = data::class.serializerOrNull() ?: throw IllegalArgumentException("No serializer found for class ${data::class}")
+                    val serializer = ApiResult.serializer(dataSerializer as KSerializer<Any>)
+                    val str = json.encodeToString(serializer, output as ApiResult<Any>)
+                    return JsonBody(str)
+                } else {
+                    val serializer = ApiResult.serializer(JsonNull.serializer())
+                    val str = json.encodeToString(serializer, output as ApiResult<Nothing>)
+                    return JsonBody(str)
+                }
+            } catch (e: Exception) {
+                return StringBody(e.message)
+            }
+
+        } else {
+            return StringBody(output.toString())
+        }
+
     }
 
     override fun <T : Any?> convert(stream: InputStream, mediaType: MediaType?, type: Type): T {

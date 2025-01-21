@@ -51,7 +51,7 @@ class CreeperService: Service() {
             .listener(object : Server.ServerListener {
                 override fun onStarted() {
                     val netAddress = NetUtil.getLocalIPAddress()
-                    Log.i(TAG, "server start, ip=${netAddress?.hostAddress}")
+                    Log.i(TAG, "server start, ip=${netAddress?.hostAddress}:${mServer.port}")
                 }
 
                 override fun onStopped() {

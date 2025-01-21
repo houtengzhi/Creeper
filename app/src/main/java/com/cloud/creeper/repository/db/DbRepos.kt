@@ -84,23 +84,29 @@ class DbRepos(private val appDatabase: AppDatabase) {
 
     fun subscribeConverterList() = appDatabase.appDao().subscribeConverterList()
 
-    suspend fun insertSubscriptionSource(source: SubscriptionSource) {
-        appDatabase.appDao().insertSubscriptionSource(source)
+    suspend fun suspendInsertSubscriptionSource(source: SubscriptionSource) {
+        appDatabase.appDao().suspendInsertSubscriptionSource(source)
     }
 
-    suspend fun updateSubscriptionSource(source: SubscriptionSource) {
+    fun updateSubscriptionSource(source: SubscriptionSource) {
         Log.d(TAG, "updateSubscriptionSource()")
         appDatabase.appDao().updateSubscriptionSource(source)
     }
 
-    suspend fun deleteSubscriptionSource(source: SubscriptionSource) {
-        appDatabase.appDao().deleteSubscriptionSource(source)
+    suspend fun suspendUpdateSubscriptionSource(source: SubscriptionSource) {
+        Log.d(TAG, "suspendUpdateSubscriptionSource()")
+        appDatabase.appDao().suspendUpdateSubscriptionSource(source)
+    }
+
+    suspend fun suspendDeleteSubscriptionSource(source: SubscriptionSource) {
+        appDatabase.appDao().suspendDeleteSubscriptionSource(source)
     }
 
     suspend fun suspendQuerySubscriptionSourceList() = appDatabase.appDao().suspendQuerySubscriptionSourceList()
 
     fun querySubscriptionSourceList() = appDatabase.appDao().querySubscriptionSourceList()
 
+    fun querySubscriptionSourceById(sourceId: String) = appDatabase.appDao().querySubscriptionSourceById(sourceId)
 
     fun subscribeSubscriptionSourceList() = appDatabase.appDao().subscribeSubscriptionSourceList()
 

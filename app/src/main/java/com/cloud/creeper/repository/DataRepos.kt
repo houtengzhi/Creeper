@@ -1,21 +1,29 @@
 package com.cloud.creeper.repository
 
 import android.util.Log
+import com.cloud.creeper.base.DataState
+import com.cloud.creeper.base.VMError
 import com.cloud.creeper.protocol.ClashConfig
 import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.protocol.ProxyConfig
 import com.cloud.creeper.protocol.clash.ClashProxyNode
 import com.cloud.creeper.protocol.core.ApiResponse
 import com.cloud.creeper.protocol.core.ConverterUtil
+import com.cloud.creeper.protocol.core.onError
+import com.cloud.creeper.protocol.core.onSuccess
 import com.cloud.creeper.repository.db.DbRepos
 import com.cloud.creeper.repository.entity.ConverterWithSources
+import com.cloud.creeper.repository.entity.SourceStatus
+import com.cloud.creeper.repository.entity.SubscriptionDetails
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.repository.file.FileRepos
 import com.cloud.creeper.repository.http.HttpRepos
+import com.cloud.creeper.ui.source.SubscriptionViewModel
 import com.cloud.creeper.util.RepositoryType
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 
@@ -171,6 +179,59 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                 }
             }
             dbRepos.suspendDeleteConverter(converter)
+        }
+    }
+
+    fun getSubscriptionDetails(
+        subscriptionSource: SubscriptionSource,
+        forceRefresh: Boolean
+    ): ApiResponse<SubscriptionDetails> {
+
+        var content: String? = null
+
+        val file = fileRepos.readSubscriptionSourceFile(subscriptionSource.getCacheFileName())
+        if (forceRefresh || !file.exists()) {
+            when (val apiResponse = httpRepos.fetchUrl(subscriptionSource.sourceUrl)) {
+                is ApiResponse.Success -> {
+                    fileRepos.saveSubscriptionSource(subscriptionSource.getCacheFileName(), apiResponse.data)
+
+                    subscriptionSource.pullStatus = SourceStatus.UPDATED
+                    subscriptionSource.pulledTime = System.currentTimeMillis()
+                    subscriptionSource.updatedTime = System.currentTimeMillis()
+                    dbRepos.updateSubscriptionSource(subscriptionSource)
+                    content = apiResponse.data
+
+                }
+
+                is ApiResponse.Error -> {
+                    return apiResponse
+
+                }
+
+                is ApiResponse.Exception -> {
+                    return apiResponse
+                }
+            }
+
+        } else {
+            content = file.readText()
+        }
+
+        var subscriptionDetails: SubscriptionDetails? = null
+        content.let {
+            val clashConfig = ConverterUtil.parseToClashConfig(subscriptionSource.type, it)
+            Log.d(TAG, "fetchSubscriptionDetails(), proxies size=${clashConfig.proxies?.size}"
+            )
+            if (!clashConfig.proxies.isNullOrEmpty()) {
+                subscriptionDetails = SubscriptionDetails(subscriptionSource, clashConfig.proxies)
+            }
+        }
+
+        return if (subscriptionDetails != null) {
+            ApiResponse.Success(subscriptionDetails!!)
+
+        } else {
+            ApiResponse.Error(VMError.EmptyProxyList)
         }
     }
 }

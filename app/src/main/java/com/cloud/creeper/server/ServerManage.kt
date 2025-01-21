@@ -7,6 +7,6 @@ package com.cloud.creeper.server
 class ServerManage {
 
     companion object {
-        const val DEFAULT_PORT = 8080
+        const val DEFAULT_PORT = 11991
     }
 }

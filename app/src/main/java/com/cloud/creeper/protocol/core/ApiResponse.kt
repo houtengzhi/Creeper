@@ -1,6 +1,7 @@
 package com.cloud.creeper.protocol.core
 
 import com.cloud.creeper.base.VMError
+import com.cloud.creeper.server.model.ApiResult
 
 
 /**
@@ -33,4 +34,20 @@ sealed interface ApiResponse<out T> {
 
     }
 
+    fun <R> map(transform: (T) -> R): ApiResult<R> {
+        return when (this) {
+            is Success -> ApiResult(
+                code = "200",
+                data = transform(this.data)
+            )
+            is Error -> ApiResult(
+                code = this.errorCode.toString(),
+                message = this.errorMessage
+            )
+            is Exception -> ApiResult(
+                code = "500",
+                message = this.throwable.message
+            )
+        }
+    }
 }

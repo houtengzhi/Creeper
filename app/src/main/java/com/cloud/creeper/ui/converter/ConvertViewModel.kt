@@ -13,7 +13,6 @@ import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.repository.DataRepos
 import com.cloud.creeper.repository.GistFile
 import com.cloud.creeper.repository.db.DbRepos
-import com.cloud.creeper.repository.entity.CloudRepository
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.repository.file.FileRepos
@@ -102,7 +101,7 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
 
     fun testSubscription(url: String) {
         viewModelScope.launch {
-            httpRepos.fetchUrl(url)
+            httpRepos.fetchUrlFlow(url)
         }
     }
 

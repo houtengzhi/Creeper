@@ -78,19 +78,28 @@ interface AppDao {
     fun subscribeConverterList(): Flow<List<ConverterWithSources>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSubscriptionSource(source: SubscriptionSource)
+    suspend fun suspendInsertSubscriptionSource(source: SubscriptionSource)
 
     @Update
-    suspend fun updateSubscriptionSource(source: SubscriptionSource)
+    fun updateSubscriptionSource(source: SubscriptionSource)
+
+    @Update
+    suspend fun suspendUpdateSubscriptionSource(source: SubscriptionSource)
 
     @Delete
-    suspend fun deleteSubscriptionSource(source: SubscriptionSource)
+    fun deleteSubscriptionSource(source: SubscriptionSource)
+
+    @Delete
+    suspend fun suspendDeleteSubscriptionSource(source: SubscriptionSource)
 
     @Query("SELECT * FROM subscription_source")
     suspend fun suspendQuerySubscriptionSourceList(): List<SubscriptionSource>
 
     @Query("SELECT * FROM subscription_source")
     fun querySubscriptionSourceList(): List<SubscriptionSource>
+
+    @Query("SELECT * FROM subscription_source WHERE source_id = :sourceId")
+    fun querySubscriptionSourceById(sourceId: String): SubscriptionSource?
 
     @Query("SELECT * FROM subscription_source ORDER BY updated_time DESC")
     fun subscribeSubscriptionSourceList(): Flow<List<SubscriptionSource>>

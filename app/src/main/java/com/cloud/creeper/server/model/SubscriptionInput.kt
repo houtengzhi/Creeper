@@ -9,11 +9,14 @@ import kotlinx.serialization.Serializable
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
-data class SubscriptionInput(@SerialName("source_name") val name: String,
-                             @SerialName("source_url") val sourceUrl: String,
-                             @SerialName("source_type") val type: String
+data class SubscriptionInput(
+    @SerialName("id") @EncodeDefault(EncodeDefault.Mode.NEVER) val id: String? = null,
+    @SerialName("source_name") val name: String,
+    @SerialName("source_url") val sourceUrl: String,
+    @SerialName("source_type") val type: String
 ) {
-    @SerialName("description") @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("description")
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
     var description: String? = null
 
     override fun toString(): String {

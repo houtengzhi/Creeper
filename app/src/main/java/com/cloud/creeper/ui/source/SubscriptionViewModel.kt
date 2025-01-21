@@ -94,7 +94,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
         viewModelScope.launch {
             flow {
                 Log.d(TAG, "addSubscriptionSource()")
-                dbRepos.insertSubscriptionSource(source)
+                dbRepos.suspendInsertSubscriptionSource(source)
                 emit(true)
             }
                 .onStart {
@@ -116,7 +116,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
         viewModelScope.launch {
             flow {
                 Log.d(TAG, "editSubscriptionSource(), source=${source}")
-                dbRepos.updateSubscriptionSource(source)
+                dbRepos.suspendUpdateSubscriptionSource(source)
                 emit(true)
             }.onStart {
                     _editState.value = DataState(true, null, null)
@@ -134,7 +134,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
         viewModelScope.launch {
             flow {
                 Log.d(TAG, "deleteSubscriptionSource()")
-                dbRepos.deleteSubscriptionSource(source)
+                dbRepos.suspendDeleteSubscriptionSource(source)
                 emit(true)
             }.onStart {
                 _deleteState.update {
@@ -180,7 +180,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
     fun pullSubscription(source: SubscriptionSource) {
         viewModelScope.launch() {
             Log.d(TAG, "pullSubscription()")
-            httpRepos.fetchUrl(source.sourceUrl)
+            httpRepos.fetchUrlFlow(source.sourceUrl)
                 .flowOn(Dispatchers.IO)
                 .onStart {
                     Log.d(TAG, "pullSubscription() onStart")
@@ -189,7 +189,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
                     }
                     source.pullStatus = SourceStatus.PENDING
                     source.updatedTime = System.currentTimeMillis()
-                    dbRepos.updateSubscriptionSource(source)
+                    dbRepos.suspendUpdateSubscriptionSource(source)
                 }
                 .flowOn(Dispatchers.Main)
                 .onEach {
@@ -207,7 +207,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
                     }
                     source.pullStatus = SourceStatus.FAILED
                     source.updatedTime = System.currentTimeMillis()
-                    dbRepos.updateSubscriptionSource(source)
+                    dbRepos.suspendUpdateSubscriptionSource(source)
                 }
                 .collect {
                     Log.d(TAG, "pullSubscription() collect")
@@ -217,7 +217,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
                     source.pullStatus = SourceStatus.UPDATED
                     source.pulledTime = System.currentTimeMillis()
                     source.updatedTime = System.currentTimeMillis()
-                    dbRepos.updateSubscriptionSource(source)
+                    dbRepos.suspendUpdateSubscriptionSource(source)
                 }
 
         }
@@ -249,7 +249,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
                         subscriptionSource.pullStatus = SourceStatus.UPDATED
                         subscriptionSource.pulledTime = System.currentTimeMillis()
                         subscriptionSource.updatedTime = System.currentTimeMillis()
-                        dbRepos.updateSubscriptionSource(subscriptionSource)
+                        dbRepos.suspendUpdateSubscriptionSource(subscriptionSource)
                     }
                     .onSuccess {
                         content = this.data

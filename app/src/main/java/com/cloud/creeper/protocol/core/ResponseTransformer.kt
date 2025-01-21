@@ -83,3 +83,10 @@ public suspend fun <T, V> ApiResponse<T>.suspendMapSuccess(
     }
     return this as ApiResponse<V>
 }
+
+public fun <T, V> ApiResponse<T>.map(transformer: (T) -> V): ApiResponse<V> {
+    if (this is ApiResponse.Success<T>) {
+        return ApiResponse.Success(transformer(data))
+    }
+    return this as ApiResponse<V>
+}

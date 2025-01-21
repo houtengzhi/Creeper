@@ -9,11 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 
@@ -27,7 +25,7 @@ class HttpRepos(private val httpClient: OkHttpClient, private val githubService:
         private const val TAG = "HttpRepos"
     }
 
-    fun fetchUrl(url: String): Flow<ApiResponse<String>> {
+    fun fetchUrlFlow(url: String): Flow<ApiResponse<String>> {
         return flow {
             Log.d(TAG, "fetchSubscriptionContent")
             val request = Request.Builder()
@@ -43,6 +41,24 @@ class HttpRepos(private val httpClient: OkHttpClient, private val githubService:
                 ApiResponse.Error(response.code, response.message)
             })
         }
+    }
+
+    fun fetchUrl(url: String): ApiResponse<String> {
+        Log.d(TAG, "fetchUrl(), url=${url}")
+        val request = Request.Builder()
+            .url(url)
+            .get()
+            .build()
+        val response = httpClient.newCall(request).execute()
+        (if (response.isSuccessful) {
+            Log.d(TAG, "fetchUrl() successful")
+            val result = response.body!!.string()
+            response.body?.close()
+            return ApiResponse.Success(result)
+        } else {
+            Log.e(TAG, "fetchUrl() failed")
+            return ApiResponse.Error(response.code, response.message)
+        })
     }
 
     suspend fun suspendFetchUrl(url: String): ApiResponse<String> {
