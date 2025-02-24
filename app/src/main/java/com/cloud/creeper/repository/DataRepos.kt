@@ -234,4 +234,15 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
             ApiResponse.Error(VMError.EmptyProxyList)
         }
     }
+
+    fun deleteSubscriptionSource(
+        subscriptionSource: SubscriptionSource
+    ): ApiResponse<Boolean> {
+        val file = fileRepos.readSubscriptionSourceFile(subscriptionSource.getCacheFileName())
+        if (file.exists()) {
+            fileRepos.deleteSubscriptionSource(subscriptionSource.getCacheFileName())
+        }
+        dbRepos.deleteSubscriptionSource(subscriptionSource)
+        return ApiResponse.Success(true)
+    }
 }

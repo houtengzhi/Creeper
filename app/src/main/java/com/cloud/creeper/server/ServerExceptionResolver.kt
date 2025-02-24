@@ -1,5 +1,6 @@
 package com.cloud.creeper.server
 
+import android.util.Log
 import com.cloud.creeper.server.model.ApiResult
 import com.cloud.creeper.server.model.ResponseCode
 import com.yanzhenjie.andserver.annotation.Resolver
@@ -18,6 +19,11 @@ import kotlinx.serialization.json.Json
  */
 @Resolver
 class ServerExceptionResolver(): ExceptionResolver {
+
+    companion object {
+        private const val TAG = "ServerExceptionResolver"
+    }
+
     override fun onResolve(request: HttpRequest, response: HttpResponse, e: Throwable) {
         val apiResult = when (e) {
             is GenericHttpException -> {
@@ -33,6 +39,8 @@ class ServerExceptionResolver(): ExceptionResolver {
             }
 
             else -> {
+                Log.w(TAG, "Exception: ${e.message}")
+                e.printStackTrace()
                 response.status = StatusCode.SC_INTERNAL_SERVER_ERROR
                 ApiResult<Nothing>(code = ResponseCode.ERROR_FAILED, message = e.message)
             }

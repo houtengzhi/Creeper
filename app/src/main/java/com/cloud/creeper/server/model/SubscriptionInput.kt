@@ -11,9 +11,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SubscriptionInput(
     @SerialName("id") @EncodeDefault(EncodeDefault.Mode.NEVER) val id: String? = null,
-    @SerialName("source_name") val name: String,
-    @SerialName("source_url") val sourceUrl: String,
-    @SerialName("source_type") val type: String
+    @SerialName("source_name") @EncodeDefault(EncodeDefault.Mode.NEVER) val name: String? = null,
+    @SerialName("source_url") @EncodeDefault(EncodeDefault.Mode.NEVER) val sourceUrl: String? = null,
+    @SerialName("source_type") @EncodeDefault(EncodeDefault.Mode.NEVER) val type: String? = null
 ) {
     @SerialName("description")
     @EncodeDefault(EncodeDefault.Mode.NEVER)

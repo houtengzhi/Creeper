@@ -88,6 +88,10 @@ class DbRepos(private val appDatabase: AppDatabase) {
         appDatabase.appDao().suspendInsertSubscriptionSource(source)
     }
 
+    fun insertSubscriptionSource(source: SubscriptionSource) {
+        appDatabase.appDao().insertSubscriptionSource(source)
+    }
+
     fun updateSubscriptionSource(source: SubscriptionSource) {
         Log.d(TAG, "updateSubscriptionSource()")
         appDatabase.appDao().updateSubscriptionSource(source)
@@ -96,6 +100,10 @@ class DbRepos(private val appDatabase: AppDatabase) {
     suspend fun suspendUpdateSubscriptionSource(source: SubscriptionSource) {
         Log.d(TAG, "suspendUpdateSubscriptionSource()")
         appDatabase.appDao().suspendUpdateSubscriptionSource(source)
+    }
+
+    fun deleteSubscriptionSource(source: SubscriptionSource) {
+        appDatabase.appDao().deleteSubscriptionSource(source)
     }
 
     suspend fun suspendDeleteSubscriptionSource(source: SubscriptionSource) {

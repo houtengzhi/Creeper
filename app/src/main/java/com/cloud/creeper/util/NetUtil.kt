@@ -3,6 +3,7 @@ package com.cloud.creeper.util
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
+import java.net.URL
 import java.util.Enumeration
 import java.util.regex.Pattern
 
@@ -44,5 +45,14 @@ object NetUtil {
             }
         }
         return null
+    }
+
+    fun isValidUrl(urlString: String): Boolean {
+        return try {
+            URL(urlString)
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 }

@@ -25,6 +25,11 @@ class FileRepos(private val cacheDirectory: String, private val fileDirectory: S
         return readFile(path, fileName)
     }
 
+    fun deleteSubscriptionSource(fileName: String): Boolean {
+        val path = "${cacheDirectory}/subscription-source"
+        return deleteFile(path, fileName)
+    }
+
     fun readSubscriptionSourceFile(fileName: String): File {
         val path = "${cacheDirectory}/subscription-source"
         return File(path, fileName)

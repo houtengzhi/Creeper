@@ -80,6 +80,9 @@ interface AppDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun suspendInsertSubscriptionSource(source: SubscriptionSource)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertSubscriptionSource(source: SubscriptionSource)
+
     @Update
     fun updateSubscriptionSource(source: SubscriptionSource)
 
