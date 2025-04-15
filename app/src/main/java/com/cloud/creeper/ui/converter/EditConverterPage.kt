@@ -78,6 +78,7 @@ private const val FLAG_DESC = 1 shl 1
 private const val FLAG_SUBSCRIPTION_LIST = 1 shl 2
 private const val FLAG_OUTPUT_TYPE = 1 shl 3
 private const val FLAG_CLOUD_REPOSITORY_LIST = 1 shl 4
+private const val FLAG_EXCLUDE = 1 shl 5
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,8 +112,8 @@ fun EditConverterPage(
                     viewModel.supportedCloudRepositories.forEach {
                         val cloudRepository = CloudRepository(SystemUtil.generateCloudRepositoryId(), it)
                         cloudRepository.accessToken = getAuthState.value.data?.accessToken
-                        cloudRepository.gistId = viewModel.gistFile?.gistId
-                        cloudRepository.gistFileName = viewModel.gistFile?.fileName
+                        cloudRepository.gistId = viewModel.gistId
+                        cloudRepository.gistFileName = viewModel.gistFileName
                         cloudRepositoryList.add(cloudRepository)
                     }
                     val converter = ConverterWithSources(
@@ -390,6 +391,24 @@ fun EditConverterScreen(
                 }
             }
         }
+
+        Text(
+            text = stringResource(id = R.string.Exclude), modifier = Modifier
+                .padding(start = 20.dp, top = 24.dp)
+        )
+        TextField(
+            value = viewModel.converterDescription, onValueChange = {
+                viewModel.updateConverterExclude(it.trim())
+                val changed = viewModel.converterExclude != converterWithSources.converter.exclude
+                viewModel.updateDataChangedStatus(if (changed) viewModel.dataChangedStatus or FLAG_EXCLUDE else viewModel.dataChangedStatus and FLAG_EXCLUDE.inv())
+                onDataChanged(viewModel.dataChangedStatus != 0)
+
+            },
+            placeholder = { Text(text = stringResource(id = R.string.Optional)) },
+            singleLine = true, modifier = Modifier
+                .padding(start = 12.dp, end = 12.dp)
+                .fillMaxWidth()
+        )
 
         Text(
             text = "Save to Cloud", modifier = Modifier

@@ -37,6 +37,12 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
     @ColumnInfo(name = "output_file_name")
     var outputFileName: String? = null
 
+    @ColumnInfo(name = "exclude")
+    var exclude: String? = null
+
+    @ColumnInfo(name = "include")
+    var include: String? = null
+
     @Ignore
     var outputFile: File? = null
 
@@ -49,6 +55,8 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
         updatedTime = parcel.readLong()
         outputType = ClientType.valueOf(parcel.readString()!!)
         outputFileName = parcel.readString()
+        exclude = parcel.readString()
+        include = parcel.readString()
     }
 
 
@@ -90,6 +98,8 @@ data class Converter(@PrimaryKey @ColumnInfo(name = "converter_id") val id: Stri
         parcel.writeLong(updatedTime)
         parcel.writeString(outputType.name)
         parcel.writeString(outputFileName)
+        parcel.writeString(exclude)
+        parcel.writeString(include)
     }
 
     override fun describeContents(): Int {

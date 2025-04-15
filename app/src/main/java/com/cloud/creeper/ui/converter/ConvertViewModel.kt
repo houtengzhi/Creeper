@@ -59,6 +59,13 @@ class ConvertViewModel @AssistedInject constructor(@Assisted private val initial
         converterDescription = input
     }
 
+    var converterExclude by mutableStateOf("")
+        private set
+
+    fun updateConverterExclude(input: String) {
+        converterExclude = input
+    }
+
     val subscriptionSourceList = mutableStateListOf<SubscriptionSource>()
 
     val canSaveConverter get() = converterName.isNotEmpty() && subscriptionSourceList.isNotEmpty()
@@ -120,6 +127,7 @@ class ConvertViewModel @AssistedInject constructor(@Assisted private val initial
         initialConverter?.let {
             subscriptionSourceList.addAll(it.subscriptionSourceList)
             updateConverterName(it.converter.name)
+            it.converter.exclude?.let { it1 ->  updateConverterExclude(it1)}
             it.converter.description?.let { it1 -> updateConverterDescription(it1) }
             updateClientType(it.converter.outputType)
 
@@ -192,7 +200,7 @@ class ConvertViewModel @AssistedInject constructor(@Assisted private val initial
     }
 
     fun updateConverter(converter: ConverterWithSources) {
-        Log.d(TAG, "updateConverter()")
+        Log.d(TAG, "updateConverter(), $converter")
         _updateState.update {
             DataState(true, null, null)
         }

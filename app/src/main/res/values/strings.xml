@@ -31,6 +31,7 @@
     <string name="About">"About"</string>
     <string name="Name">"Name"</string>
     <string name="Description">"Description"</string>
+    <string name="Exclude">"Exclude"</string>
     <string name="Optional">"Optional"</string>
     <string name="Local_Address">"Local Address"</string>
     <string name="Local">"Local"</string>

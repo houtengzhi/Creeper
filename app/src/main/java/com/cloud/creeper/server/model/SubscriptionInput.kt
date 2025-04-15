@@ -22,6 +22,4 @@ data class SubscriptionInput(
     override fun toString(): String {
         return "SubscriptionInput(name='$name', sourceUrl='$sourceUrl', type=$type, description=$description)"
     }
-
-
 }

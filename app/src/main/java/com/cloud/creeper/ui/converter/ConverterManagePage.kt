@@ -59,6 +59,7 @@ import com.cloud.creeper.R
 import com.cloud.creeper.base.DataState
 import com.cloud.creeper.repository.entity.Converter
 import com.cloud.creeper.repository.entity.ConverterWithSources
+import com.cloud.creeper.ui.ErrorDialog
 
 /**
  *
@@ -71,6 +72,7 @@ private const val TAG = "ConverterManagePage"
 fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick: () -> Unit = {}, onNewClick: () -> Unit, onEditClick: (converter : ConverterWithSources) -> Unit, onDetailsClick: (converter : ConverterWithSources) -> Unit) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val uiState = viewModel.subscribeConverterListState.collectAsStateWithLifecycle()
+    val updateState = viewModel.updateState.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -88,6 +90,29 @@ fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick
             },
             onDetailsClick = onDetailsClick)
 
+    }
+
+    when {
+        updateState.value.isLoading -> {
+            LoadingIndicator()
+        }
+
+        updateState.value.throwable != null -> {
+            val message = updateState.value.throwable!!.message ?: updateState.value.throwable!!.toString()
+            ErrorDialog(message = message)
+        }
+
+        updateState.value.vmError != null -> {
+            val message = updateState.value.vmError!!.errorMessage
+            ErrorDialog(message = message)
+        }
+
+        updateState.value.data != null -> {
+        }
+
+        else -> {
+
+        }
     }
 }
 

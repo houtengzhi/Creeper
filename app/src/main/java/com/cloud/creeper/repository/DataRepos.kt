@@ -113,7 +113,14 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                         val proxyNodeList = mutableListOf<ClashProxyNode>()
                         proxyConfigList.forEach { config ->
                             val clashConfig = config.toClashConfig()
-                            clashConfig.proxies?.let {
+                            clashConfig.proxies?.filter { node ->
+                                val exclude = converter.converter.exclude
+                                if (exclude.isNullOrEmpty()) {
+                                    true
+                                } else {
+                                    !node.toString().contains(exclude)
+                                }
+                            }?.let {
                                 proxyNodeList.addAll(it)
                             }
                         }
