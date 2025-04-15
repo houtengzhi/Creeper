@@ -49,7 +49,9 @@ import kotlinx.coroutines.CoroutineScope
 fun ConverterDetailsPage(
     converterWithSources: ConverterWithSources,
     onUpClick: () -> Unit = {},
-    viewModel: ConvertViewModel = hiltViewModel(),
+    viewModel: ConvertViewModel = hiltViewModel<ConvertViewModel, ConvertViewModel.ConvertViewModelFactory> { factory ->
+        factory.create(converterWithSources)
+    },
     authViewModel: AuthViewModel = hiltViewModel(),
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()

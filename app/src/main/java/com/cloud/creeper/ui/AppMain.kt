@@ -18,10 +18,12 @@ import com.cloud.creeper.compose.AppTheme
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
 import com.cloud.creeper.repository.entity.SubscriptionSource
+import com.cloud.creeper.ui.converter.ConvertViewModel
 import com.cloud.creeper.ui.converter.ConverterDetailsPage
 import com.cloud.creeper.ui.converter.EditConverterPage
 import com.cloud.creeper.ui.converter.KEY_GIST_FILE
 import com.cloud.creeper.ui.converter.KEY_REQUEST_CODE
+import com.cloud.creeper.ui.converter.REQUEST_CODE_SELECT_SUBSCRIPTION
 import com.cloud.creeper.ui.gists.GistsPage
 import com.cloud.creeper.ui.gists.GistsScreen
 import com.cloud.creeper.ui.gists.GistsViewModel
@@ -61,7 +63,11 @@ fun AppMain() {
                     })
             }
             composable(Screen.ConverterManage.route) {
-                ConverterManagePage(onUpClick = {
+                ConverterManagePage(
+                    viewModel = hiltViewModel<ConvertViewModel, ConvertViewModel.ConvertViewModelFactory> { factory ->
+                        factory.create(null)
+                    },
+                    onUpClick = {
                     navController.navigateUp()
                 }, onNewClick = {
                     navController.navigate(Screen.NewConverter.route)
@@ -124,6 +130,9 @@ fun AppMain() {
                     onUpClick = {
                         navController.navigateUp()
                     },
+                    viewModel = hiltViewModel<ConvertViewModel, ConvertViewModel.ConvertViewModelFactory> { factory ->
+                        factory.create(converter)
+                    },
                     onCloudIntegrationClick = {
                         navController.navigate(Screen.Authorize.route)
                     },
@@ -180,10 +189,10 @@ fun AppMain() {
 
                 },
                     onResultSet = { subscriptionSource ->
-                        if ("SELECT_SUBSCRIPTION" == requestCode) {
+                        if (REQUEST_CODE_SELECT_SUBSCRIPTION == requestCode) {
                             val data = Bundle()
                             data.putString(KEY_REQUEST_CODE, requestCode)
-                            data.putParcelable("SUBSCRIPTION_SOURCE", subscriptionSource)
+                            data.putParcelable(KEY_SUBSCRIPTION_SOURCE, subscriptionSource)
                             Log.d(TAG, "setResult(), data=${data}")
                             navController.setResult(data)
                             navController.popBackStack()

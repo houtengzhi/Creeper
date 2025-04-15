@@ -61,6 +61,7 @@ import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.ui.integration.AuthViewModel
+import com.cloud.creeper.util.KEY_SUBSCRIPTION_SOURCE
 import com.cloud.creeper.util.RepositoryType
 import com.cloud.creeper.util.SystemUtil
 import com.cloud.creeper.util.parcelable
@@ -94,7 +95,7 @@ fun EditConverterPage(
     var canSave by remember {
         mutableStateOf(viewModel.canSaveConverter)
     }
-    val addState = viewModel.addState.collectAsStateWithLifecycle()
+    val updateState = viewModel.updateState.collectAsStateWithLifecycle()
 
     val getAuthState = authViewModel.getTokenState.collectAsStateWithLifecycle()
 
@@ -144,20 +145,20 @@ fun EditConverterPage(
     }
 
     when {
-        addState.value.isLoading -> {
+        updateState.value.isLoading -> {
             LoadingIndicator()
         }
 
-        addState.value.throwable != null -> {
+        updateState.value.throwable != null -> {
 
         }
 
-        addState.value.vmError != null -> {
+        updateState.value.vmError != null -> {
 
         }
 
-        addState.value.data != null -> {
-            if (addState.value.data!!) {
+        updateState.value.data != null -> {
+            if (updateState.value.data!!) {
                 onUpClick()
             }
         }
@@ -207,6 +208,8 @@ fun EditConverterScreen(
     navToSelectGist: (coroutineScope: CoroutineScope, requestCode: String, auth: ServiceAuth, onResult: (data: Bundle) -> Unit) -> Unit
 ) {
 
+    Log.d(TAG, "EditConverterScreen()")
+
     var clientMenuExpanded by remember { mutableStateOf(false) }
 
     var showAddSubscriptionDialog by remember {
@@ -224,26 +227,6 @@ fun EditConverterScreen(
         converter.description?.let { viewModel.updateConverterDescription(it) }
     }
 
-    var dataChangeStatus by remember {
-        mutableIntStateOf(0)
-    }
-
-    var name by remember {
-        mutableStateOf(converterWithSources.converter.name)
-    }
-
-    var desc by remember {
-        mutableStateOf(converterWithSources.converter.description)
-    }
-
-    val subscriptionSourceList = remember {
-        mutableStateListOf(*converterWithSources.subscriptionSourceList.toTypedArray())
-    }
-
-    var outputType by remember {
-        mutableStateOf(ClientType.Clash)
-    }
-
     val supportedCloudRepositories = remember {
         var s = converterWithSources.cloudRepositoryList?.map { cloudRepository ->
             cloudRepository.type
@@ -253,38 +236,6 @@ fun EditConverterScreen(
         }
         mutableStateListOf(*s)
     }
-
-    var gistsOn by remember {
-        var on = false
-        converterWithSources.cloudRepositoryList?.forEach { cloudRepository ->
-            if (RepositoryType.REPOSITORY_GITHUB == cloudRepository.type) {
-                on = true
-            }
-        }
-        mutableStateOf(on)
-    }
-
-    var gistId by remember {
-        var f: String? = null
-        converterWithSources.cloudRepositoryList?.forEach { cloudRepository ->
-            if (RepositoryType.REPOSITORY_GITHUB == cloudRepository.type) {
-                f = cloudRepository.gistId
-            }
-        }
-        mutableStateOf(f)
-    }
-
-    var gistFileName by remember {
-        var f: String? = null
-        converterWithSources.cloudRepositoryList?.forEach { cloudRepository ->
-            if (RepositoryType.REPOSITORY_GITHUB == cloudRepository.type) {
-                f = cloudRepository.gistFileName
-            }
-        }
-        mutableStateOf(f)
-    }
-
-
 
     Column(
         modifier = modifier
@@ -297,11 +248,11 @@ fun EditConverterScreen(
                 .padding(start = 20.dp)
         )
         TextField(
-            value = name, onValueChange = {
-                name = it.trim()
-                val changed = name.isNotEmpty() && name != converterWithSources.converter.name
-                dataChangeStatus = if (changed) dataChangeStatus or FLAG_NAME else dataChangeStatus and FLAG_NAME.inv()
-                onDataChanged( dataChangeStatus != 0)
+            value = viewModel.converterName, onValueChange = {
+                viewModel.updateConverterName(it.trim())
+                val changed = viewModel.converterName.isNotEmpty() && viewModel.converterName != converterWithSources.converter.name
+                viewModel.updateDataChangedStatus(if (changed) viewModel.dataChangedStatus or FLAG_NAME else viewModel.dataChangedStatus and FLAG_NAME.inv())
+                onDataChanged( viewModel.dataChangedStatus != 0)
 
             }, singleLine = true, modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp)
@@ -313,11 +264,11 @@ fun EditConverterScreen(
                 .padding(start = 20.dp, top = 24.dp)
         )
         TextField(
-            value = if (desc != null) desc!! else "", onValueChange = {
-                desc = it.trim()
-                val changed = desc != converterWithSources.converter.description
-                dataChangeStatus = if (changed) dataChangeStatus or FLAG_DESC else dataChangeStatus and FLAG_DESC.inv()
-                onDataChanged(dataChangeStatus != 0)
+            value = viewModel.converterDescription, onValueChange = {
+                viewModel.updateConverterDescription(it.trim())
+                val changed = viewModel.converterDescription != converterWithSources.converter.description
+                viewModel.updateDataChangedStatus(if (changed) viewModel.dataChangedStatus or FLAG_DESC else viewModel.dataChangedStatus and FLAG_DESC.inv())
+                onDataChanged(viewModel.dataChangedStatus != 0)
 
             },
             placeholder = { Text(text = stringResource(id = R.string.Optional)) },
@@ -339,19 +290,20 @@ fun EditConverterScreen(
             )
 
             IconButton(modifier = Modifier.padding(end = 20.dp), onClick = {
-                navForResult(viewModel.viewModelScope, "SELECT_SUBSCRIPTION") { data ->
-                    val requestCode = data.getString("REQUEST_CODE")
+                navForResult(viewModel.viewModelScope, REQUEST_CODE_SELECT_SUBSCRIPTION) { data ->
+                    val requestCode = data.getString(KEY_REQUEST_CODE)
                     Log.d(TAG, "onResult(), requestCode=${requestCode}")
-                    if ("SELECT_SUBSCRIPTION" == requestCode) {
+                    if (REQUEST_CODE_SELECT_SUBSCRIPTION == requestCode) {
                         val subscriptionSource =
-                            data.parcelable<SubscriptionSource>("SUBSCRIPTION_SOURCE")
+                            data.parcelable<SubscriptionSource>(KEY_SUBSCRIPTION_SOURCE)
                         subscriptionSource?.let {
-                            Log.d(TAG, "onResult(), url=${it.sourceUrl}")
-                            if (!subscriptionSourceList.contains(it)) {
-                                subscriptionSourceList.add(it)
-                                val changed = subscriptionSourceList != converterWithSources.subscriptionSourceList
-                                dataChangeStatus = if (changed) dataChangeStatus or FLAG_SUBSCRIPTION_LIST else dataChangeStatus and FLAG_SUBSCRIPTION_LIST.inv()
-                                onDataChanged(dataChangeStatus != 0)
+                            Log.d(TAG, "onResult(), select ${it.name}")
+                            if (!viewModel.subscriptionSourceList.contains(it)) {
+                                viewModel.subscriptionSourceList.add(it)
+                                Log.d(TAG, "subscription source list size=${viewModel.subscriptionSourceList.size}")
+                                val changed = viewModel.subscriptionSourceList != converterWithSources.subscriptionSourceList
+                                viewModel.updateDataChangedStatus(if (changed) viewModel.dataChangedStatus or FLAG_SUBSCRIPTION_LIST else viewModel.dataChangedStatus and FLAG_SUBSCRIPTION_LIST.inv())
+                                onDataChanged(viewModel.dataChangedStatus != 0)
                             }
                         }
                     }
@@ -362,8 +314,8 @@ fun EditConverterScreen(
             }
         }
 
-        subscriptionSourceList.forEach { source ->
-
+        Log.d(TAG, "subscriptionSourceList size=${viewModel.subscriptionSourceList.size}")
+        viewModel.subscriptionSourceList.forEach { source ->
             Row(
                 modifier = Modifier
                     .padding(top = 12.dp)
@@ -391,10 +343,10 @@ fun EditConverterScreen(
 
 
                 IconButton(modifier = Modifier.padding(end = 20.dp), onClick = {
-                    subscriptionSourceList.remove(source)
-                    val changed = subscriptionSourceList != converterWithSources.subscriptionSourceList
-                    dataChangeStatus = if (changed) dataChangeStatus or FLAG_SUBSCRIPTION_LIST else dataChangeStatus and FLAG_SUBSCRIPTION_LIST.inv()
-                    onDataChanged(dataChangeStatus != 0)
+                    viewModel.subscriptionSourceList.remove(source)
+                    val changed = viewModel.subscriptionSourceList != converterWithSources.subscriptionSourceList
+                    viewModel.updateDataChangedStatus(if (changed) viewModel.dataChangedStatus or FLAG_SUBSCRIPTION_LIST else viewModel.dataChangedStatus and FLAG_SUBSCRIPTION_LIST.inv())
+                    onDataChanged(viewModel.dataChangedStatus != 0)
                 }) {
                     Icon(
                         imageVector = Icons.TwoTone.Clear,
@@ -415,7 +367,7 @@ fun EditConverterScreen(
             clientMenuExpanded = it
         }) {
             TextField(
-                value = outputType.name, onValueChange = {
+                value = viewModel.outputType.name, onValueChange = {
 
                 },
                 readOnly = true,
@@ -432,7 +384,7 @@ fun EditConverterScreen(
                 onDismissRequest = { clientMenuExpanded = false }) {
                 supportedClientList.forEach {
                     DropdownMenuItem(text = { Text(text = it.name) }, onClick = {
-                        outputType = it
+                        viewModel.updateClientType(it)
                         clientMenuExpanded = false
                     })
                 }
@@ -459,8 +411,8 @@ fun EditConverterScreen(
             Switch(
                 checked = supportedCloudRepositories.contains(RepositoryType.REPOSITORY_GITHUB),
                 onCheckedChange = {
-                    gistsOn = it
-                    if (gistsOn) {
+                    viewModel.updateGistsOn(it)
+                    if (viewModel.gistsOn) {
                         supportedCloudRepositories.add(RepositoryType.REPOSITORY_GITHUB)
 
                     } else {
@@ -469,7 +421,7 @@ fun EditConverterScreen(
                 }, enabled = isAuthorized)
         }
 
-        AnimatedVisibility(visible = gistsOn) {
+        AnimatedVisibility(visible = viewModel.gistsOn) {
             Row( modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp)
                 .fillMaxWidth()
@@ -487,7 +439,7 @@ fun EditConverterScreen(
                         gistMenuExpanded = it
                     }) {
 
-                    Text(text = if (gistFileName == null) stringResource(id = R.string.Create_a_new) else gistFileName!!,
+                    Text(text = if (viewModel.gistFileName == null) stringResource(id = R.string.Create_a_new) else viewModel.gistFileName!!,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 12.dp, end = 12.dp)
@@ -501,8 +453,8 @@ fun EditConverterScreen(
                             text = { Text(stringResource(id = R.string.Create_a_new)) },
                             onClick = {
                                 gistMenuExpanded = false
-                                gistId = null
-                                gistFileName = null
+                                viewModel.updateGistId(null)
+                                viewModel.updateGistFileName(null)
 
                             })
                         DropdownMenuItem(
@@ -518,8 +470,8 @@ fun EditConverterScreen(
                                     Log.d(TAG, "onResult(), requestCode=${requestCode}")
                                     if (REQUEST_CODE_SELECT_GIST == requestCode) {
                                         val gistFile = data.parcelable<GistFile>(KEY_GIST_FILE)
-                                        gistId = gistFile?.gistId
-                                        gistFileName = gistFile?.fileName
+                                        viewModel.updateGistId(gistFile?.gistId)
+                                        viewModel.updateGistFileName(gistFile?.fileName)
                                     }
                                 }
                             })

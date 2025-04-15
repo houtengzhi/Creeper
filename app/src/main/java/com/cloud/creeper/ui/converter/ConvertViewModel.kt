@@ -17,6 +17,10 @@ import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.repository.file.FileRepos
 import com.cloud.creeper.repository.http.HttpRepos
+import com.cloud.creeper.util.RepositoryType
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -35,8 +39,8 @@ import javax.inject.Inject
  *
  * Created by cloud on 2024/2/21.
  */
-@HiltViewModel
-class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, private val httpRepos: HttpRepos, private val dbRepos: DbRepos, private val fileRepos: FileRepos):  ViewModel() {
+@HiltViewModel(assistedFactory = ConvertViewModel.ConvertViewModelFactory::class)
+class ConvertViewModel @AssistedInject constructor(@Assisted private val initialConverter: ConverterWithSources?, private val dataRepos: DataRepos, private val httpRepos: HttpRepos, private val dbRepos: DbRepos, private val fileRepos: FileRepos):  ViewModel() {
 
     companion object {
         const val TAG = "ConvertViewModel"
@@ -73,9 +77,35 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
         this.gistFile = gistFile
     }
 
+    var dataChangedStatus by mutableStateOf(0)
+        private set
+
+    fun updateDataChangedStatus(status: Int) {
+        dataChangedStatus = status
+    }
+
     val supportedCloudRepositories = mutableStateListOf<String>()
 
+    var gistsOn by mutableStateOf(false)
+        private set
 
+    fun updateGistsOn(on: Boolean) {
+        gistsOn = on
+    }
+
+    var gistId: String? by mutableStateOf("")
+        private set
+
+    fun updateGistId(id: String?) {
+        gistId = id
+    }
+
+    var gistFileName: String? by mutableStateOf("")
+        private set
+
+    fun updateGistFileName(name: String?) {
+        gistFileName = name
+    }
 
     private val _addState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
     val addState = _addState.stateIn(viewModelScope, SharingStarted.Lazily, _addState.value)
@@ -85,6 +115,32 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
 
     private val _deleteState = MutableStateFlow<DataState<Boolean>>(DataState.initial())
     val deleteState = _deleteState.stateIn(viewModelScope, SharingStarted.Lazily, _deleteState.value)
+
+    init {
+        initialConverter?.let {
+            subscriptionSourceList.addAll(it.subscriptionSourceList)
+            updateConverterName(it.converter.name)
+            it.converter.description?.let { it1 -> updateConverterDescription(it1) }
+            updateClientType(it.converter.outputType)
+
+            var s = it.cloudRepositoryList?.map { cloudRepository ->
+                cloudRepository.type
+            }?.toTypedArray()
+            if (s == null) {
+                s = arrayOf()
+            }
+            supportedCloudRepositories.addAll(s)
+
+            it.cloudRepositoryList?.forEach {
+                    cloudRepository ->
+                if (RepositoryType.REPOSITORY_GITHUB == cloudRepository.type) {
+                    updateGistsOn(true)
+                    updateGistId(cloudRepository.gistId)
+                    updateGistFileName(cloudRepository.gistFileName)
+                }
+            }
+        }
+    }
 
     val subscribeConverterListState = dbRepos.subscribeConverterList()
         .flowOn(Dispatchers.IO)
@@ -193,5 +249,10 @@ class ConvertViewModel @Inject constructor(private val dataRepos: DataRepos, pri
             emit(DataState(it))
         }
         .stateIn(viewModelScope, started = SharingStarted.Lazily, initialValue = DataState.initial())
+
+    @AssistedFactory
+    interface ConvertViewModelFactory {
+        fun create(converter: ConverterWithSources?) : ConvertViewModel
+    }
 
 }

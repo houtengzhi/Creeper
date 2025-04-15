@@ -58,6 +58,7 @@ import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.ui.integration.AuthViewModel
+import com.cloud.creeper.util.KEY_SUBSCRIPTION_SOURCE
 import com.cloud.creeper.util.RepositoryType
 import com.cloud.creeper.util.SystemUtil
 import com.cloud.creeper.util.parcelable
@@ -70,6 +71,7 @@ import kotlinx.coroutines.CoroutineScope
 private const val TAG = "NewConverterPage"
 
 const val REQUEST_CODE_SELECT_GIST = "select_gist"
+const val REQUEST_CODE_SELECT_SUBSCRIPTION = "select_subscription"
 
 const val KEY_GIST_FILE = "gist_file"
 const val KEY_REQUEST_CODE = "request_code"
@@ -78,7 +80,9 @@ const val KEY_REQUEST_CODE = "request_code"
 @Composable
 fun NewConverterPage(
     onUpClick: () -> Unit = {},
-    viewModel: ConvertViewModel = hiltViewModel(),
+    viewModel: ConvertViewModel = hiltViewModel<ConvertViewModel, ConvertViewModel.ConvertViewModelFactory> { factory ->
+        factory.create(null)
+    },
     authViewModel: AuthViewModel = hiltViewModel(),
     onSubscriptionClick: () -> Unit,
     onCloudIntegrationClick: () -> Unit,
@@ -270,12 +274,12 @@ fun NewConverterScreen(
             )
 
             IconButton(modifier = Modifier.padding(end = 20.dp), onClick = {
-                navForResult(viewModel.viewModelScope, "SELECT_SUBSCRIPTION") { data ->
+                navForResult(viewModel.viewModelScope, REQUEST_CODE_SELECT_SUBSCRIPTION) { data ->
                     val requestCode = data.getString(KEY_REQUEST_CODE)
                     Log.d(TAG, "onResult(), requestCode=${requestCode}")
-                    if ("SELECT_SUBSCRIPTION" == requestCode) {
+                    if (REQUEST_CODE_SELECT_SUBSCRIPTION == requestCode) {
                         val subscriptionSource =
-                            data.parcelable<SubscriptionSource>("SUBSCRIPTION_SOURCE")
+                            data.parcelable<SubscriptionSource>(KEY_SUBSCRIPTION_SOURCE)
                         subscriptionSource?.let {
                             Log.d(TAG, "onResult(), url=${it.sourceUrl}")
                             url = it.sourceUrl
