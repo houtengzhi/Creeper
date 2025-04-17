@@ -27,3 +27,4 @@ object RepositoryType {
 const val KEY_SERVICE_AUTH = "service_auth"
 const val KEY_CONVERTER = "converter"
 const val KEY_SUBSCRIPTION_SOURCE = "subscription_source"
+const val KEY_REQUEST_CODE = "request_code"

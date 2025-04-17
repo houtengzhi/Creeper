@@ -57,4 +57,5 @@
     <string name="Create_a_new">"Create a new"</string>
     <string name="Overwrite_the_existing">"Overwrite the existing"</string>
     <string name="Delete_remote_repos">"Delete remote repos"</string>
+    <string name="Error">"Error"</string>
 </resources>

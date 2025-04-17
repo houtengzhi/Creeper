@@ -72,4 +72,13 @@ object SystemUtil {
             date
         }
     }
+
+    fun isValidRegex(pattern: String): Boolean {
+        return try {
+            Regex(pattern)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
 }

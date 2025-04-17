@@ -122,7 +122,7 @@ fun SubscriptionDetailsScreen(dataState: DataState<SubscriptionDetails>, modifie
         dataState.throwable != null -> {
 
         }
-        dataState.vmError != null -> {
+        dataState.error != null -> {
 
         }
         dataState.data != null -> {

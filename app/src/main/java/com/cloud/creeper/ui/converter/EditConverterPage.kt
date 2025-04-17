@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
@@ -61,8 +63,10 @@ import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.ui.integration.AuthViewModel
+import com.cloud.creeper.util.KEY_REQUEST_CODE
 import com.cloud.creeper.util.KEY_SUBSCRIPTION_SOURCE
 import com.cloud.creeper.util.RepositoryType
+import com.cloud.creeper.util.SUPPORTED_SOURCE_TYPE_LIST
 import com.cloud.creeper.util.SystemUtil
 import com.cloud.creeper.util.parcelable
 import kotlinx.coroutines.CoroutineScope
@@ -110,16 +114,20 @@ fun EditConverterPage(
                 onSaveClick = {
                     val cloudRepositoryList = mutableListOf<CloudRepository>()
                     viewModel.supportedCloudRepositories.forEach {
-                        val cloudRepository = CloudRepository(SystemUtil.generateCloudRepositoryId(), it)
+                        var cloudRepository = viewModel.getInitialConverter()!!.cloudRepositoryList?.find { cloudRepository ->  cloudRepository.type == it }
+                        if (cloudRepository == null) {
+                            cloudRepository = CloudRepository(SystemUtil.generateCloudRepositoryId(), it)
+                        }
                         cloudRepository.accessToken = getAuthState.value.data?.accessToken
                         cloudRepository.gistId = viewModel.gistId
                         cloudRepository.gistFileName = viewModel.gistFileName
                         cloudRepositoryList.add(cloudRepository)
                     }
                     val converter = ConverterWithSources(
-                        Converter(SystemUtil.generateConverterId(), viewModel.converterName)
+                        Converter(viewModel.getInitialConverter()!!.converter.id, viewModel.converterName)
                             .apply {
                                 description = viewModel.converterDescription
+                                exclude = viewModel.converterExclude
                                 createdTime = System.currentTimeMillis()
                                 updatedTime = System.currentTimeMillis()
                                 outputType = viewModel.outputType
@@ -154,7 +162,7 @@ fun EditConverterPage(
 
         }
 
-        updateState.value.vmError != null -> {
+        updateState.value.error != null -> {
 
         }
 
@@ -219,29 +227,11 @@ fun EditConverterScreen(
 
     val isAuthorized = auth != null && !auth.isExpired()
 
-    val supportedClientList = mutableListOf<ClientType>()
-    supportedClientList.add(ClientType.Clash)
-    supportedClientList.add(ClientType.V2Ray)
-
-    converterWithSources.apply {
-        viewModel.updateConverterName(converter.name)
-        converter.description?.let { viewModel.updateConverterDescription(it) }
-    }
-
-    val supportedCloudRepositories = remember {
-        var s = converterWithSources.cloudRepositoryList?.map { cloudRepository ->
-            cloudRepository.type
-        }?.toTypedArray()
-        if (s == null) {
-            s = arrayOf()
-        }
-        mutableStateListOf(*s)
-    }
-
     Column(
         modifier = modifier
             .fillMaxWidth()
             .fillMaxHeight()
+            .verticalScroll(rememberScrollState())
     ) {
 
         Text(
@@ -383,7 +373,7 @@ fun EditConverterScreen(
             ExposedDropdownMenu(
                 expanded = clientMenuExpanded,
                 onDismissRequest = { clientMenuExpanded = false }) {
-                supportedClientList.forEach {
+                SUPPORTED_SOURCE_TYPE_LIST.forEach {
                     DropdownMenuItem(text = { Text(text = it.name) }, onClick = {
                         viewModel.updateClientType(it)
                         clientMenuExpanded = false
@@ -397,7 +387,7 @@ fun EditConverterScreen(
                 .padding(start = 20.dp, top = 24.dp)
         )
         TextField(
-            value = viewModel.converterDescription, onValueChange = {
+            value = viewModel.converterExclude, onValueChange = {
                 viewModel.updateConverterExclude(it.trim())
                 val changed = viewModel.converterExclude != converterWithSources.converter.exclude
                 viewModel.updateDataChangedStatus(if (changed) viewModel.dataChangedStatus or FLAG_EXCLUDE else viewModel.dataChangedStatus and FLAG_EXCLUDE.inv())
@@ -428,21 +418,21 @@ fun EditConverterScreen(
                 }
             }
             Switch(
-                checked = supportedCloudRepositories.contains(RepositoryType.REPOSITORY_GITHUB),
+                checked = viewModel.supportedCloudRepositories.contains(RepositoryType.REPOSITORY_GITHUB),
                 onCheckedChange = {
                     viewModel.updateGistsOn(it)
                     if (viewModel.gistsOn) {
-                        supportedCloudRepositories.add(RepositoryType.REPOSITORY_GITHUB)
+                        viewModel.supportedCloudRepositories.add(RepositoryType.REPOSITORY_GITHUB)
 
                     } else {
-                        supportedCloudRepositories.remove(RepositoryType.REPOSITORY_GITHUB)
+                        viewModel.supportedCloudRepositories.remove(RepositoryType.REPOSITORY_GITHUB)
                     }
                 }, enabled = isAuthorized)
         }
 
         AnimatedVisibility(visible = viewModel.gistsOn) {
             Row( modifier = Modifier
-                .padding(start = 12.dp, end = 12.dp)
+                .padding(start = 12.dp, end = 12.dp, bottom = 30.dp)
                 .fillMaxWidth()
                 .wrapContentHeight(),
                 horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -485,7 +475,7 @@ fun EditConverterScreen(
                                     REQUEST_CODE_SELECT_GIST,
                                     auth!!
                                 ) { data ->
-                                    val requestCode = data.getString("REQUEST_CODE")
+                                    val requestCode = data.getString(KEY_REQUEST_CODE)
                                     Log.d(TAG, "onResult(), requestCode=${requestCode}")
                                     if (REQUEST_CODE_SELECT_GIST == requestCode) {
                                         val gistFile = data.parcelable<GistFile>(KEY_GIST_FILE)

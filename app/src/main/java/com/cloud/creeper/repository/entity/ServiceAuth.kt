@@ -14,7 +14,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "service_auth", indices = [Index(value = ["service_name"], unique = true)])
 data class ServiceAuth(@PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Int = 0,
                        @ColumnInfo(name = "service_name")val serviceName: String,
-                       val accessToken: String,
+                       @ColumnInfo(name = "service_uid") val serviceUid: String,
                        @ColumnInfo(name = "auth_type") val authType: String) : Parcelable {
     @ColumnInfo(name = "created_time")
     var createdTime: Long = 0
@@ -32,6 +32,9 @@ data class ServiceAuth(@PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id")
 
     @ColumnInfo(name = "phone_number")
     var phoneNumber: String? = null
+
+    @ColumnInfo(name = "access_token")
+    var accessToken: String? = null
 
     constructor(parcel: Parcel) : this(
         parcel.readInt(),

@@ -55,7 +55,7 @@ fun AuthInfoPage(viewModel: AuthViewModel = hiltViewModel(), onUpClick: () -> Un
         deleteAuthState.value.throwable != null -> {
 
         }
-        deleteAuthState.value.vmError != null -> {
+        deleteAuthState.value.error != null -> {
 
         }
         deleteAuthState.value.data != null -> {

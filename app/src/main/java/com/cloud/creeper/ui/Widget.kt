@@ -14,19 +14,21 @@ import com.cloud.creeper.base.VMError
 fun ErrorDialog(message: String, onDismissRequest: () -> Unit = { }) {
     AlertDialog(onDismissRequest = onDismissRequest, modifier = Modifier,
         confirmButton = {
-        },
-        dismissButton = {
             TextButton(onClick = {
                 onDismissRequest()
             }) {
-                Text(text = stringResource(id = R.string.Cancel))
+                Text(text = stringResource(id = R.string.Dismiss))
             }
         },
+        dismissButton = {
+
+        },
         title = {
+            Text(text = stringResource(id = R.string.Error))
         },
         text = {
             Text(text = message)
         },
-        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = true)
     )
 }

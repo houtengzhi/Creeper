@@ -77,7 +77,7 @@ fun GistsScreen(modifier: Modifier = Modifier, dataState: DataState<List<Gist>>,
         dataState.throwable != null -> {
 
         }
-        dataState.vmError != null -> {
+        dataState.error != null -> {
 
         }
         dataState.data != null -> {

@@ -20,6 +20,7 @@ import com.cloud.creeper.repository.file.FileRepos
 import com.cloud.creeper.repository.http.HttpRepos
 import com.cloud.creeper.ui.source.SubscriptionViewModel
 import com.cloud.creeper.util.RepositoryType
+import com.cloud.creeper.util.SystemUtil
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -118,7 +119,17 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                                 if (exclude.isNullOrEmpty()) {
                                     true
                                 } else {
-                                    !node.toString().contains(exclude)
+                                    val excluded = if (SystemUtil.isValidRegex(exclude)) {
+                                        Regex(exclude).find(node.toString()) != null
+                                    } else {
+                                        node.toString().contains(exclude)
+                                    }
+                                    if (excluded) {
+                                        Log.v(TAG, "${node.name} is excluded")
+                                        false
+                                    } else {
+                                        true
+                                    }
                                 }
                             }?.let {
                                 proxyNodeList.addAll(it)
@@ -186,6 +197,44 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                 }
             }
             dbRepos.suspendDeleteConverter(converter)
+        }
+    }
+
+    suspend fun suspendAddSubscriptionSource(subscriptionSource: SubscriptionSource): ApiResponse<SubscriptionSource> {
+        return withContext(Dispatchers.Default) {
+            var content: String? = null
+            when (val apiResponse = httpRepos.suspendFetchUrl(subscriptionSource.sourceUrl)) {
+                is ApiResponse.Success -> {
+                    Log.d(TAG, "fetchSubscriptionContent success, sourceType=${subscriptionSource.type}")
+                    fileRepos.saveSubscriptionSource(subscriptionSource.getCacheFileName(), apiResponse.data)
+                    subscriptionSource.pullStatus = SourceStatus.UPDATED
+                    subscriptionSource.pulledTime = System.currentTimeMillis()
+                    subscriptionSource.updatedTime = System.currentTimeMillis()
+                    content = apiResponse.data
+                }
+
+                is ApiResponse.Error -> {
+                    Log.e(TAG, "fetchSubscriptionContent error=${apiResponse}")
+                    return@withContext apiResponse
+                }
+
+                is ApiResponse.Exception -> {
+                    Log.e(TAG, "fetchSubscriptionContent exception=${apiResponse}")
+                    return@withContext apiResponse
+                }
+
+            }
+
+            content.let {
+                val clashConfig = ConverterUtil.parseToClashConfig(subscriptionSource.type, it)
+                Log.d(TAG, "proxies size=${clashConfig.proxies?.size}"
+                )
+                if (!clashConfig.proxies.isNullOrEmpty()) {
+                    dbRepos.suspendInsertSubscriptionSource(subscriptionSource)
+                    return@withContext ApiResponse.Success(subscriptionSource)
+                }
+            }
+            return@withContext ApiResponse.Error(VMError.EmptyProxyList)
         }
     }
 

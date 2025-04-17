@@ -122,7 +122,8 @@ class AuthViewModel @Inject constructor(private val authRepos: AuthRepos, privat
         viewModelScope.launch(Dispatchers.Default + coroutineExceptionHandler) {
             val user = httpRepos.suspendVerifyAuthenticatedUser(token)
             Log.d(TAG, "verifyAuthenticatedUser() user=$user")
-            val auth = ServiceAuth(serviceName = SERVICE_GITHUB, accessToken = token, authType = AuthType.MANUALLY)
+            val auth = ServiceAuth(serviceName = SERVICE_GITHUB, serviceUid = user.id.toString(), authType = AuthType.MANUALLY)
+            auth.accessToken = token
             auth.userName = if (user.name.isNullOrEmpty()) user.login else user.name
             auth.email = user.email
             _verifyTokenState.update {

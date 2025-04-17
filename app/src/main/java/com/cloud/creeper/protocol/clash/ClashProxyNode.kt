@@ -58,4 +58,10 @@ data class ClashProxyNode(override val name : String, override val type: String,
     @EncodeDefault(EncodeDefault.Mode.NEVER) @SerialName("fastOpen") var fastOpen: Boolean? = null
     @EncodeDefault(EncodeDefault.Mode.NEVER) @SerialName("up") var up: Int? = null
     @EncodeDefault(EncodeDefault.Mode.NEVER) @SerialName("down") var down: Int? = null
+
+    override fun toString(): String {
+        return "ClashProxyNode(name='$name', type='$type', server='$server', port='$port', password=$password, tls=$tls, network=$network, uuid=$uuid, alterId=$alterId, cipher=$cipher, wsPath=$wsPath, wsHeaders=$wsHeaders, wsOpts=$wsOpts, skipCertVerify=$skipCertVerify, udp=$udp, serverName=$serverName, country=$country, obfs=$obfs, sni=$sni, smux=$smux, flow=$flow, clientFingerprint=$clientFingerprint, realityOpts=$realityOpts, fastOpen=$fastOpen, up=$up, down=$down)"
+    }
+
+
 }

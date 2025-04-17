@@ -102,8 +102,8 @@ fun ConverterManagePage(viewModel: ConvertViewModel = hiltViewModel(), onUpClick
             ErrorDialog(message = message)
         }
 
-        updateState.value.vmError != null -> {
-            val message = updateState.value.vmError!!.errorMessage
+        updateState.value.error != null -> {
+            val message = updateState.value.error!!.errorMessage
             ErrorDialog(message = message)
         }
 
@@ -169,7 +169,7 @@ fun ConverterPageScreen(dataState: DataState<List<ConverterWithSources>>, modifi
 
         }
 
-        dataState.vmError != null -> {
+        dataState.error != null -> {
 
         }
 

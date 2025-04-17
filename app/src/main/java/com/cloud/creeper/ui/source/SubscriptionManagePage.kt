@@ -55,6 +55,7 @@ import com.cloud.creeper.R
 import com.cloud.creeper.base.DataState
 import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.repository.entity.SubscriptionSource
+import com.cloud.creeper.ui.ErrorDialog
 import com.cloud.creeper.util.SUPPORTED_SOURCE_TYPE_LIST
 import com.cloud.creeper.util.SystemUtil
 
@@ -90,7 +91,7 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel, onUpClick: () -> Un
     ) { contentPadding ->
         Log.d(TAG, "Scaffold() $currentRecomposeScope")
 
-        ConverterPageScreen(uiState.value, addState.value, deleteState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
+        ConverterPageScreen(viewModel, uiState.value, addState.value, deleteState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
             onItemClick = onResultSet,
             onEditClick = {
                 viewModel.editSubscriptionSource(it)
@@ -154,20 +155,20 @@ private fun MoreMenu(expanded: Boolean, onDismissRequest: () -> Unit, onNewClick
 }
 
 @Composable
-fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState: DataState<Boolean>, deleteState: DataState<Boolean>, modifier: Modifier = Modifier,
+fun ConverterPageScreen(viewModel: SubscriptionViewModel, dataState: DataState<List<SubscriptionSource>>, addState: DataState<Boolean>, deleteState: DataState<Boolean>, modifier: Modifier = Modifier,
                         onItemClick: (subscriptionSource: SubscriptionSource) -> Unit,
                         onEditClick: (subscriptionSource: SubscriptionSource) -> Unit,
                         onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit,
                         onUpdateClick: (subscriptionSource: SubscriptionSource) -> Unit,
                         onDetailsClick: (subscriptionSource: SubscriptionSource) -> Unit) {
-    Log.d(TAG, "ConverterPageScreen(), dataState=${dataState}")
+    Log.d(TAG, "ConverterPageScreen(), dataState=${dataState} addState=${addState}")
     when {
         dataState.isLoading -> {
         }
         dataState.throwable != null -> {
 
         }
-        dataState.vmError != null -> {
+        dataState.error != null -> {
 
         }
         dataState.data != null -> {
@@ -182,15 +183,25 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
         }
     }
 
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+
     when {
         addState.isLoading -> {
             LoadingIndicator()
         }
         addState.throwable != null -> {
+            Log.d(TAG, "add failed for exception: ${addState.throwable.message}")
+            showErrorDialog = true
+            errorMessage = addState.throwable.message ?: "Exception"
+            viewModel.resetAddState()
 
         }
-        addState.vmError != null -> {
-
+        addState.error != null -> {
+            Log.d(TAG, "add failed for ${addState.error}")
+            showErrorDialog = true
+            errorMessage = addState.error!!.toString()
+            viewModel.resetAddState()
         }
         else -> {
 
@@ -204,12 +215,16 @@ fun ConverterPageScreen(dataState: DataState<List<SubscriptionSource>>, addState
         deleteState.throwable != null -> {
 
         }
-        deleteState.vmError != null -> {
+        deleteState.error != null -> {
 
         }
         else -> {
 
         }
+    }
+
+    if (showErrorDialog) {
+        ErrorDialog(message = errorMessage, onDismissRequest = { showErrorDialog = false })
     }
 }
 

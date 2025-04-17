@@ -7,16 +7,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloud.creeper.base.DataState
 import com.cloud.creeper.base.VMError
+import com.cloud.creeper.protocol.core.ApiResponse
 import com.cloud.creeper.protocol.core.ConverterUtil
 import com.cloud.creeper.protocol.core.onError
+import com.cloud.creeper.protocol.core.onException
 import com.cloud.creeper.protocol.core.onSuccess
+import com.cloud.creeper.protocol.core.suspendOnError
+import com.cloud.creeper.protocol.core.suspendOnException
 import com.cloud.creeper.protocol.core.suspendOnSuccess
+import com.cloud.creeper.repository.DataRepos
 import com.cloud.creeper.repository.db.DbRepos
 import com.cloud.creeper.repository.entity.SourceStatus
 import com.cloud.creeper.repository.entity.SubscriptionDetails
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.repository.file.FileRepos
 import com.cloud.creeper.repository.http.HttpRepos
+import com.cloud.creeper.support.livedata.UnPeekLiveData
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -41,14 +47,14 @@ import kotlinx.coroutines.withContext
  * Created by cloud on 2024/2/27.
  */
 @HiltViewModel(assistedFactory = SubscriptionViewModel.SubscriptionViewModelFactory::class)
-class SubscriptionViewModel @AssistedInject constructor(@Assisted private val subscriptionSource: SubscriptionSource? = null, private val httpRepos: HttpRepos, private val dbRepos: DbRepos, private val fileRepos: FileRepos):  ViewModel() {
+class SubscriptionViewModel @AssistedInject constructor(@Assisted private val subscriptionSource: SubscriptionSource? = null, private val dataRepos: DataRepos, private val httpRepos: HttpRepos, private val dbRepos: DbRepos, private val fileRepos: FileRepos):  ViewModel() {
 
     companion object {
         const val TAG = "SubscriptionViewModel"
     }
 
-    private val _addState = MutableLiveData<DataState<Boolean>>()
-    val addState: MutableLiveData<DataState<Boolean>> get() = _addState
+    private val _addState = UnPeekLiveData<DataState<Boolean>>()
+    val addState: UnPeekLiveData<DataState<Boolean>> get() = _addState
 
     private val _editState = MutableLiveData<DataState<Boolean>>()
     val editState: LiveData<DataState<Boolean>> get() = _editState
@@ -94,8 +100,8 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
         viewModelScope.launch {
             flow {
                 Log.d(TAG, "addSubscriptionSource()")
-                dbRepos.suspendInsertSubscriptionSource(source)
-                emit(true)
+                val apiResponse = dataRepos.suspendAddSubscriptionSource(source)
+                emit(apiResponse)
             }
                 .onStart {
                     Log.d(TAG, "addSubscriptionSource onStart")
@@ -107,9 +113,20 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
                 }
                 .collect {
                     Log.d(TAG, "addSubscriptionSource collect")
-                    _addState.value = DataState(isLoading = false, data = true, throwable = null)
+                    it.onSuccess {
+                        _addState.value = DataState(isLoading = false, data = true, throwable = null)
+                    }.onError {
+                        _addState.value = DataState(this)
+                    }.onException {
+                        _addState.value = DataState(this.throwable)
+                    }
+
                 }
         }
+    }
+
+    fun resetAddState() {
+        _addState.value = DataState.initial()
     }
 
     fun editSubscriptionSource(source: SubscriptionSource) {

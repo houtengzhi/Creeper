@@ -41,7 +41,7 @@ class GistsViewModel @AssistedInject constructor(@Assisted private val auth: Ser
     init {
         Log.d(TAG, "Auth ${auth}")
         auth?.let {
-            fetchGistList(it.accessToken)
+            fetchGistList(it.accessToken!!)
         }
     }
 

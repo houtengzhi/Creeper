@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
@@ -58,6 +60,7 @@ import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.ServiceAuth
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.ui.integration.AuthViewModel
+import com.cloud.creeper.util.KEY_REQUEST_CODE
 import com.cloud.creeper.util.KEY_SUBSCRIPTION_SOURCE
 import com.cloud.creeper.util.RepositoryType
 import com.cloud.creeper.util.SystemUtil
@@ -74,7 +77,6 @@ const val REQUEST_CODE_SELECT_GIST = "select_gist"
 const val REQUEST_CODE_SELECT_SUBSCRIPTION = "select_subscription"
 
 const val KEY_GIST_FILE = "gist_file"
-const val KEY_REQUEST_CODE = "request_code"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,6 +119,7 @@ fun NewConverterPage(
                         Converter(SystemUtil.generateConverterId(), viewModel.converterName)
                             .apply {
                                 description = viewModel.converterDescription
+                                exclude = viewModel.converterExclude
                                 createdTime = System.currentTimeMillis()
                                 updatedTime = System.currentTimeMillis()
                                 outputType = viewModel.outputType
@@ -151,7 +154,7 @@ fun NewConverterPage(
 
         }
 
-        addState.value.vmError != null -> {
+        addState.value.error != null -> {
 
         }
 
@@ -225,6 +228,7 @@ fun NewConverterScreen(
         modifier = modifier
             .fillMaxWidth()
             .fillMaxHeight()
+            .verticalScroll(rememberScrollState())
     ) {
 
         var url by remember {
@@ -370,6 +374,22 @@ fun NewConverterScreen(
         }
 
         Text(
+            text = stringResource(id = R.string.Exclude), modifier = Modifier
+                .padding(start = 20.dp, top = 24.dp)
+        )
+        TextField(
+            value = viewModel.converterExclude, onValueChange = {
+                viewModel.updateConverterExclude(it.trim())
+                onDataChanged(viewModel.canSaveConverter)
+
+            },
+            placeholder = { Text(text = stringResource(id = R.string.Optional)) },
+            singleLine = true, modifier = Modifier
+                .padding(start = 12.dp, end = 12.dp)
+                .fillMaxWidth()
+        )
+
+        Text(
             text = "Save to Cloud", modifier = Modifier
                 .padding(start = 20.dp, top = 24.dp)
         )
@@ -401,7 +421,7 @@ fun NewConverterScreen(
 
         AnimatedVisibility(visible = gistsOn) {
             Row( modifier = Modifier
-                .padding(start = 12.dp, end = 12.dp)
+                .padding(start = 12.dp, end = 12.dp, bottom = 30.dp)
                 .fillMaxWidth()
                 .wrapContentHeight(),
                 horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {

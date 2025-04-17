@@ -106,7 +106,7 @@ fun AuthorizePage(viewModel: AuthViewModel = hiltViewModel(), onUpClick: () -> U
         saveAuthState.value.throwable != null -> {
 
         }
-        saveAuthState.value.vmError != null -> {
+        saveAuthState.value.error != null -> {
 
         }
         saveAuthState.value.data != null -> {
@@ -124,7 +124,7 @@ fun AuthorizePage(viewModel: AuthViewModel = hiltViewModel(), onUpClick: () -> U
         deleteAuthState.value.throwable != null -> {
 
         }
-        deleteAuthState.value.vmError != null -> {
+        deleteAuthState.value.error != null -> {
 
         }
         deleteAuthState.value.data != null -> {
@@ -143,7 +143,7 @@ fun AuthorizePage(viewModel: AuthViewModel = hiltViewModel(), onUpClick: () -> U
         verifyTokenState.value.throwable != null -> {
 
         }
-        verifyTokenState.value.vmError != null -> {
+        verifyTokenState.value.error != null -> {
 
         }
         verifyTokenState.value.data != null -> {
@@ -294,7 +294,9 @@ fun authorize(activity: Activity, onAuthorizeSuccess: (auth: ServiceAuth) -> Uni
         }
 
         accessToken?.let {
-            val auth = ServiceAuth(serviceName = SERVICE_GITHUB, accessToken = accessToken, authType = AuthType.OAUTH2)
+            val id = profile?.get("id").toString()
+            val auth = ServiceAuth(serviceName = SERVICE_GITHUB, serviceUid = id, authType = AuthType.OAUTH2)
+            auth.accessToken = accessToken
             auth.userName = profile?.get("login").toString()
             auth.email = profile?.get("email").toString()
 
