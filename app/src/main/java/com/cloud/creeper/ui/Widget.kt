@@ -1,6 +1,7 @@
 package com.cloud.creeper.ui
 
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,4 +32,9 @@ fun ErrorDialog(message: String, onDismissRequest: () -> Unit = { }) {
         },
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = true)
     )
+}
+
+@Composable
+fun LoadingIndicator(modifier: Modifier) {
+    CircularProgressIndicator(modifier)
 }

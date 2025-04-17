@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,7 +17,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,7 +49,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cloud.creeper.R
 import com.cloud.creeper.base.DataState
@@ -188,7 +187,7 @@ fun ConverterPageScreen(viewModel: SubscriptionViewModel, dataState: DataState<L
 
     when {
         addState.isLoading -> {
-            LoadingIndicator()
+            com.cloud.creeper.ui.LoadingIndicator(modifier = Modifier.width(64.dp))
         }
         addState.throwable != null -> {
             Log.d(TAG, "add failed for exception: ${addState.throwable.message}")
@@ -210,7 +209,7 @@ fun ConverterPageScreen(viewModel: SubscriptionViewModel, dataState: DataState<L
 
     when {
         deleteState.isLoading -> {
-            LoadingIndicator()
+            com.cloud.creeper.ui.LoadingIndicator(modifier = Modifier.width(64.dp))
         }
         deleteState.throwable != null -> {
 
@@ -251,7 +250,9 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
 
         Column(modifier = Modifier.weight(1f)) {
 
-            Row(modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(text = subscriptionSource.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp), maxLines = 1)
                 Text(text = subscriptionSource.getPulledTimeText(context),
                     modifier = Modifier.padding(end = 12.dp),
@@ -547,9 +548,4 @@ private fun DeleteSubscriptionSourceDialog(subscriptionSource: SubscriptionSourc
         },
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
     )
-}
-
-@Composable
-private fun LoadingIndicator() {
-    CircularProgressIndicator()
 }
