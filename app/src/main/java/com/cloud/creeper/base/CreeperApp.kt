@@ -1,6 +1,7 @@
 package com.cloud.creeper.base
 
 import android.app.Application
+import com.cloud.creeper.server.ServerManage
 import dagger.hilt.android.HiltAndroidApp
 
 /**
@@ -17,5 +18,6 @@ class CreeperApp: Application() {
     override fun onCreate() {
         super.onCreate()
         INSTANCE = this
+        ServerManage.init(applicationContext)
     }
 }

@@ -27,6 +27,7 @@ import com.cloud.creeper.ui.gists.GistsPage
 import com.cloud.creeper.ui.gists.GistsScreen
 import com.cloud.creeper.ui.gists.GistsViewModel
 import com.cloud.creeper.ui.integration.AuthorizePage
+import com.cloud.creeper.ui.settings.SettingsPage
 import com.cloud.creeper.ui.source.SubscriptionDetailsPage
 import com.cloud.creeper.ui.source.SubscriptionViewModel
 import com.cloud.creeper.util.KEY_CONVERTER
@@ -60,7 +61,10 @@ fun AppMain() {
                     },
                     onCloudIntegrationClick = {
                         navController.navigate(Screen.Authorize.route)
-                    })
+                    },
+                    onSettingsClick = {
+                        navController.navigate(Screen.SettingsScreen.route)
+                })
             }
             composable(Screen.ConverterManage.route) {
                 ConverterManagePage(
@@ -242,6 +246,11 @@ fun AppMain() {
                     })
             }
 
+            composable(Screen.SettingsScreen.route) {
+                SettingsPage( onUpClick = {
+                    navController.navigateUp()
+                })
+            }
 
 
             composable(route = Screen.Gallery.route,
@@ -293,6 +302,8 @@ sealed class Screen(val route: String, val navArguments: List<NamedNavArgument> 
     }
 
     data object AuthInfo: Screen("AuthInfo")
+
+    data object SettingsScreen: Screen("Settings")
 
     data object Gallery: Screen(route = "Gallery/{sourceId}",
         navArguments = listOf(navArgument("sourceId") {type = NavType.IntType})

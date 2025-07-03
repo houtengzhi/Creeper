@@ -58,4 +58,6 @@
     <string name="Overwrite_the_existing">"Overwrite the existing"</string>
     <string name="Delete_remote_repos">"Delete remote repos"</string>
     <string name="Error">"Error"</string>
+    <string name="Server">“Server”</string>
+    <string name="Http_Port">"Http Port"</string>
 </resources>

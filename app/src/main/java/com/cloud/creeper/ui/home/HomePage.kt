@@ -62,7 +62,7 @@ import com.google.accompanist.permissions.shouldShowRationale
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
-fun HomePage(onConvertClick: () -> Unit = {}, onSubscriptionSourceManageClick: () -> Unit = {}, onCloudIntegrationClick: () -> Unit = {}) {
+fun HomePage(onConvertClick: () -> Unit = {}, onSubscriptionSourceManageClick: () -> Unit = {}, onCloudIntegrationClick: () -> Unit = {}, onSettingsClick: () -> Unit = {}) {
 
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -74,7 +74,7 @@ fun HomePage(onConvertClick: () -> Unit = {}, onSubscriptionSourceManageClick: (
     ) { contentPadding ->
         HomePageScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
             onConvertClick = onConvertClick, onSubscriptionSourceManageClick = onSubscriptionSourceManageClick,
-            onCloudIntegrationClick = onCloudIntegrationClick)
+            onCloudIntegrationClick = onCloudIntegrationClick, onSettingsClick = onSettingsClick)
 
         var showRationableDialog by remember {
             mutableStateOf(false)
@@ -132,7 +132,7 @@ private fun HomeTopAppBar(scrollBehavior: TopAppBarScrollBehavior,
 
 @Composable
 private fun HomePageScreen(modifier: Modifier = Modifier, onConvertClick: () -> Unit, onSubscriptionSourceManageClick: () -> Unit,
-                           onCloudIntegrationClick: () -> Unit) {
+                           onCloudIntegrationClick: () -> Unit, onSettingsClick: () -> Unit) {
 
     Column(modifier = modifier
         .fillMaxWidth()
@@ -196,7 +196,7 @@ private fun HomePageScreen(modifier: Modifier = Modifier, onConvertClick: () -> 
         CommonItem(
             iconResId = R.drawable.ic_settings,
             title = stringResource(id = R.string.Settings),
-            onClick = { },
+            onClick = onSettingsClick,
             modifier = Modifier
         )
 
