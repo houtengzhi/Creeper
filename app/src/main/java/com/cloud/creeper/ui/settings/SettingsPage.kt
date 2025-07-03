@@ -1,10 +1,13 @@
 package com.cloud.creeper.ui.settings
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,7 +41,7 @@ import com.cloud.creeper.ui.integration.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsPage(onUpClick: () -> Unit) {
+fun SettingsPage(viewModel: SettingsViewModel = hiltViewModel(), onUpClick: () -> Unit) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
 
@@ -48,19 +51,19 @@ fun SettingsPage(onUpClick: () -> Unit) {
             TopAppBar(scrollBehavior = scrollBehavior, onUpClick = onUpClick)
         }
     ) { contentPadding ->
-        SettingsScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), {
-
-        })
+        SettingsScreen(modifier = Modifier.padding(top = contentPadding.calculateTopPadding()), viewModel)
 
     }
 
 }
 
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier, saveAuth: (auth: ServiceAuth) -> Unit) {
+fun SettingsScreen(modifier: Modifier = Modifier, viewModel: SettingsViewModel) {
 
-    Column {
-        TextInputItem(title = stringResource(id = R.string.Http_Port), description = "", onClick = { /*TODO*/ }, modifier = Modifier)
+    Column(modifier = modifier
+        .fillMaxWidth()
+        .fillMaxHeight()) {
+        TextInputItem(title = stringResource(id = R.string.Http_Port), description = "", value = viewModel.getServerPort().toString(), onClick = { /*TODO*/ }, modifier = Modifier)
     }
 
 }
@@ -86,24 +89,33 @@ private fun TopAppBar(scrollBehavior: TopAppBarScrollBehavior,
 }
 
 @Composable
-private fun TextInputItem(title: String, description: String, onClick: () -> Unit, modifier: Modifier) {
+private fun TextInputItem(title: String, description: String?, value: String, onClick: () -> Unit, modifier: Modifier) {
     Row(verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .padding(start = 24.dp, end = 24.dp)
+            .clickable(onClick = onClick)
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(start = 24.dp, top = 12.dp, end = 24.dp)
-            .clickable(onClick = onClick)) {
+            .padding(top = 12.dp, bottom = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
 
         Column {
             Text(text = title,
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 24.dp, top = 12.dp),
+                modifier = Modifier.padding(start = 24.dp),
                 textAlign = TextAlign.Center)
 
-            Text(text = description,
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 12.dp))
+            if (!description.isNullOrBlank()) {
+                Text(text = description,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(start = 24.dp))
+            }
+
         }
+
+        Text(text = value,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(end = 24.dp),
+            textAlign = TextAlign.Center)
 
 
     }
