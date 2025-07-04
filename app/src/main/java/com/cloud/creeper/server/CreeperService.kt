@@ -46,7 +46,7 @@ class CreeperService: Service() {
         super.onCreate()
 
         mServer = AndServer.webServer(this)
-            .port(ServerManage.DEFAULT_PORT)
+            .port(ServerManage.getPort())
             .timeout(15, TimeUnit.SECONDS)
             .listener(object : Server.ServerListener {
                 override fun onStarted() {

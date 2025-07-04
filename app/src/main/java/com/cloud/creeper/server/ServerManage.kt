@@ -2,6 +2,7 @@ package com.cloud.creeper.server
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 /**
  *
@@ -13,14 +14,14 @@ object ServerManage {
     private const val PREF_NAME = "server_manage_pref"
     private lateinit var prefs: SharedPreferences
 
-    private const val KEY_PORT = "server_port";
+    private const val KEY_HTTP__PORT = "http_port";
 
     fun init(context: Context) {
         prefs = context.applicationContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     }
 
     private fun putInt(key: String, value: Int) {
-        prefs.edit().putInt(key, value).apply()
+        prefs.edit { putInt(key, value) }
     }
 
     private fun getInt(key: String, defaultValue: Int = 0): Int {
@@ -28,10 +29,10 @@ object ServerManage {
     }
 
     fun getPort(): Int {
-        return prefs.getInt(KEY_PORT, DEFAULT_PORT)
+        return prefs.getInt(KEY_HTTP__PORT, DEFAULT_PORT)
     }
 
     fun savePort(port: Int) {
-        prefs.edit().putInt(KEY_PORT, port).apply()
+        prefs.edit { putInt(KEY_HTTP__PORT, port) }
     }
 }

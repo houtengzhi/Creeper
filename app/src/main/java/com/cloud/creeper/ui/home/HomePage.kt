@@ -50,6 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.cloud.creeper.R
 import com.cloud.creeper.server.CreeperService
+import com.cloud.creeper.server.ServerManage
+import com.cloud.creeper.util.NetUtil
 import com.cloud.creeper.util.SystemUtil
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -145,7 +147,7 @@ private fun HomePageScreen(modifier: Modifier = Modifier, onConvertClick: () -> 
         CardItem(
             iconResId = if (serverStarted) R.drawable.ic_running else R.drawable.ic_stopped,
             title = if (serverStarted) "Running" else "Stopped",
-            subtitle = if (serverStarted) "hhhhhh" else "Click here to start",
+            subtitle = if (serverStarted) "http://${NetUtil.getLocalIPAddress()?.hostAddress}:${ServerManage.getPort()}" else "Click here to start",
             onClick = {
                 if (serverStarted) {
                     context.stopService(intent)
