@@ -92,7 +92,7 @@ class SubscriptionController {
         if (subscriptionInput.sourceUrl.isNullOrEmpty()) {
             throw GenericHttpException(ResponseCode.ERROR_INVALID_REQUEST, StatusCode.SC_BAD_REQUEST, "Source url is required.")
         }
-        if (NetUtil.isValidUrl(subscriptionInput.sourceUrl)) {
+        if (!NetUtil.isValidUrl(subscriptionInput.sourceUrl)) {
             throw GenericHttpException(ResponseCode.ERROR_INVALID_REQUEST, StatusCode.SC_BAD_REQUEST, "Source url is invalid.")
         }
         if (subscriptionInput.type.isNullOrEmpty()) {
