@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subscription Manager</title>
+    <title>Creeper - 订阅源管理</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
@@ -24,10 +24,10 @@
             height: 100vh;
         }
 
-        /* Sidebar */
+        /* 侧边栏样式 */
         .sidebar {
             width: 280px;
-            background-color: #fff;
+            background: #fff;
             box-shadow: 2px 0 4px rgba(0,0,0,0.1);
             z-index: 1000;
         }
@@ -75,7 +75,7 @@
             font-size: 24px;
         }
 
-        /* Main Content */
+        /* 主内容区域 */
         .main-content {
             flex: 1;
             padding: 24px;
@@ -90,7 +90,7 @@
         }
 
         .page-title {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 400;
             color: #333;
         }
@@ -101,7 +101,7 @@
             align-items: center;
         }
 
-        /* Buttons */
+        /* 按钮样式 */
         .btn {
             padding: 8px 16px;
             border: none;
@@ -111,18 +111,18 @@
             font-weight: 500;
             text-transform: uppercase;
             transition: all 0.2s;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
         }
 
         .btn-primary {
-            background-color: #1976d2;
+            background: #1976d2;
             color: white;
         }
 
         .btn-primary:hover {
-            background-color: #1565c0;
+            background: #1565c0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
@@ -139,12 +139,12 @@
             background-color: #f5f5f5;
         }
 
-        /* View Toggle */
+        /* 视图切换按钮 */
         .view-toggle {
             display: flex;
-            background-color: #e0e0e0;
+            background: #fff;
             border-radius: 4px;
-            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .view-toggle button {
@@ -152,37 +152,99 @@
             border: none;
             background: none;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
         }
 
         .view-toggle button.active {
-            background-color: #1976d2;
+            background: #1976d2;
             color: white;
         }
 
-        /* Subscription List */
-        .subscription-list {
+        /* 订阅源列表样式 */
+        .subscriptions-container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .subscriptions-list {
+            padding: 16px;
+        }
+
+        .subscription-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+
+        .subscription-item:last-child {
+            border-bottom: none;
+        }
+
+        .subscription-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .subscription-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .subscription-icon.clash {
+            background: #ff5722;
+        }
+
+        .subscription-icon.v2ray {
+            background: #4caf50;
+        }
+
+        .subscription-info {
+            flex: 1;
+        }
+
+        .subscription-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .subscription-url {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+
+        .subscription-type {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .subscription-actions {
+            position: relative;
+        }
+
+        /* 网格视图样式 */
+        .subscriptions-grid {
             display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 16px;
-        }
-
-        .subscription-list.list-view {
-            grid-template-columns: 1fr;
-        }
-
-        .subscription-list.grid-view {
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            max-width: 100%;
-        }
-
-        @media (min-width: 1200px) {
-            .subscription-list.grid-view {
-                grid-template-columns: repeat(3, 1fr);
-            }
+            padding: 16px;
         }
 
         .subscription-card {
-            background: white;
+            background: #fff;
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -196,45 +258,39 @@
 
         .card-header {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             margin-bottom: 12px;
         }
 
-        .subscription-name {
-            font-size: 18px;
-            font-weight: 500;
-            color: #333;
-            margin-bottom: 4px;
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 20px;
+            color: white;
         }
 
-        .subscription-type {
-            display: inline-block;
-            padding: 4px 8px;
-            background-color: #e3f2fd;
-            color: #1976d2;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
+        .card-actions {
+            position: absolute;
+            top: 16px;
+            right: 16px;
         }
 
-        .subscription-url {
-            color: #666;
-            font-size: 14px;
-            word-break: break-all;
-            margin-top: 8px;
-        }
-
-        /* More Menu */
-        .more-menu {
+        /* 下拉菜单样式 */
+        .dropdown {
             position: relative;
+            display: inline-block;
         }
 
-        .menu-dropdown {
+        .dropdown-menu {
             position: absolute;
             top: 100%;
             right: 0;
-            background: white;
+            background: #fff;
             border-radius: 4px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             min-width: 120px;
@@ -242,11 +298,11 @@
             display: none;
         }
 
-        .menu-dropdown.show {
+        .dropdown-menu.show {
             display: block;
         }
 
-        .menu-item {
+        .dropdown-item {
             padding: 12px 16px;
             cursor: pointer;
             transition: background-color 0.2s;
@@ -255,32 +311,31 @@
             gap: 8px;
         }
 
-        .menu-item:hover {
+        .dropdown-item:hover {
             background-color: #f5f5f5;
         }
 
-        /* Modal */
-        .modal-overlay {
+        /* 对话框样式 */
+        .modal {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0,0,0,0.5);
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
             display: none;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             z-index: 2000;
         }
 
-        .modal-overlay.show {
+        .modal.show {
             display: flex;
         }
 
-        .modal {
-            background: white;
+        .modal-content {
+            background: #fff;
             border-radius: 8px;
-            padding: 24px;
             width: 90%;
             max-width: 500px;
             max-height: 90vh;
@@ -288,17 +343,31 @@
         }
 
         .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e0e0e0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
         }
 
         .modal-title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 500;
         }
 
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* 表单样式 */
         .form-group {
             margin-bottom: 20px;
         }
@@ -315,7 +384,7 @@
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 14px;
             transition: border-color 0.2s;
         }
 
@@ -329,56 +398,39 @@
             min-height: 80px;
         }
 
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 24px;
+        /* 错误提示 */
+        .error-message {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 8px;
         }
 
-        .btn-secondary {
-            background-color: #f5f5f5;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background-color: #e0e0e0;
-        }
-
-        /* Coming Soon */
-        .coming-soon {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 400px;
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
             color: #666;
         }
 
-        .coming-soon .material-icons {
+        .empty-state .material-icons {
             font-size: 64px;
-            margin-bottom: 16px;
             color: #ccc;
+            margin-bottom: 16px;
         }
 
-        .coming-soon h2 {
-            font-size: 24px;
-            font-weight: 400;
-        }
-
-        /* Loading */
+        /* 加载状态 */
         .loading {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 200px;
+            padding: 40px;
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #1976d2;
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e0e0e0;
+            border-top: 3px solid #1976d2;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -388,17 +440,34 @@
             100% { transform: rotate(360deg); }
         }
 
-        .hidden {
-            display: none !important;
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 240px;
+            }
+            
+            .main-content {
+                padding: 16px;
+            }
+            
+            .subscriptions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar -->
+        <!-- 侧边栏 -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <h1 class="sidebar-title">Creeper</h1>
+                <div class="sidebar-title">Creeper</div>
             </div>
             <nav class="sidebar-nav">
                 <button class="nav-item active" data-page="subscriptions">
@@ -412,12 +481,12 @@
             </nav>
         </div>
 
-        <!-- Main Content -->
+        <!-- 主内容区域 -->
         <div class="main-content">
-            <!-- Subscriptions Page -->
+            <!-- 订阅源页面 -->
             <div id="subscriptions-page" class="page">
                 <div class="content-header">
-                    <h1 class="page-title">Subscriptions</h1>
+                    <h1 class="page-title">订阅源管理</h1>
                     <div class="header-actions">
                         <div class="view-toggle">
                             <button class="active" data-view="list">
@@ -427,379 +496,424 @@
                                 <span class="material-icons">view_module</span>
                             </button>
                         </div>
-                        <button class="btn btn-primary" id="add-subscription-btn">
+                        <button class="btn btn-primary" onclick="showAddModal()">
                             <span class="material-icons">add</span>
                             Add Subscription
                         </button>
                     </div>
                 </div>
 
-                <div id="loading" class="loading">
-                    <div class="spinner"></div>
-                </div>
-
-                <div id="subscription-list" class="subscription-list list-view hidden">
-                    <!-- Subscriptions will be loaded here -->
+                <div class="subscriptions-container">
+                    <div id="subscriptions-content">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Converters Page -->
-            <div id="converters-page" class="page hidden">
+            <!-- 转换器页面 -->
+            <div id="converters-page" class="page" style="display: none;">
                 <div class="content-header">
-                    <h1 class="page-title">Converters</h1>
+                    <h1 class="page-title">转换器</h1>
                 </div>
-                <div class="coming-soon">
-                    <span class="material-icons">build</span>
-                    <h2>Coming soon...</h2>
+                <div class="empty-state">
+                    <div class="material-icons">build</div>
+                    <h3>Coming soon...</h3>
+                    <p>转换器功能正在开发中</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Add Subscription Modal -->
-    <div id="add-modal" class="modal-overlay">
-        <div class="modal">
+    <!-- 添加/编辑订阅源对话框 -->
+    <div id="subscription-modal" class="modal">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Add Subscription</h2>
-                <button class="btn-icon" id="close-modal">
+                <h2 class="modal-title" id="modal-title">添加订阅源</h2>
+                <button class="btn-icon" onclick="hideModal()">
                     <span class="material-icons">close</span>
                 </button>
             </div>
-            <form id="add-subscription-form">
-                <div class="form-group">
-                    <label class="form-label" for="source-name">Name *</label>
-                    <input type="text" id="source-name" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="description">Description</label>
-                    <textarea id="description" class="form-textarea" placeholder="Optional description"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="source-url">Subscription URL *</label>
-                    <input type="url" id="source-url" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="source-type">Source Type *</label>
-                    <select id="source-type" class="form-select" required>
-                        <option value="">Select type</option>
-                        <option value="Clash">Clash</option>
-                        <option value="V2Ray">V2Ray</option>
-                    </select>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="cancel-btn">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
+            <div class="modal-body">
+                <form id="subscription-form">
+                    <div class="form-group">
+                        <label class="form-label">名称 *</label>
+                        <input type="text" class="form-input" id="source-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">订阅链接 *</label>
+                        <input type="url" class="form-input" id="source-url" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">类型 *</label>
+                        <select class="form-select" id="source-type" required>
+                            <option value="">请选择类型</option>
+                            <option value="Clash">Clash</option>
+                            <option value="V2Ray">V2Ray</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">描述</label>
+                        <textarea class="form-textarea" id="source-description" placeholder="可选的描述信息"></textarea>
+                    </div>
+                    <div id="form-error" class="error-message" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" onclick="hideModal()">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveSubscription()">保存</button>
+            </div>
         </div>
     </div>
 
     <script>
-        class SubscriptionManager {
-            constructor() {
-                this.currentPage = 'subscriptions';
-                this.currentView = 'list';
-                this.subscriptions = [];
-                this.init();
-            }
+        // 全局变量
+        let subscriptions = [];
+        let currentView = 'list';
+        let editingId = null;
 
-            init() {
-                this.bindEvents();
-                this.loadSubscriptions();
-            }
+        // API 基础URL
+        const API_BASE = '/creeper';
 
-            bindEvents() {
-                // Navigation
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        const page = e.currentTarget.dataset.page;
-                        this.switchPage(page);
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            setupEventListeners();
+            loadSubscriptions();
+        }
+
+        function setupEventListeners() {
+            // 侧边栏导航
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const page = this.dataset.page;
+                    switchPage(page);
+                });
+            });
+
+            // 视图切换
+            document.querySelectorAll('.view-toggle button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const view = this.dataset.view;
+                    switchView(view);
+                });
+            });
+
+            // 点击外部关闭下拉菜单
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        menu.classList.remove('show');
                     });
-                });
-
-                // View toggle
-                document.querySelectorAll('.view-toggle button').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const view = e.currentTarget.dataset.view;
-                        this.switchView(view);
-                    });
-                });
-
-                // Add subscription modal
-                document.getElementById('add-subscription-btn').addEventListener('click', () => {
-                    this.showAddModal();
-                });
-
-                document.getElementById('close-modal').addEventListener('click', () => {
-                    this.hideAddModal();
-                });
-
-                document.getElementById('cancel-btn').addEventListener('click', () => {
-                    this.hideAddModal();
-                });
-
-                // Form submission
-                document.getElementById('add-subscription-form').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.addSubscription();
-                });
-
-                // Close modal on overlay click
-                document.getElementById('add-modal').addEventListener('click', (e) => {
-                    if (e.target === e.currentTarget) {
-                        this.hideAddModal();
-                    }
-                });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!e.target.closest('.more-menu')) {
-                        document.querySelectorAll('.menu-dropdown').forEach(menu => {
-                            menu.classList.remove('show');
-                        });
-                    }
-                });
-            }
-
-            switchPage(page) {
-                // Update navigation
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                document.querySelector(`[data-page="${page}"]`).classList.add('active');
-
-                // Update content
-                document.querySelectorAll('.page').forEach(p => {
-                    p.classList.add('hidden');
-                });
-                document.getElementById(`${page}-page`).classList.remove('hidden');
-
-                this.currentPage = page;
-            }
-
-            switchView(view) {
-                // Update toggle buttons
-                document.querySelectorAll('.view-toggle button').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                document.querySelector(`[data-view="${view}"]`).classList.add('active');
-
-                // Update list class
-                const list = document.getElementById('subscription-list');
-                list.className = `subscription-list ${view}-view`;
-
-                this.currentView = view;
-            }
-
-            async loadSubscriptions() {
-                try {
-                    document.getElementById('loading').classList.remove('hidden');
-                    document.getElementById('subscription-list').classList.add('hidden');
-
-                    const response = await fetch('/creeper/subscriptions');
-                    const result = await response.json();
-
-                    if (result.code === 'RESPONSE_SUCCESS') {
-                        this.subscriptions = result.data.subscriptions;
-                        this.renderSubscriptions();
-                    } else {
-                        throw new Error('Failed to load subscriptions');
-                    }
-                } catch (error) {
-                    console.error('Error loading subscriptions:', error);
-                    // Show mock data for demo
-                    this.subscriptions = [
-                        {
-                            id: "SS75fa967b0b42",
-                            source_name: "01",
-                            source_url: "https://no8-svip.urlapi-dodo.me/s?t=782b4eaaf96ec21c06a481b59beed550",
-                            source_type: "V2Ray"
-                        },
-                        {
-                            id: "SSa43825f86c8c",
-                            source_name: "02",
-                            source_url: "https://gist.githubusercontent.com/Yofk/9b35a5e8560d9a9ff4d5f48772e65631/raw/myown.yaml",
-                            source_type: "Clash"
-                        }
-                    ];
-                    this.renderSubscriptions();
-                } finally {
-                    document.getElementById('loading').classList.add('hidden');
-                    document.getElementById('subscription-list').classList.remove('hidden');
                 }
+            });
+
+            // 模态框外部点击关闭
+            document.getElementById('subscription-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideModal();
+                }
+            });
+        }
+
+        // 页面切换
+        function switchPage(page) {
+            // 更新导航状态
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-page="${page}"]`).classList.add('active');
+
+            // 显示对应页面
+            document.querySelectorAll('.page').forEach(p => {
+                p.style.display = 'none';
+            });
+            document.getElementById(`${page}-page`).style.display = 'block';
+        }
+
+        // 视图切换
+        function switchView(view) {
+            currentView = view;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.view-toggle button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-view="${view}"]`).classList.add('active');
+
+            // 重新渲染列表
+            renderSubscriptions();
+        }
+
+        // 加载订阅源列表
+        async function loadSubscriptions() {
+            try {
+                const response = await fetch(`${API_BASE}/subscriptions`);
+                const data = await response.json();
+                
+                if (data.code === 'RESPONSE_SUCCESS') {
+                    subscriptions = data.data.subscriptions;
+                    renderSubscriptions();
+                } else {
+                    showError('加载订阅源失败: ' + data.message);
+                }
+            } catch (error) {
+                showError('网络错误: ' + error.message);
+            }
+        }
+
+        // 渲染订阅源列表
+        function renderSubscriptions() {
+            const container = document.getElementById('subscriptions-content');
+            
+            if (subscriptions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="material-icons">inbox</div>
+                        <h3>暂无订阅源</h3>
+                        <p>点击右上角按钮添加第一个订阅源</p>
+                    </div>
+                `;
+                return;
             }
 
-            renderSubscriptions() {
-                const container = document.getElementById('subscription-list');
-                container.innerHTML = '';
-
-                this.subscriptions.forEach(subscription => {
-                    const card = this.createSubscriptionCard(subscription);
-                    container.appendChild(card);
-                });
+            if (currentView === 'list') {
+                renderListView(container);
+            } else {
+                renderGridView(container);
             }
+        }
 
-            createSubscriptionCard(subscription) {
-                const card = document.createElement('div');
-                card.className = 'subscription-card';
-                card.innerHTML = `
-                    <div class="card-header">
-                        <div>
-                            <div class="subscription-name">${this.escapeHtml(subscription.source_name)}</div>
-                            <span class="subscription-type">${subscription.source_type}</span>
-                        </div>
-                        <div class="more-menu">
-                            <button class="btn-icon more-btn">
-                                <span class="material-icons">more_vert</span>
-                            </button>
-                            <div class="menu-dropdown">
-                                <div class="menu-item" data-action="edit" data-id="${subscription.id}">
-                                    <span class="material-icons">edit</span>
-                                    Edit
-                                </div>
-                                <div class="menu-item" data-action="delete" data-id="${subscription.id}">
-                                    <span class="material-icons">delete</span>
-                                    Delete
+        // 列表视图
+        function renderListView(container) {
+            const html = `
+                <div class="subscriptions-list">
+                    ${subscriptions.map(sub => `
+                        <div class="subscription-item">
+                            <div class="subscription-icon ${sub.source_type.toLowerCase()}">
+                                ${getTypeIcon(sub.source_type)}
+                            </div>
+                            <div class="subscription-info">
+                                <div class="subscription-name">${escapeHtml(sub.source_name)}</div>
+                                <div class="subscription-url">${escapeHtml(sub.source_url)}</div>
+                                <div class="subscription-type">${sub.source_type}</div>
+                            </div>
+                            <div class="subscription-actions">
+                                <div class="dropdown">
+                                    <button class="btn-icon" onclick="toggleDropdown(event)">
+                                        <span class="material-icons">more_vert</span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <div class="dropdown-item" onclick="editSubscription('${sub.id}')">
+                                            <span class="material-icons">edit</span>
+                                            编辑
+                                        </div>
+                                        <div class="dropdown-item" onclick="deleteSubscription('${sub.id}')">
+                                            <span class="material-icons">delete</span>
+                                            删除
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="subscription-url">${this.escapeHtml(subscription.source_url)}</div>
-                `;
+                    `).join('')}
+                </div>
+            `;
+            container.innerHTML = html;
+        }
 
-                // Bind more menu events
-                const moreBtn = card.querySelector('.more-btn');
-                const dropdown = card.querySelector('.menu-dropdown');
+        // 网格视图
+        function renderGridView(container) {
+            const html = `
+                <div class="subscriptions-grid">
+                    ${subscriptions.map(sub => `
+                        <div class="subscription-card">
+                            <div class="card-header">
+                                <div class="card-icon ${sub.source_type.toLowerCase()}">
+                                    ${getTypeIcon(sub.source_type)}
+                                </div>
+                                <div class="subscription-info">
+                                    <div class="subscription-name">${escapeHtml(sub.source_name)}</div>
+                                    <div class="subscription-type">${sub.source_type}</div>
+                                </div>
+                            </div>
+                            <div class="subscription-url">${escapeHtml(sub.source_url)}</div>
+                            <div class="card-actions">
+                                <div class="dropdown">
+                                    <button class="btn-icon" onclick="toggleDropdown(event)">
+                                        <span class="material-icons">more_vert</span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <div class="dropdown-item" onclick="editSubscription('${sub.id}')">
+                                            <span class="material-icons">edit</span>
+                                            编辑
+                                        </div>
+                                        <div class="dropdown-item" onclick="deleteSubscription('${sub.id}')">
+                                            <span class="material-icons">delete</span>
+                                            删除
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            container.innerHTML = html;
+        }
 
-                moreBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    // Close other dropdowns
-                    document.querySelectorAll('.menu-dropdown').forEach(menu => {
-                        if (menu !== dropdown) {
-                            menu.classList.remove('show');
-                        }
-                    });
-                    dropdown.classList.toggle('show');
-                });
+        // 获取类型图标
+        function getTypeIcon(type) {
+            return type === 'Clash' ? 'flash_on' : 'vpn_key';
+        }
 
-                // Bind menu item events
-                card.querySelectorAll('.menu-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        const action = e.currentTarget.dataset.action;
-                        const id = e.currentTarget.dataset.id;
-                        dropdown.classList.remove('show');
-                        
-                        if (action === 'edit') {
-                            this.editSubscription(id);
-                        } else if (action === 'delete') {
-                            this.deleteSubscription(id);
-                        }
-                    });
-                });
+        // 切换下拉菜单
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            const menu = event.target.closest('.dropdown').querySelector('.dropdown-menu');
+            
+            // 关闭其他菜单
+            document.querySelectorAll('.dropdown-menu').forEach(m => {
+                if (m !== menu) m.classList.remove('show');
+            });
+            
+            menu.classList.toggle('show');
+        }
 
-                return card;
+        // 显示添加对话框
+        function showAddModal() {
+            editingId = null;
+            document.getElementById('modal-title').textContent = '添加订阅源';
+            document.getElementById('subscription-form').reset();
+            document.getElementById('form-error').style.display = 'none';
+            document.getElementById('subscription-modal').classList.add('show');
+        }
+
+        // 编辑订阅源
+        function editSubscription(id) {
+            const subscription = subscriptions.find(s => s.id === id);
+            if (!subscription) return;
+
+            editingId = id;
+            document.getElementById('modal-title').textContent = '编辑订阅源';
+            document.getElementById('source-name').value = subscription.source_name;
+            document.getElementById('source-url').value = subscription.source_url;
+            document.getElementById('source-type').value = subscription.source_type;
+            document.getElementById('source-description').value = subscription.description || '';
+            document.getElementById('form-error').style.display = 'none';
+            document.getElementById('subscription-modal').classList.add('show');
+
+            // 关闭下拉菜单
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+
+        // 保存订阅源
+        async function saveSubscription() {
+            const form = document.getElementById('subscription-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
             }
 
-            showAddModal() {
-                document.getElementById('add-modal').classList.add('show');
-                document.getElementById('add-subscription-form').reset();
-            }
+            const data = {
+                source_name: document.getElementById('source-name').value,
+                source_url: document.getElementById('source-url').value,
+                source_type: document.getElementById('source-type').value,
+                description: document.getElementById('source-description').value
+            };
 
-            hideAddModal() {
-                document.getElementById('add-modal').classList.remove('show');
-            }
-
-            async addSubscription() {
-                const formData = new FormData(document.getElementById('add-subscription-form'));
-                const data = {
-                    source_name: formData.get('source-name') || document.getElementById('source-name').value,
-                    source_url: formData.get('source-url') || document.getElementById('source-url').value,
-                    source_type: formData.get('source-type') || document.getElementById('source-type').value,
-                    description: formData.get('description') || document.getElementById('description').value
-                };
-
-                try {
-                    const response = await fetch('/creeper/subscriptions', {
+            try {
+                let response;
+                if (editingId) {
+                    // 更新订阅源
+                    response = await fetch(`${API_BASE}/subscriptions/${editingId}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(data)
                     });
-
-                    const result = await response.json();
-                    
-                    if (result.code === 'RESPONSE_SUCCESS') {
-                        this.hideAddModal();
-                        this.loadSubscriptions();
-                        this.showNotification('Subscription added successfully!');
-                    } else {
-                        throw new Error('Failed to add subscription');
-                    }
-                } catch (error) {
-                    console.error('Error adding subscription:', error);
-                    // For demo purposes, add to local array
-                    const newSubscription = {
-                        id: 'SS' + Math.random().toString(36).substr(2, 9),
-                        ...data
-                    };
-                    this.subscriptions.push(newSubscription);
-                    this.renderSubscriptions();
-                    this.hideAddModal();
-                    this.showNotification('Subscription added successfully! (Demo mode)');
+                } else {
+                    // 添加订阅源
+                    response = await fetch(`${API_BASE}/subscriptions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
                 }
-            }
 
-            editSubscription(id) {
-                const subscription = this.subscriptions.find(s => s.id === id);
-                if (subscription) {
-                    // For demo, just show an alert
-                    alert(`Edit subscription: ${subscription.source_name}`);
+                const result = await response.json();
+                
+                if (result.code === 'RESPONSE_SUCCESS') {
+                    hideModal();
+                    loadSubscriptions(); // 重新加载列表
+                } else {
+                    showFormError(result.message);
                 }
-            }
-
-            deleteSubscription(id) {
-                if (confirm('Are you sure you want to delete this subscription?')) {
-                    // For demo, remove from local array
-                    this.subscriptions = this.subscriptions.filter(s => s.id !== id);
-                    this.renderSubscriptions();
-                    this.showNotification('Subscription deleted successfully! (Demo mode)');
-                }
-            }
-
-            showNotification(message) {
-                // Simple notification - in a real app, you'd want a proper notification system
-                const notification = document.createElement('div');
-                notification.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: #4caf50;
-                    color: white;
-                    padding: 12px 24px;
-                    border-radius: 4px;
-                    z-index: 3000;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                `;
-                notification.textContent = message;
-                document.body.appendChild(notification);
-
-                setTimeout(() => {
-                    notification.remove();
-                }, 3000);
-            }
-
-            escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
+            } catch (error) {
+                showFormError('网络错误: ' + error.message);
             }
         }
 
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', () => {
-            new SubscriptionManager();
-        });
+        // 删除订阅源
+        async function deleteSubscription(id) {
+            if (!confirm('确定要删除这个订阅源吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/subscriptions/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 'RESPONSE_SUCCESS') {
+                    loadSubscriptions(); // 重新加载列表
+                } else {
+                    showError('删除失败: ' + result.message);
+                }
+            } catch (error) {
+                showError('网络错误: ' + error.message);
+            }
+
+            // 关闭下拉菜单
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+
+        // 隐藏模态框
+        function hideModal() {
+            document.getElementById('subscription-modal').classList.remove('show');
+        }
+
+        // 显示表单错误
+        function showFormError(message) {
+            const errorEl = document.getElementById('form-error');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        // 显示全局错误
+        function showError(message) {
+            alert(message); // 简单的错误提示，可以替换为更好的UI组件
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
     </script>
 </body>
 </html>
