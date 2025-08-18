@@ -53,12 +53,12 @@ import com.cloud.creeper.compose.AppTheme
 import com.cloud.creeper.repository.entity.ServiceAuth
 import com.cloud.creeper.util.AuthType
 import com.cloud.creeper.util.SERVICE_GITHUB
+import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.OAuthCredential
 import com.google.firebase.auth.OAuthProvider
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.auth
 
 /**
  *
@@ -89,6 +89,7 @@ fun AuthorizePage(viewModel: AuthViewModel = hiltViewModel(), onUpClick: () -> U
             if (it.authType == AuthType.OAUTH2) {
                 viewModel.deleteAuthInfo(it)
                 Firebase.auth.signOut()
+
 
             } else if (it.authType == AuthType.MANUALLY) {
                 viewModel.deleteAuthInfo(it)
