@@ -122,6 +122,20 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
         }
     }
 
+    fun getClientIconPath(): String {
+        return when (type) {
+            ClientType.Clash -> {
+                "/image/ic_clashr.png"
+            }
+            ClientType.V2Ray -> {
+                "/image/ic_v2ray.png"
+            }
+            else -> {
+                "/image/ic_clashr.png"
+            }
+        }
+    }
+
     fun getCacheFileName(): String {
         return if (type == ClientType.Clash) {
             "${id}.yaml"

@@ -2,6 +2,7 @@ package com.cloud.creeper.server.model
 
 import androidx.room.ColumnInfo
 import com.cloud.creeper.protocol.ClientType
+import com.cloud.creeper.repository.entity.SourceStatus
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -18,6 +19,10 @@ data class SubscriptionInput(
     @SerialName("description")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     var description: String? = null
+
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName("source_icon_path")
+    var iconPath: String? = null
 
     override fun toString(): String {
         return "SubscriptionInput(name='$name', sourceUrl='$sourceUrl', type=$type, description=$description)"

@@ -20,6 +20,7 @@ import com.cloud.creeper.server.model.ApiResult
 import com.cloud.creeper.server.model.ResponseCode
 import com.cloud.creeper.server.model.SubscriptionDetailsOutput
 import com.cloud.creeper.server.model.SubscriptionInput
+import com.cloud.creeper.server.model.SubscriptionOutput
 import com.cloud.creeper.server.model.SubscriptionsOutput
 import com.cloud.creeper.util.CurrentDispatcher
 import com.cloud.creeper.util.NetUtil
@@ -187,7 +188,13 @@ class SubscriptionController {
         val provider = EntryPoints.get(CreeperApp.INSTANCE, EntryProvider::class.java)
         val dbRepos = provider.getDbRepos()
         val sourceList = dbRepos.querySubscriptionSourceList().map {
-            SubscriptionInput(it.id, it.name, it.sourceUrl, it.type.name)
+            SubscriptionOutput(it.id, it.name, it.sourceUrl, it.type.name).apply {
+                this.description = if (it.description.isNullOrEmpty()) null else it.description
+                this.iconPath = it.getClientIconPath()
+                this.createdTime = it.createdTime
+                this.pulledTime = it.pulledTime
+                this.pullStatus = it.pullStatus
+            }
         }
         val output = SubscriptionsOutput(sourceList)
 
