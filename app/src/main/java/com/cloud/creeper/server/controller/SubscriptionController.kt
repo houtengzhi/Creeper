@@ -103,15 +103,26 @@ class SubscriptionController {
             throw GenericHttpException(ResponseCode.ERROR_INVALID_REQUEST, StatusCode.SC_BAD_REQUEST, "Type must be one of ${SUPPORTED_SOURCE_TYPE_LIST.joinToString { it.name }}")
         }
         val provider = EntryPoints.get(CreeperApp.INSTANCE, EntryProvider::class.java)
-        val dbRepos = provider.getDbRepos()
+        val dataRepos = provider.getDataRepos()
+
         val subscriptionSource = SubscriptionSource(SystemUtil.generateSubscriptionSourceId(), subscriptionInput.name, subscriptionInput.sourceUrl, ClientType.valueOf(subscriptionInput.type)).apply {
             this.description = subscriptionInput.description
             createdTime = System.currentTimeMillis()
             updatedTime = System.currentTimeMillis()
         }
-        dbRepos.insertSubscriptionSource(subscriptionSource)
-        httpResponse.status = HttpURLConnection.HTTP_OK
-        return ApiResult(ResponseCode.SUCCESS)
+        val apiResponse = dataRepos.addSubscriptionSource(subscriptionSource)
+        return when (apiResponse) {
+            is Success -> {
+                httpResponse.status = StatusCode.SC_OK
+                ApiResult(ResponseCode.SUCCESS)
+            }
+            is Error -> {
+                throw GenericHttpException(ResponseCode.ERROR_FAILED, StatusCode.SC_INTERNAL_SERVER_ERROR, apiResponse.errorMessage)
+            }
+            is Exception -> {
+                throw GenericHttpException(ResponseCode.ERROR_FAILED, StatusCode.SC_INTERNAL_SERVER_ERROR, apiResponse.throwable)
+            }
+        }
     }
 
     @ResponseBody

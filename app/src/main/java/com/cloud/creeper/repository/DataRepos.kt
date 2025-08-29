@@ -200,13 +200,62 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
         }
     }
 
-    suspend fun suspendAddSubscriptionSource(subscriptionSource: SubscriptionSource): ApiResponse<SubscriptionSource> {
-        return withContext(Dispatchers.Default) {
-            var content: String? = null
-            when (val apiResponse = httpRepos.suspendFetchUrl(subscriptionSource.sourceUrl)) {
+    fun addSubscriptionSource(subscriptionSource: SubscriptionSource): ApiResponse<SubscriptionSource> {
+        Log.d(TAG, "addSubscriptionSource()")
+        var content: String?
+        when (val apiResponse = httpRepos.fetchUrl(subscriptionSource.sourceUrl)) {
+            is ApiResponse.Success -> {
+                Log.d(TAG, "fetchSubscriptionContent success, sourceType=${subscriptionSource.type}")
+                fileRepos.saveSubscriptionSource(
+                    subscriptionSource.getCacheFileName(),
+                    apiResponse.data
+                )
+                subscriptionSource.pullStatus = SourceStatus.UPDATED
+                subscriptionSource.pulledTime = System.currentTimeMillis()
+                subscriptionSource.updatedTime = System.currentTimeMillis()
+                content = apiResponse.data
+            }
+
+            is ApiResponse.Error -> {
+                Log.e(TAG, "fetchSubscriptionContent error=${apiResponse}")
+                return apiResponse
+            }
+
+            is ApiResponse.Exception -> {
+                Log.e(TAG, "fetchSubscriptionContent exception=${apiResponse}")
+                return apiResponse
+            }
+
+        }
+
+        content.let {
+            val clashConfig = ConverterUtil.parseToClashConfig(subscriptionSource.type, it)
+            Log.d(
+                TAG, "proxies size=${clashConfig.proxies?.size}"
+            )
+            if (!clashConfig.proxies.isNullOrEmpty()) {
+                dbRepos.insertSubscriptionSource(subscriptionSource)
+                return ApiResponse.Success(subscriptionSource)
+            }
+        }
+        return ApiResponse.Error(VMError.EmptyProxyList)
+    }
+
+    fun updateSubscriptionSource(subscriptionSource: SubscriptionSource): ApiResponse<SubscriptionSource> {
+        Log.d(TAG, "updateSubscriptionSource()")
+        val oldSubscriptionSource = dbRepos.querySubscriptionSourceById(subscriptionSource.id)
+        if (oldSubscriptionSource == null) {
+            return ApiResponse.Error(VMError.SubscriptionSourceNotFound)
+        }
+        if (subscriptionSource.sourceUrl != oldSubscriptionSource.sourceUrl) {
+            var content: String?
+            when (val apiResponse = httpRepos.fetchUrl(subscriptionSource.sourceUrl)) {
                 is ApiResponse.Success -> {
                     Log.d(TAG, "fetchSubscriptionContent success, sourceType=${subscriptionSource.type}")
-                    fileRepos.saveSubscriptionSource(subscriptionSource.getCacheFileName(), apiResponse.data)
+                    fileRepos.saveSubscriptionSource(
+                        subscriptionSource.getCacheFileName(),
+                        apiResponse.data
+                    )
                     subscriptionSource.pullStatus = SourceStatus.UPDATED
                     subscriptionSource.pulledTime = System.currentTimeMillis()
                     subscriptionSource.updatedTime = System.currentTimeMillis()
@@ -215,34 +264,50 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
 
                 is ApiResponse.Error -> {
                     Log.e(TAG, "fetchSubscriptionContent error=${apiResponse}")
-                    return@withContext apiResponse
+                    return apiResponse
                 }
 
                 is ApiResponse.Exception -> {
                     Log.e(TAG, "fetchSubscriptionContent exception=${apiResponse}")
-                    return@withContext apiResponse
+                    return apiResponse
                 }
 
             }
 
             content.let {
                 val clashConfig = ConverterUtil.parseToClashConfig(subscriptionSource.type, it)
-                Log.d(TAG, "proxies size=${clashConfig.proxies?.size}"
+                Log.d(
+                    TAG, "proxies size=${clashConfig.proxies?.size}"
                 )
                 if (!clashConfig.proxies.isNullOrEmpty()) {
-                    dbRepos.suspendInsertSubscriptionSource(subscriptionSource)
-                    return@withContext ApiResponse.Success(subscriptionSource)
+                    dbRepos.updateSubscriptionSource(subscriptionSource)
+                    return ApiResponse.Success(subscriptionSource)
                 }
             }
-            return@withContext ApiResponse.Error(VMError.EmptyProxyList)
+        } else {
+            dbRepos.updateSubscriptionSource(subscriptionSource)
+            return ApiResponse.Success(subscriptionSource)
         }
+        return ApiResponse.Error(VMError.EmptyProxyList)
+    }
+
+    fun deleteSubscriptionSource(
+        subscriptionSource: SubscriptionSource
+    ): ApiResponse<Boolean> {
+        Log.d(TAG, "deleteSubscriptionSource()")
+        val file = fileRepos.readSubscriptionSourceFile(subscriptionSource.getCacheFileName())
+        if (file.exists()) {
+            fileRepos.deleteSubscriptionSource(subscriptionSource.getCacheFileName())
+        }
+        dbRepos.deleteSubscriptionSource(subscriptionSource)
+        return ApiResponse.Success(true)
     }
 
     fun getSubscriptionDetails(
         subscriptionSource: SubscriptionSource,
         forceRefresh: Boolean
     ): ApiResponse<SubscriptionDetails> {
-
+        Log.d(TAG, "getSubscriptionDetails()")
         var content: String? = null
 
         val file = fileRepos.readSubscriptionSourceFile(subscriptionSource.getCacheFileName())
@@ -291,14 +356,35 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
         }
     }
 
-    fun deleteSubscriptionSource(
-        subscriptionSource: SubscriptionSource
-    ): ApiResponse<Boolean> {
-        val file = fileRepos.readSubscriptionSourceFile(subscriptionSource.getCacheFileName())
-        if (file.exists()) {
-            fileRepos.deleteSubscriptionSource(subscriptionSource.getCacheFileName())
+    suspend fun suspendAddSubscriptionSource(subscriptionSource: SubscriptionSource): ApiResponse<SubscriptionSource> {
+        Log.d(TAG, "suspendAddSubscriptionSource()")
+        return withContext(Dispatchers.Default) {
+            return@withContext addSubscriptionSource(subscriptionSource)
         }
-        dbRepos.deleteSubscriptionSource(subscriptionSource)
-        return ApiResponse.Success(true)
     }
+
+    suspend fun suspendUpdateSubscriptionSource(subscriptionSource: SubscriptionSource): ApiResponse<SubscriptionSource> {
+        Log.d(TAG, "suspendUpdateSubscriptionSource()")
+        return withContext(Dispatchers.Default) {
+            return@withContext updateSubscriptionSource(subscriptionSource)
+        }
+    }
+
+    suspend fun suspendDeleteSubscriptionSource(subscriptionSource: SubscriptionSource): ApiResponse<Boolean> {
+        Log.d(TAG, "suspendDeleteSubscriptionSource()")
+        return withContext(Dispatchers.Default) {
+            return@withContext deleteSubscriptionSource(subscriptionSource)
+        }
+    }
+
+    suspend fun suspendGetSubscriptionDetails(
+        subscriptionSource: SubscriptionSource,
+        forceRefresh: Boolean
+    ): ApiResponse<SubscriptionDetails> {
+        Log.d(TAG, "suspendGetSubscriptionDetails()")
+        return withContext(Dispatchers.Default) {
+            return@withContext getSubscriptionDetails(subscriptionSource, forceRefresh)
+        }
+    }
+
 }

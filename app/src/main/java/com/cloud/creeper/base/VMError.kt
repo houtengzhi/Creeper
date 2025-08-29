@@ -12,7 +12,9 @@ enum class VMError(val errorCode: Int, val errorMessage: String) {
 
     EmptyProxyList(1003, "Proxy list is empty"),
 
-    ConverterNameExisted(1004, "Converter name has been existed");
+    SubscriptionSourceNotFound(2000, "Subscription source not found"),
+
+    ConverterNameExisted(3000, "Converter name has been existed");
 
     override fun toString(): String {
         return "Error(errorCode=$errorCode, errorMessage='$errorMessage')"

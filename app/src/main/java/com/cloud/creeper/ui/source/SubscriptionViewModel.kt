@@ -133,7 +133,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
         viewModelScope.launch {
             flow {
                 Log.d(TAG, "editSubscriptionSource(), source=${source}")
-                dbRepos.suspendUpdateSubscriptionSource(source)
+                dataRepos.suspendUpdateSubscriptionSource(source)
                 emit(true)
             }.onStart {
                     _editState.value = DataState(true, null, null)
@@ -151,7 +151,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
         viewModelScope.launch {
             flow {
                 Log.d(TAG, "deleteSubscriptionSource()")
-                dbRepos.suspendDeleteSubscriptionSource(source)
+                dataRepos.suspendDeleteSubscriptionSource(source)
                 emit(true)
             }.onStart {
                 _deleteState.update {
