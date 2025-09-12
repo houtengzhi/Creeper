@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -91,7 +92,7 @@ private fun SubscriptionDetailsTopAppBar(scrollBehavior: TopAppBarScrollBehavior
             IconButton(onClick = {
                 moreMenuExpanded = true
             }) {
-                Icon(imageVector = Icons.Filled.Add, contentDescription = "Add converter")
+                Icon(imageVector = Icons.Filled.MoreVert, contentDescription = "More option menus")
             }
             MoreMenu(expanded = moreMenuExpanded, onDismissRequest = {
                 moreMenuExpanded = false

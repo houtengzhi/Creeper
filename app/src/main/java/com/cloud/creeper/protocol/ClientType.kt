@@ -8,6 +8,7 @@ enum class ClientType(val value: Int) {
 
     Unknown(100),
     Clash(200),
+    ClashMeta(210),
     V2Ray(300);
 
 }

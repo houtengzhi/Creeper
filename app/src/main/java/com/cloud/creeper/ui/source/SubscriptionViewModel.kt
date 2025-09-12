@@ -194,57 +194,8 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
                 }
         }
 
-    fun pullSubscription(source: SubscriptionSource) {
-        viewModelScope.launch() {
-            Log.d(TAG, "pullSubscription()")
-            httpRepos.fetchUrlFlow(source.sourceUrl)
-                .flowOn(Dispatchers.IO)
-                .onStart {
-                    Log.d(TAG, "pullSubscription() onStart")
-                    _pullState.update {
-                        DataState(true, null, null)
-                    }
-                    source.pullStatus = SourceStatus.PENDING
-                    source.updatedTime = System.currentTimeMillis()
-                    dbRepos.suspendUpdateSubscriptionSource(source)
-                }
-                .flowOn(Dispatchers.Main)
-                .onEach {
-                    Log.d(TAG, "pullSubscription() onEach")
-                    it.onSuccess {
-                        fileRepos.saveSubscriptionSource(source.getCacheFileName(), this.data)
-                    }
-
-                }
-                .flowOn(Dispatchers.IO)
-                .catch {throwable ->
-                    Log.e(TAG, "pullSubscription() throwable=${throwable.message}")
-                    _pullState.update {
-                        DataState(throwable)
-                    }
-                    source.pullStatus = SourceStatus.FAILED
-                    source.updatedTime = System.currentTimeMillis()
-                    dbRepos.suspendUpdateSubscriptionSource(source)
-                }
-                .collect {
-                    Log.d(TAG, "pullSubscription() collect")
-                    _pullState.update {
-                        DataState(isLoading = false, data = true, throwable = null)
-                    }
-                    source.pullStatus = SourceStatus.UPDATED
-                    source.pulledTime = System.currentTimeMillis()
-                    source.updatedTime = System.currentTimeMillis()
-                    dbRepos.suspendUpdateSubscriptionSource(source)
-                }
-
-        }
-    }
-
     fun fetchSubscriptionDetails(subscriptionSource: SubscriptionSource, forceRefresh: Boolean) {
         Log.d(TAG, "fetchSubscriptionDetails()")
-        _subscriptionDetailsState.update {
-            DataState(true, null, null)
-        }
         val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
             Log.e(TAG, "fetchSubscriptionDetails() exception for ${throwable.message}")
             throwable.printStackTrace()
@@ -252,60 +203,47 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
                 DataState(throwable)
             }
         }
+
         viewModelScope.launch(Dispatchers.Default + coroutineExceptionHandler) {
-
-            var content: String? = null
-            var subscriptionDetails: SubscriptionDetails? = null
-
-            val file = fileRepos.readSubscriptionSourceFile(subscriptionSource.getCacheFileName())
-            if (forceRefresh || !file.exists()) {
-                val apiResponse = httpRepos.suspendFetchUrl(subscriptionSource.sourceUrl)
-                apiResponse.suspendOnSuccess {
-                        fileRepos.saveSubscriptionSource(subscriptionSource.getCacheFileName(), this.data)
-
-                        subscriptionSource.pullStatus = SourceStatus.UPDATED
-                        subscriptionSource.pulledTime = System.currentTimeMillis()
-                        subscriptionSource.updatedTime = System.currentTimeMillis()
-                        dbRepos.suspendUpdateSubscriptionSource(subscriptionSource)
+            flow {
+                Log.d(TAG, "fetchSubscriptionDetails()")
+                val apiResponse = dataRepos.suspendGetSubscriptionDetails(subscriptionSource, forceRefresh)
+                emit(apiResponse)
+            }
+                .onStart {
+                    Log.d(TAG, "fetchSubscriptionDetails onStart")
+                    _subscriptionDetailsState.update {
+                        DataState(true, null, null)
                     }
-                    .onSuccess {
-                        content = this.data
+                }
+                .catch { throwable ->
+                    Log.e(TAG, "fetchSubscriptionDetails throwable=${throwable.message}")
+                    _subscriptionDetailsState.update {
+                        DataState(throwable = throwable)
                     }
-                    .onError {
+                }
+                .collect {
+                    it.onSuccess {
+                        Log.d(TAG, "fetchSubscriptionDetails onSuccess")
+                        _subscriptionDetailsState.update {
+                            DataState(
+                                false,
+                                this.data,
+                                null
+                            )
+                        }
+                    }.onError {
+                        Log.e(TAG, "fetchSubscriptionDetails onError: $this")
                         _subscriptionDetailsState.update {
                             DataState(this)
                         }
-                    }
-
-            } else {
-                content = file.readText()
-            }
-
-            content?.let {
-                val clashConfig = ConverterUtil.parseToClashConfig(subscriptionSource.type, it)
-                Log.d(TAG, "fetchSubscriptionDetails(), proxies size=${clashConfig.proxies?.size}")
-                if (!clashConfig.proxies.isNullOrEmpty()) {
-                    subscriptionDetails = SubscriptionDetails(subscriptionSource, clashConfig.proxies)
-                }
-            }
-
-            withContext(Dispatchers.Main) {
-                Log.d(TAG, "fetchSubscriptionDetails() subscriptionDetails=${subscriptionDetails}")
-                if (subscriptionDetails != null) {
-                    _subscriptionDetailsState.update {
-                        DataState(
-                            false,
-                            subscriptionDetails,
-                            null
-                        )
-                    }
-
-                } else {
-                    _subscriptionDetailsState.update {
-                        DataState(VMError.EmptyProxyList)
+                    }.onException {
+                        Log.e(TAG, "fetchSubscriptionDetails onException: $this")
+                        _subscriptionDetailsState.update {
+                            DataState(this.throwable)
+                        }
                     }
                 }
-            }
         }
     }
 

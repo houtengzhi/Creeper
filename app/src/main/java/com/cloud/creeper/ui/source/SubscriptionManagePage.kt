@@ -98,7 +98,7 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel, onUpClick: () -> Un
             onDeleteClick = {
                 viewModel.deleteSubscriptionSource(it)
         }, onUpdateClick = {
-            viewModel.pullSubscription(it)
+            viewModel.fetchSubscriptionDetails(it, true)
         }, onDetailsClick = onDetailsClick)
 
         when {

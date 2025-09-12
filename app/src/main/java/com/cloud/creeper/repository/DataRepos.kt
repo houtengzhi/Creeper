@@ -18,6 +18,7 @@ import com.cloud.creeper.repository.entity.SubscriptionDetails
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.repository.file.FileRepos
 import com.cloud.creeper.repository.http.HttpRepos
+import com.cloud.creeper.support.filter.ClashProxyFilter
 import com.cloud.creeper.ui.source.SubscriptionViewModel
 import com.cloud.creeper.util.RepositoryType
 import com.cloud.creeper.util.SystemUtil
@@ -46,14 +47,16 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
         supervisorScope {
             subscriptionSourceList.forEach { source ->
                 val deferred = async {
+                    Log.d(TAG, "fetch subscription source(${source.name}), url=${source.sourceUrl}")
                     val apiResponse = httpRepos.suspendFetchUrl(source.sourceUrl)
                     when (apiResponse) {
                         is ApiResponse.Success<String> -> {
-                            Log.d(TAG, "fetchSubscription success, sourceType=${source.type}")
+                            Log.d(TAG, "fetch subscription source(${source.name}) success, sourceType=${source.type}")
                             when (source.type) {
                                 ClientType.Clash -> {
                                     withContext(Dispatchers.Default) {
                                         val clashConfig = ConverterUtil.deserializeClashConfig(apiResponse.data)
+                                        Log.d(TAG, "Subscription source(${source.name}): type=${source.type}, nodes size=${clashConfig.proxies?.size}")
                                         clashConfig
                                     }
                                 }
@@ -61,24 +64,25 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                                 ClientType.V2Ray -> {
                                     withContext(Dispatchers.Default) {
                                         val v2RayConfig = ConverterUtil.deserializeV2RaySubscription(apiResponse.data)
+                                        Log.d(TAG, "Subscription source(${source.name}): type=${source.type}, nodes size=${v2RayConfig.protoList.size}")
                                         v2RayConfig
                                     }
                                 }
 
                                 else -> {
-                                    Log.e(TAG, "fetchSubscription not supported type ${source.type}")
+                                    Log.e(TAG, "fetch subscription source(${source.name}) failed: not supported type ${source.type}")
                                     null
                                 }
                             }
                         }
 
                         is ApiResponse.Error -> {
-                            Log.e(TAG, "fetchSubscription error=${apiResponse}")
+                            Log.e(TAG, "fetch subscription source(${source.name}) failed: error=${apiResponse}")
                             null
                         }
 
                         is ApiResponse.Exception -> {
-                            Log.e(TAG, "fetchSubscription exception=${apiResponse}")
+                            Log.e(TAG, "fetch subscription source(${source.name}) failed: exception=${apiResponse}")
                             null
                         }
 
@@ -107,31 +111,32 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
         return withContext(Dispatchers.Default) {
             val proxyConfigList = suspendMergerSubscriptionSources(converter.subscriptionSourceList)
 
+            Log.d(TAG, "Proxy config size = ${proxyConfigList.size}")
             if (proxyConfigList.isNotEmpty()) {
                 val content: String
                 when (converter.converter.outputType) {
                     ClientType.Clash -> {
                         val proxyNodeList = mutableListOf<ClashProxyNode>()
-                        proxyConfigList.forEach { config ->
+                        val exclude = converter.converter.exclude
+                        val clashNodeFilter = if (exclude.isNullOrEmpty()) {
+                            ClashProxyFilter()
+                        } else if (SystemUtil.isValidRegex(exclude)) {
+                            ClashProxyFilter(excludedRegex = exclude.toRegex(RegexOption.IGNORE_CASE))
+                        } else {
+                            ClashProxyFilter(excludedValues = exclude.split(" ", ","))
+                        }
+                        proxyConfigList.forEachIndexed { index, config ->
                             val clashConfig = config.toClashConfig()
                             clashConfig.proxies?.filter { node ->
-                                val exclude = converter.converter.exclude
-                                if (exclude.isNullOrEmpty()) {
-                                    true
+                                val excluded = clashNodeFilter.isExcluded(node)
+                                if (excluded) {
+                                    Log.v(TAG, "${node.name} is excluded")
+                                    false
                                 } else {
-                                    val excluded = if (SystemUtil.isValidRegex(exclude)) {
-                                        Regex(exclude).find(node.toString()) != null
-                                    } else {
-                                        node.toString().contains(exclude)
-                                    }
-                                    if (excluded) {
-                                        Log.v(TAG, "${node.name} is excluded")
-                                        false
-                                    } else {
-                                        true
-                                    }
+                                    true
                                 }
                             }?.let {
+                                Log.i(TAG, "Proxy config[${index}] nodes size: ${clashConfig.proxies.size}")
                                 proxyNodeList.addAll(it)
                             }
                         }
@@ -140,6 +145,9 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                             converter.converter.outputFileName = "${converter.converter.name}.yaml"
                         }
 
+                    }
+                    ClientType.ClashMeta -> {
+                        content = ""
                     }
                     ClientType.V2Ray -> {
                         content = ""
@@ -325,11 +333,19 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                 }
 
                 is ApiResponse.Error -> {
+                    subscriptionSource.pullStatus = SourceStatus.FAILED
+                    subscriptionSource.pulledTime = System.currentTimeMillis()
+                    subscriptionSource.updatedTime = System.currentTimeMillis()
+                    dbRepos.updateSubscriptionSource(subscriptionSource)
                     return apiResponse
 
                 }
 
                 is ApiResponse.Exception -> {
+                    subscriptionSource.pullStatus = SourceStatus.FAILED
+                    subscriptionSource.pulledTime = System.currentTimeMillis()
+                    subscriptionSource.updatedTime = System.currentTimeMillis()
+                    dbRepos.updateSubscriptionSource(subscriptionSource)
                     return apiResponse
                 }
             }

@@ -2,6 +2,7 @@ package com.cloud.creeper.protocol.core
 
 import android.util.Log
 import com.charleskorn.kaml.Yaml
+import com.charleskorn.kaml.YamlConfiguration
 import com.cloud.creeper.protocol.ClashConfig
 import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.protocol.V2RayConfig
@@ -28,13 +29,15 @@ object ConverterUtil {
 
     const val TAG = "ConverterUtil"
 
+    private val MyYaml = Yaml(configuration = YamlConfiguration(strictMode = false))
+
     fun deserializeClashConfig(content: String): ClashConfig {
         Log.d(TAG, "deserializeClashConfig()")
-        return Yaml.default.decodeFromString(ClashConfig.serializer(), content)
+        return MyYaml.decodeFromString(ClashConfig.serializer(), content)
     }
 
     fun serializeClashConfig(clashConfig: ClashConfig): String {
-        return Yaml.default.encodeToString(ClashConfig.serializer(), clashConfig)
+        return MyYaml.encodeToString(ClashConfig.serializer(), clashConfig)
     }
 
     @OptIn(ExperimentalEncodingApi::class)

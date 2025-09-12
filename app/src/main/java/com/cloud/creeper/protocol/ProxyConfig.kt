@@ -48,6 +48,13 @@ data class ClashConfig(
 ): ProxyConfig() {
 
     override fun toClashConfig(): ClashConfig {
+        this.proxies?.forEach { node ->
+            if ("grpc" == node.network) {
+                if (node.tls == null) {
+                    node.tls = true
+                }
+            }
+        }
         return this
     }
 
