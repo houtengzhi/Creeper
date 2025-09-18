@@ -47,16 +47,16 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
         supervisorScope {
             subscriptionSourceList.forEach { source ->
                 val deferred = async {
-                    Log.d(TAG, "fetch subscription source(${source.name}), url=${source.sourceUrl}")
+                    Log.d(TAG, "fetch subscription source ${source.name}, url=${source.sourceUrl}")
                     val apiResponse = httpRepos.suspendFetchUrl(source.sourceUrl)
                     when (apiResponse) {
                         is ApiResponse.Success<String> -> {
-                            Log.d(TAG, "fetch subscription source(${source.name}) success, sourceType=${source.type}")
+                            Log.d(TAG, "fetch subscription source ${source.name} success, sourceType=${source.type}")
                             when (source.type) {
                                 ClientType.Clash -> {
                                     withContext(Dispatchers.Default) {
                                         val clashConfig = ConverterUtil.deserializeClashConfig(apiResponse.data)
-                                        Log.d(TAG, "Subscription source(${source.name}): type=${source.type}, nodes size=${clashConfig.proxies?.size}")
+                                        Log.d(TAG, "Subscription source ${source.name}: type=${source.type}, nodes size=${clashConfig.proxies?.size}")
                                         clashConfig
                                     }
                                 }
@@ -77,12 +77,12 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                         }
 
                         is ApiResponse.Error -> {
-                            Log.e(TAG, "fetch subscription source(${source.name}) failed: error=${apiResponse}")
+                            Log.e(TAG, "fetch subscription source ${source.name} failed: error=${apiResponse}")
                             null
                         }
 
                         is ApiResponse.Exception -> {
-                            Log.e(TAG, "fetch subscription source(${source.name}) failed: exception=${apiResponse}")
+                            Log.e(TAG, "fetch subscription source ${source.name} failed: exception=${apiResponse}")
                             null
                         }
 
@@ -136,10 +136,16 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                                     true
                                 }
                             }?.let {
-                                Log.i(TAG, "Proxy config[${index}] nodes size: ${clashConfig.proxies.size}")
-                                proxyNodeList.addAll(it)
+                                Log.i(TAG, "Proxy config[${index}] nodes size: ${it.size}")
+                                if (it.size > 100) {
+                                    Log.d(TAG, "Only take the first 100 nodes")
+                                    proxyNodeList.addAll(it.subList(0, 99))
+                                } else {
+                                    proxyNodeList.addAll(it)
+                                }
                             }
                         }
+                        Log.d(TAG, "All proxy nodes size: ${proxyNodeList.size}")
                         content =  ConverterUtil.serializeClashConfig(ClashConfig(proxies = proxyNodeList))
                         if (converter.converter.outputFileName == null) {
                             converter.converter.outputFileName = "${converter.converter.name}.yaml"
@@ -209,44 +215,43 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
     }
 
     fun addSubscriptionSource(subscriptionSource: SubscriptionSource): ApiResponse<SubscriptionSource> {
-        Log.d(TAG, "addSubscriptionSource()")
-        var content: String?
+        Log.d(TAG, "addSubscriptionSource(), sourceType=${subscriptionSource.type}")
         when (val apiResponse = httpRepos.fetchUrl(subscriptionSource.sourceUrl)) {
             is ApiResponse.Success -> {
-                Log.d(TAG, "fetchSubscriptionContent success, sourceType=${subscriptionSource.type}")
-                fileRepos.saveSubscriptionSource(
-                    subscriptionSource.getCacheFileName(),
-                    apiResponse.data
-                )
-                subscriptionSource.pullStatus = SourceStatus.UPDATED
-                subscriptionSource.pulledTime = System.currentTimeMillis()
-                subscriptionSource.updatedTime = System.currentTimeMillis()
-                content = apiResponse.data
+                Log.d(TAG, "Fetch subscription content success")
+                val content = apiResponse.data
+                val clashConfig = ConverterUtil.parseToClashConfig(subscriptionSource.type, content)
+                Log.d(TAG, "Parse content success, proxy nodes size=${clashConfig.proxies?.size}")
+                if (!clashConfig.proxies.isNullOrEmpty()) {
+                    fileRepos.saveSubscriptionSource(
+                        subscriptionSource.getCacheFileName(),
+                        apiResponse.data
+                    )
+                    subscriptionSource.pullStatus = SourceStatus.UPDATED
+                    subscriptionSource.pulledTime = System.currentTimeMillis()
+                    subscriptionSource.updatedTime = System.currentTimeMillis()
+                    dbRepos.insertSubscriptionSource(subscriptionSource)
+
+                    Log.d(TAG, "addSubscriptionSource success")
+                    return ApiResponse.Success(subscriptionSource)
+
+                } else {
+                    Log.w(TAG, "Proxy nodes is empty.")
+                    return ApiResponse.Error(VMError.EmptyProxyList)
+                }
             }
 
             is ApiResponse.Error -> {
-                Log.e(TAG, "fetchSubscriptionContent error=${apiResponse}")
+                Log.e(TAG, "addSubscriptionSource error=${apiResponse}")
                 return apiResponse
             }
 
             is ApiResponse.Exception -> {
-                Log.e(TAG, "fetchSubscriptionContent exception=${apiResponse}")
+                Log.e(TAG, "addSubscriptionSource exception=${apiResponse}")
                 return apiResponse
             }
 
         }
-
-        content.let {
-            val clashConfig = ConverterUtil.parseToClashConfig(subscriptionSource.type, it)
-            Log.d(
-                TAG, "proxies size=${clashConfig.proxies?.size}"
-            )
-            if (!clashConfig.proxies.isNullOrEmpty()) {
-                dbRepos.insertSubscriptionSource(subscriptionSource)
-                return ApiResponse.Success(subscriptionSource)
-            }
-        }
-        return ApiResponse.Error(VMError.EmptyProxyList)
     }
 
     fun updateSubscriptionSource(subscriptionSource: SubscriptionSource): ApiResponse<SubscriptionSource> {
@@ -271,12 +276,12 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                 }
 
                 is ApiResponse.Error -> {
-                    Log.e(TAG, "fetchSubscriptionContent error=${apiResponse}")
+                    Log.e(TAG, "updateSubscriptionSource error=${apiResponse}")
                     return apiResponse
                 }
 
                 is ApiResponse.Exception -> {
-                    Log.e(TAG, "fetchSubscriptionContent exception=${apiResponse}")
+                    Log.e(TAG, "updateSubscriptionSource exception=${apiResponse}")
                     return apiResponse
                 }
 
