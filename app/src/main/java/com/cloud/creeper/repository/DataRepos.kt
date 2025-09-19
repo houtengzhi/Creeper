@@ -1,7 +1,6 @@
 package com.cloud.creeper.repository
 
 import android.util.Log
-import com.cloud.creeper.base.DataState
 import com.cloud.creeper.base.VMError
 import com.cloud.creeper.protocol.ClashConfig
 import com.cloud.creeper.protocol.ClientType
@@ -9,8 +8,6 @@ import com.cloud.creeper.protocol.ProxyConfig
 import com.cloud.creeper.protocol.clash.ClashProxyNode
 import com.cloud.creeper.protocol.core.ApiResponse
 import com.cloud.creeper.protocol.core.ConverterUtil
-import com.cloud.creeper.protocol.core.onError
-import com.cloud.creeper.protocol.core.onSuccess
 import com.cloud.creeper.repository.db.DbRepos
 import com.cloud.creeper.repository.entity.ConverterWithSources
 import com.cloud.creeper.repository.entity.SourceStatus
@@ -19,13 +16,11 @@ import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.repository.file.FileRepos
 import com.cloud.creeper.repository.http.HttpRepos
 import com.cloud.creeper.support.filter.ClashProxyFilter
-import com.cloud.creeper.ui.source.SubscriptionViewModel
 import com.cloud.creeper.util.RepositoryType
 import com.cloud.creeper.util.SystemUtil
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 
@@ -228,7 +223,6 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                         apiResponse.data
                     )
                     subscriptionSource.pullStatus = SourceStatus.UPDATED
-                    subscriptionSource.pulledTime = System.currentTimeMillis()
                     subscriptionSource.updatedTime = System.currentTimeMillis()
                     dbRepos.insertSubscriptionSource(subscriptionSource)
 
@@ -254,8 +248,8 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
         }
     }
 
-    fun updateSubscriptionSource(subscriptionSource: SubscriptionSource): ApiResponse<SubscriptionSource> {
-        Log.d(TAG, "updateSubscriptionSource()")
+    fun editSubscriptionSource(subscriptionSource: SubscriptionSource): ApiResponse<SubscriptionSource> {
+        Log.d(TAG, "editSubscriptionSource()")
         val oldSubscriptionSource = dbRepos.querySubscriptionSourceById(subscriptionSource.id)
         if (oldSubscriptionSource == null) {
             return ApiResponse.Error(VMError.SubscriptionSourceNotFound)
@@ -264,15 +258,24 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
             var content: String?
             when (val apiResponse = httpRepos.fetchUrl(subscriptionSource.sourceUrl)) {
                 is ApiResponse.Success -> {
-                    Log.d(TAG, "fetchSubscriptionContent success, sourceType=${subscriptionSource.type}")
-                    fileRepos.saveSubscriptionSource(
-                        subscriptionSource.getCacheFileName(),
-                        apiResponse.data
-                    )
-                    subscriptionSource.pullStatus = SourceStatus.UPDATED
-                    subscriptionSource.pulledTime = System.currentTimeMillis()
-                    subscriptionSource.updatedTime = System.currentTimeMillis()
+                    Log.d(TAG, "Fetch subscription content success")
                     content = apiResponse.data
+
+                    val clashConfig = ConverterUtil.parseToClashConfig(subscriptionSource.type, content)
+                    Log.d(TAG, "Parse content success, proxy nodes size=${clashConfig.proxies?.size}")
+                    if (!clashConfig.proxies.isNullOrEmpty()) {
+                        fileRepos.saveSubscriptionSource(
+                            subscriptionSource.getCacheFileName(),
+                            apiResponse.data
+                        )
+                        subscriptionSource.pullStatus = SourceStatus.UPDATED
+                        subscriptionSource.updatedTime = System.currentTimeMillis()
+                        dbRepos.updateSubscriptionSource(subscriptionSource)
+                        return ApiResponse.Success(subscriptionSource)
+                    } else {
+                        Log.w(TAG, "Proxy nodes is empty.")
+                        return ApiResponse.Error(VMError.EmptyProxyList)
+                    }
                 }
 
                 is ApiResponse.Error -> {
@@ -287,21 +290,10 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
 
             }
 
-            content.let {
-                val clashConfig = ConverterUtil.parseToClashConfig(subscriptionSource.type, it)
-                Log.d(
-                    TAG, "proxies size=${clashConfig.proxies?.size}"
-                )
-                if (!clashConfig.proxies.isNullOrEmpty()) {
-                    dbRepos.updateSubscriptionSource(subscriptionSource)
-                    return ApiResponse.Success(subscriptionSource)
-                }
-            }
         } else {
             dbRepos.updateSubscriptionSource(subscriptionSource)
             return ApiResponse.Success(subscriptionSource)
         }
-        return ApiResponse.Error(VMError.EmptyProxyList)
     }
 
     fun deleteSubscriptionSource(
@@ -330,7 +322,6 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                     fileRepos.saveSubscriptionSource(subscriptionSource.getCacheFileName(), apiResponse.data)
 
                     subscriptionSource.pullStatus = SourceStatus.UPDATED
-                    subscriptionSource.pulledTime = System.currentTimeMillis()
                     subscriptionSource.updatedTime = System.currentTimeMillis()
                     dbRepos.updateSubscriptionSource(subscriptionSource)
                     content = apiResponse.data
@@ -339,7 +330,6 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
 
                 is ApiResponse.Error -> {
                     subscriptionSource.pullStatus = SourceStatus.FAILED
-                    subscriptionSource.pulledTime = System.currentTimeMillis()
                     subscriptionSource.updatedTime = System.currentTimeMillis()
                     dbRepos.updateSubscriptionSource(subscriptionSource)
                     return apiResponse
@@ -348,7 +338,6 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
 
                 is ApiResponse.Exception -> {
                     subscriptionSource.pullStatus = SourceStatus.FAILED
-                    subscriptionSource.pulledTime = System.currentTimeMillis()
                     subscriptionSource.updatedTime = System.currentTimeMillis()
                     dbRepos.updateSubscriptionSource(subscriptionSource)
                     return apiResponse
@@ -387,7 +376,7 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
     suspend fun suspendUpdateSubscriptionSource(subscriptionSource: SubscriptionSource): ApiResponse<SubscriptionSource> {
         Log.d(TAG, "suspendUpdateSubscriptionSource()")
         return withContext(Dispatchers.Default) {
-            return@withContext updateSubscriptionSource(subscriptionSource)
+            return@withContext editSubscriptionSource(subscriptionSource)
         }
     }
 

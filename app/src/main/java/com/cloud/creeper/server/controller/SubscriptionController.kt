@@ -6,13 +6,8 @@ import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.protocol.core.ApiResponse.Error
 import com.cloud.creeper.protocol.core.ApiResponse.Exception
 import com.cloud.creeper.protocol.core.ApiResponse.Success
-import com.cloud.creeper.protocol.core.mapSuccess
-import com.cloud.creeper.protocol.core.onError
-import com.cloud.creeper.protocol.core.onException
-import com.cloud.creeper.protocol.core.onSuccess
 import com.cloud.creeper.repository.DataRepos
 import com.cloud.creeper.repository.db.DbRepos
-import com.cloud.creeper.repository.entity.SubscriptionDetails
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.repository.file.FileRepos
 import com.cloud.creeper.server.GenericHttpException
@@ -35,7 +30,6 @@ import com.yanzhenjie.andserver.annotation.QueryParam
 import com.yanzhenjie.andserver.annotation.RequestBody
 import com.yanzhenjie.andserver.annotation.ResponseBody
 import com.yanzhenjie.andserver.framework.body.FileBody
-import com.yanzhenjie.andserver.framework.body.JsonBody
 import com.yanzhenjie.andserver.http.HttpHeaders
 import com.yanzhenjie.andserver.http.HttpRequest
 import com.yanzhenjie.andserver.http.HttpResponse
@@ -49,10 +43,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import org.json.JSONArray
-import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
 
@@ -203,7 +193,7 @@ class SubscriptionController {
                 this.description = if (it.description.isNullOrEmpty()) null else it.description
                 this.iconPath = it.getClientIconPath()
                 this.createdTime = it.createdTime
-                this.pulledTime = it.pulledTime
+                this.updatedTime = it.updatedTime
                 this.pullStatus = it.pullStatus
             }
         }

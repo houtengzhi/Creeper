@@ -132,7 +132,7 @@ private fun SubscriptionDetailsTopAppBar(scrollBehavior: TopAppBarScrollBehavior
 private fun MoreMenu(expanded: Boolean, onDismissRequest: () -> Unit, onUpdateClick: () -> Unit) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
         DropdownMenuItem(text = {
-            Text(text = stringResource(id = R.string.Refresh))
+            Text(text = stringResource(id = R.string.Update))
         }, onClick = {
             onDismissRequest()
             onUpdateClick()

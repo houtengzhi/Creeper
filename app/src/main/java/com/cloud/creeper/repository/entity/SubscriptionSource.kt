@@ -32,9 +32,6 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
     @ColumnInfo(name = "updated_time")
     var updatedTime: Long = 0
 
-    @ColumnInfo(name = "pulled_time")
-    var pulledTime: Long = 0
-
     @ColumnInfo(name = "pull_status")
     var pullStatus: SourceStatus = SourceStatus.IDLE
 
@@ -47,7 +44,6 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
         description = parcel.readString()
         createdTime = parcel.readLong()
         updatedTime = parcel.readLong()
-        pulledTime = parcel.readLong()
         pullStatus = SourceStatus.valueOf(parcel.readString()!!)
     }
 
@@ -61,7 +57,6 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
         }
         parcel.writeLong(createdTime)
         parcel.writeLong(updatedTime)
-        parcel.writeLong(pulledTime)
         parcel.writeString(pullStatus.name)
     }
 
@@ -79,13 +74,13 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
         }
     }
 
-    fun getPulledTimeText(context: Context): String {
+    fun getUpdatedTimeText(context: Context): String {
         return when (pullStatus) {
             SourceStatus.IDLE, SourceStatus.PENDING -> {
                 "Updating..."
             }
             SourceStatus.UPDATED -> {
-                SystemUtil.getPulledTimeText(context, pulledTime)
+                SystemUtil.getPulledTimeText(context, updatedTime)
             }
             SourceStatus.FAILED -> {
                 "Updated failed"

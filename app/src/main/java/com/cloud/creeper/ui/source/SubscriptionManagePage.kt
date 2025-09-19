@@ -47,9 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -274,7 +272,7 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
                 .fillMaxWidth()
                 .padding(top = 12.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(text = subscriptionSource.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp), maxLines = 1)
-                Text(text = subscriptionSource.getPulledTimeText(context),
+                Text(text = subscriptionSource.getUpdatedTimeText(context),
                     modifier = Modifier.padding(end = 12.dp),
                     style = MaterialTheme.typography.labelMedium)
             }
@@ -340,7 +338,7 @@ private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Un
             onDeleteClick()
         })
         DropdownMenuItem(text = {
-            Text(text = stringResource(id = R.string.Refresh))
+            Text(text = stringResource(id = R.string.Update))
         }, onClick = {
             onDismissRequest()
             onUpdateClick()

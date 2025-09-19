@@ -24,8 +24,8 @@ data class SubscriptionOutput(@SerialName("id") @EncodeDefault(EncodeDefault.Mod
     @SerialName("created_time")
     var createdTime: Long = 0
 
-    @SerialName("pulled_time")
-    var pulledTime: Long = 0
+    @SerialName("updated_time")
+    var updatedTime: Long = 0
 
     @SerialName("pull_status")
     var pullStatus: SourceStatus = SourceStatus.IDLE

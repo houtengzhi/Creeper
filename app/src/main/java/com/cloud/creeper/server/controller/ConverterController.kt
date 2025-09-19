@@ -47,7 +47,7 @@ class ConverterController {
                 this.description = if (it.description.isNullOrEmpty()) null else it.description
                 this.iconPath = it.getClientIconPath()
                 this.createdTime = it.createdTime
-                this.pulledTime = it.pulledTime
+                this.updatedTime = it.updatedTime
                 this.pullStatus = it.pullStatus
             }
         }

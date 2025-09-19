@@ -605,7 +605,7 @@
                     source_type: "V2Ray",
                     source_icon_path: "/image/ic_v2ray.png",
                     created_time: Date.now() - HOUR_MILLIS,
-                    pulled_time: Date.now() - HOUR_MILLIS,
+                    updated_time: Date.now() - HOUR_MILLIS,
                     pull_status: "UPDATED",
                     description: "Demo subscription for testing"
                 },
@@ -616,7 +616,7 @@
                     source_type: "Clash",
                     source_icon_path: "/image/ic_clashr.png",
                     created_time: Date.now() - 2 * DAY_MILLIS,
-                    pulled_time: Date.now() - 2 * DAY_MILLIS,
+                    updated_time: Date.now() - 2 * DAY_MILLIS,
                     pull_status: "FAILED",
                     description: "Another demo subscription"
                 }
@@ -782,7 +782,7 @@
                         <div class="subscription-url">${sub.source_url}</div>
                         <div class="subscription-meta">
                             <span class="subscription-type ${sub.source_type.toLowerCase()}">${sub.source_type}</span>
-                            <span class="subscription-time">${getPulledTimeText(sub.pulled_time, sub.pull_status)}</span>
+                            <span class="subscription-time">${getPulledTimeText(sub.updated_time, sub.pull_status)}</span>
                         </div>
                     </div>
                     <div class="subscription-actions">
