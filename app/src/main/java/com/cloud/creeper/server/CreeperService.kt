@@ -3,6 +3,7 @@ package com.cloud.creeper.server
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -15,12 +16,12 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import com.cloud.creeper.MainActivity
 import com.cloud.creeper.R
 import com.cloud.creeper.util.NetUtil
 import com.yanzhenjie.andserver.AndServer
 import com.yanzhenjie.andserver.Server
 import dagger.hilt.android.AndroidEntryPoint
-import java.lang.Exception
 import java.util.concurrent.TimeUnit
 
 /**
@@ -73,10 +74,13 @@ class CreeperService: Service() {
                 NOTIFICATION_CHANNEL_ID
             }
         val builder = NotificationCompat.Builder(this, channelId)
+        val intent = Intent(this, MainActivity::class.java)
         builder.setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setOngoing(true)
             .setSmallIcon(R.mipmap.ic_launcher_round)
             .setContentTitle("Creeper")
+            .setContentIntent(PendingIntent.getActivity(this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             ServiceCompat.startForeground(this,100, builder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)

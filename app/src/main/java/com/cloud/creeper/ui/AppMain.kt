@@ -192,16 +192,14 @@ fun AppMain() {
                 }, onNewClick = {
 
                 },
-                    onResultSet = { subscriptionSource ->
-                        if (REQUEST_CODE_SELECT_SUBSCRIPTION == requestCode) {
-                            val data = Bundle()
-                            data.putString(KEY_REQUEST_CODE, requestCode)
-                            data.putParcelable(KEY_SUBSCRIPTION_SOURCE, subscriptionSource)
-                            Log.d(TAG, "setResult(), data=${data}")
-                            navController.setResult(data)
-                            navController.popBackStack()
-                        }
-                    },
+                    onResultSet = if (REQUEST_CODE_SELECT_SUBSCRIPTION == requestCode)  { subscriptionSource ->
+                        val data = Bundle()
+                        data.putString(KEY_REQUEST_CODE, requestCode)
+                        data.putParcelable(KEY_SUBSCRIPTION_SOURCE, subscriptionSource)
+                        Log.d(TAG, "setResult(), data=${data}")
+                        navController.setResult(data)
+                        navController.popBackStack()
+                    } else null,
                     onDetailsClick = { subscriptionSource ->
                         val args = Bundle()
                         args.putParcelable(KEY_SUBSCRIPTION_SOURCE, subscriptionSource)
@@ -211,7 +209,7 @@ fun AppMain() {
             composable(route = Screen.SubscriptionDetailsScreen.route) {
                 val subscriptionSource = it.arguments?.getParcelable<SubscriptionSource>(
                     KEY_SUBSCRIPTION_SOURCE)
-                SubscriptionDetailsPage(viewModel = hiltViewModel<SubscriptionViewModel, SubscriptionViewModel.SubscriptionViewModelFactory> { factory ->
+                SubscriptionDetailsPage(subscriptionSource!!, viewModel = hiltViewModel<SubscriptionViewModel, SubscriptionViewModel.SubscriptionViewModelFactory> { factory ->
                     factory.create(subscriptionSource)
                 }, onUpClick = {
                     navController.navigateUp()

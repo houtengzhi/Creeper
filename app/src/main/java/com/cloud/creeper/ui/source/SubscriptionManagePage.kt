@@ -1,5 +1,6 @@
 package com.cloud.creeper.ui.source
 
+import android.content.ClipData
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -26,6 +27,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -38,11 +41,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,6 +64,7 @@ import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.ui.ErrorDialog
 import com.cloud.creeper.util.SUPPORTED_SOURCE_TYPE_LIST
 import com.cloud.creeper.util.SystemUtil
+import kotlinx.coroutines.launch
 
 /**
  *
@@ -66,7 +74,7 @@ private const val TAG = "SubscriptionManagePage"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionManagePage(viewModel: SubscriptionViewModel, onUpClick: () -> Unit = {}, onNewClick: () -> Unit,
-                           onResultSet: (subscriptionSource: SubscriptionSource) -> Unit, onDetailsClick: (subscriptionSource: SubscriptionSource) -> Unit) {
+                           onResultSet: ((subscriptionSource: SubscriptionSource) -> Unit)? = null, onDetailsClick: (subscriptionSource: SubscriptionSource) -> Unit) {
     Log.d(TAG, "SubscriptionManagePage() $currentRecomposeScope")
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -79,6 +87,8 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel, onUpClick: () -> Un
 
     val addState = viewModel.addState.observeAsState(DataState.initial())
 
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -86,12 +96,15 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel, onUpClick: () -> Un
             SubscriptionManageTopAppBar(scrollBehavior = scrollBehavior, onUpClick = onUpClick, onNewClick = {
                 showAddSubscriptionDialog = true
             })
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
     ) { contentPadding ->
         Log.d(TAG, "Scaffold() $currentRecomposeScope")
 
         ConverterPageScreen(viewModel, uiState.value, addState.value, deleteState.value, modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
-            onItemClick = onResultSet,
+            onItemClick = onResultSet ?: onDetailsClick,
             onEditClick = {
                 viewModel.editSubscriptionSource(it)
             },
@@ -99,7 +112,12 @@ fun SubscriptionManagePage(viewModel: SubscriptionViewModel, onUpClick: () -> Un
                 viewModel.deleteSubscriptionSource(it)
         }, onUpdateClick = {
             viewModel.fetchSubscriptionDetails(it, true)
-        }, onDetailsClick = onDetailsClick)
+        }, onDetailsClick = onDetailsClick,
+            onShowSnackbar = {
+                scope.launch {
+                    snackbarHostState.showSnackbar(it)
+                }
+            })
 
         when {
             showAddSubscriptionDialog -> {
@@ -159,7 +177,8 @@ fun ConverterPageScreen(viewModel: SubscriptionViewModel, dataState: DataState<L
                         onEditClick: (subscriptionSource: SubscriptionSource) -> Unit,
                         onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit,
                         onUpdateClick: (subscriptionSource: SubscriptionSource) -> Unit,
-                        onDetailsClick: (subscriptionSource: SubscriptionSource) -> Unit) {
+                        onDetailsClick: (subscriptionSource: SubscriptionSource) -> Unit,
+                        onShowSnackbar: (message: String) -> Unit) {
     Log.d(TAG, "ConverterPageScreen(), dataState=${dataState} addState=${addState}")
     when {
         dataState.isLoading -> {
@@ -174,7 +193,7 @@ fun ConverterPageScreen(viewModel: SubscriptionViewModel, dataState: DataState<L
             dataState.data.let { dataList ->
                 LazyColumn(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(dataList) {
-                        SubscriptionSourceItem(it, onItemClick, onEditClick, onDeleteClick, onUpdateClick, onDetailsClick)
+                        SubscriptionSourceItem(it, onItemClick, onEditClick, onDeleteClick, onUpdateClick, onShowSnackbar)
                     }
                 }
             }
@@ -232,11 +251,12 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
                                    onEditClick: (subscriptionSource: SubscriptionSource) -> Unit,
                                    onDeleteClick: (subscriptionSource: SubscriptionSource) -> Unit,
                                    onUpdateClick: (subscriptionSource: SubscriptionSource) -> Unit,
-                                   onDetailsClick: (subscriptionSource: SubscriptionSource) -> Unit) {
+                                   onShowSnackbar: (message: String) -> Unit) {
     var menuExpanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val clipboardManager = LocalClipboard.current
 
     Row(modifier = Modifier
         .fillMaxWidth()
@@ -264,6 +284,8 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
         IconButton(onClick = {
             menuExpanded = true
         }, modifier = Modifier.padding(end = 12.dp)) {
+            val message = stringResource(R.string.Copied_successfully)
+
             Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More Menu")
 
             SubscriptionSourceMenu(
@@ -272,8 +294,10 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
                 onEditClick = { showEditDialog = true },
                 onDeleteClick = { showDeleteDialog = true },
                 onUpdateClick = { onUpdateClick(subscriptionSource)},
-                onDetailsClick = {
-                    onDetailsClick(subscriptionSource)
+                onCopyClick = {
+                    val clipData = ClipData.newPlainText("plain text", subscriptionSource.sourceUrl)
+                    clipboardManager.nativeClipboard.setPrimaryClip(clipData)
+                    onShowSnackbar(message)
                 })
         }
     }
@@ -301,7 +325,7 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
 }
 
 @Composable
-private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit, onUpdateClick: () -> Unit, onDetailsClick: () -> Unit) {
+private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Unit, onEditClick: () -> Unit, onDeleteClick: () -> Unit, onUpdateClick: () -> Unit, onCopyClick: () -> Unit) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest, modifier = Modifier) {
         DropdownMenuItem(text = {
             Text(text = stringResource(id = R.string.Edit))
@@ -316,16 +340,16 @@ private fun SubscriptionSourceMenu(expanded: Boolean, onDismissRequest: () -> Un
             onDeleteClick()
         })
         DropdownMenuItem(text = {
-            Text(text = stringResource(id = R.string.Update))
+            Text(text = stringResource(id = R.string.Refresh))
         }, onClick = {
             onDismissRequest()
             onUpdateClick()
         })
         DropdownMenuItem(text = {
-            Text(text = stringResource(id = R.string.Details))
+            Text(text = stringResource(id = R.string.Copy_Url))
         }, onClick = {
             onDismissRequest()
-            onDetailsClick()
+            onCopyClick()
         } )
     }
 }

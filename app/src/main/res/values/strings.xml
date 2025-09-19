@@ -60,4 +60,9 @@
     <string name="Error">"Error"</string>
     <string name="Server">“Server”</string>
     <string name="Http_Port">"Http Port"</string>
+    <string name="Total_X">"Total: %1$s"</string>
+    <string name="Subscription_statistics">"Subscription statistics"</string>
+    <string name="No_data_obtained">"No data obtained"</string>
+    <string name="Copy_Url">"Copy Url"</string>
+    <string name="Copied_successfully">"Copied successfully"</string>
 </resources>
