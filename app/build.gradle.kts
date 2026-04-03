@@ -1,3 +1,7 @@
+import org.codehaus.groovy.runtime.ArrayTypeUtils.dimension
+import java.text.SimpleDateFormat
+import java.util.Date
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -12,6 +16,15 @@ plugins {
     // Add the Google services Gradle plugin
     id("com.google.gms.google-services")
 }
+
+fun buildTime(): String {
+    return SimpleDateFormat("yyyyMMdd_HHmm").format(Date())
+}
+
+fun generateVersionCode(): Int {
+    return (System.currentTimeMillis() / 1000).toInt()
+}
+
 
 android {
     signingConfigs {
@@ -29,8 +42,8 @@ android {
         applicationId = "com.cloud.creeper"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = generateVersionCode()
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         signingConfig = signingConfigs.getByName("debug")
@@ -38,17 +51,26 @@ android {
 
     buildTypes {
         debug {
-
             signingConfig = signingConfigs.getByName("debug")
         }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
     }
+
+    flavorDimensions += "channel"
+
+    productFlavors {
+        create("googlePlay") {
+            dimension = "channel"
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -66,6 +88,27 @@ android {
         getByName("main") {
             assets {
                 srcDirs("src/main/assets")
+            }
+        }
+    }
+
+    applicationVariants.all {
+        val variant = this
+
+        variant.outputs.all {
+            val output = this
+
+            val appName = "Crepper"
+            val versionName = variant.versionName
+            val buildType = variant.buildType.name
+            val flavorName = variant.flavorName
+            val time = buildTime()
+
+            val newApkName =
+                "${appName}_v${versionName}_${buildType}_${flavorName}_${time}.apk"
+
+            if (output is com.android.build.gradle.internal.api.BaseVariantOutputImpl) {
+                output.outputFileName = newApkName
             }
         }
     }
