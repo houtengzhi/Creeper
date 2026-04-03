@@ -4,6 +4,15 @@
 
 [中文说明](README_ZH.md)
 
+### 📸 Screenshots
+
+<p align="center">
+  <img src="screenshots/Screenshot_20260403_155506.png" width="200" />
+  <img src="screenshots/Screenshot_20260403_155536.png" width="200" />
+  <img src="screenshots/Screenshot_20260403_155611.png" width="200" />
+  <img src="screenshots/Screenshot_20260403_155754.png" width="200" />
+</p>
+
 ### 🚀 Features
 
 - **Subscription Management**: Easily add, edit, delete, and list proxy subscription sources.
