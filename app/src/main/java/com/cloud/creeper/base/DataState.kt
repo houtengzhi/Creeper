@@ -15,7 +15,7 @@ open class DataState<T>(val isLoading: Boolean,
 
     constructor(data: T) : this(false, data, null)
     constructor(throwable: Throwable) : this(false, null, throwable)
-    constructor(error: VMError) : this(false, null, null) {
+    constructor(error: AppError) : this(false, null, null) {
         this.error = ApiResponse.Error(error)
     }
     constructor(error: ApiResponse.Error) : this(false, null, null) {

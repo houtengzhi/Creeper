@@ -52,8 +52,8 @@ class HttpRepos(private val httpClient: OkHttpClient, private val githubService:
         val response = httpClient.newCall(request).execute()
         (if (response.isSuccessful) {
             Log.d(TAG, "fetchUrl() successful")
-            val result = response.body!!.string()
-            response.body?.close()
+            val result = response.body.string()
+            response.body.close()
             return ApiResponse.Success(result)
         } else {
             Log.e(TAG, "fetchUrl() failed")
@@ -71,8 +71,8 @@ class HttpRepos(private val httpClient: OkHttpClient, private val githubService:
             val response = httpClient.newCall(request).execute()
             (if (response.isSuccessful) {
                 Log.d(TAG, "suspendFetchUrl() successful")
-                val result = response.body!!.string()
-                response.body?.close()
+                val result = response.body.string()
+                response.body.close()
                 ApiResponse.Success(result)
             } else {
                 Log.e(TAG, "suspendFetchUrl() failed")

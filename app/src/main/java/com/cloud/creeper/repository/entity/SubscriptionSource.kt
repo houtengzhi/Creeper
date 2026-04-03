@@ -76,8 +76,8 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
 
     fun getUpdatedTimeText(context: Context): String {
         return when (pullStatus) {
-            SourceStatus.IDLE, SourceStatus.PENDING -> {
-                "Updating..."
+            SourceStatus.IDLE, SourceStatus.UPDATING -> {
+                "Updating"
             }
             SourceStatus.UPDATED -> {
                 SystemUtil.getPulledTimeText(context, updatedTime)
@@ -106,10 +106,10 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
     fun getClientIconColor():Color {
         return when (type) {
             ClientType.Clash -> {
-                MaterialTheme.colorScheme.primary
+                Color(0xFF1B3965)
             }
             ClientType.V2Ray -> {
-                MaterialTheme.colorScheme.primary
+                Color.Black
             }
             else -> {
                 MaterialTheme.colorScheme.primary
@@ -156,7 +156,7 @@ data class SubscriptionSource(@PrimaryKey @ColumnInfo(name = "source_id") val id
 
 enum class SourceStatus() {
     IDLE,
-    PENDING,
+    UPDATING,
     FAILED,
     UPDATED;
 }

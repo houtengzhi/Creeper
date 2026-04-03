@@ -9,7 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloud.creeper.base.DataState
-import com.cloud.creeper.base.VMError
+import com.cloud.creeper.base.AppError
 import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.repository.DataRepos
 import com.cloud.creeper.repository.GistFile
@@ -34,7 +34,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  *
@@ -197,7 +196,7 @@ class ConvertViewModel @AssistedInject constructor(@Assisted private val initial
             } else {
                 Log.e(TAG, "addConverter() proxy list is empty")
                 _addState.update {
-                    DataState(VMError.EmptyProxyList)
+                    DataState(AppError.EmptyProxyList)
                 }
             }
         }
@@ -225,7 +224,7 @@ class ConvertViewModel @AssistedInject constructor(@Assisted private val initial
 
             } else {
                 _updateState.update {
-                    DataState(VMError.EmptyProxyList)
+                    DataState(AppError.EmptyProxyList)
                 }
             }
         }

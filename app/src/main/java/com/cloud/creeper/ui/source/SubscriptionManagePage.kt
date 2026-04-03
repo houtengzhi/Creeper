@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -57,9 +58,12 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cloud.creeper.R
 import com.cloud.creeper.base.DataState
+import com.cloud.creeper.compose.anim.ThreeDotsLoadingAnimation
 import com.cloud.creeper.protocol.ClientType
+import com.cloud.creeper.repository.entity.SourceStatus
 import com.cloud.creeper.repository.entity.SubscriptionSource
-import com.cloud.creeper.ui.ErrorDialog
+import com.cloud.creeper.ui.widget.ErrorDialog
+import com.cloud.creeper.ui.widget.LoadingIndicator
 import com.cloud.creeper.util.SUPPORTED_SOURCE_TYPE_LIST
 import com.cloud.creeper.util.SystemUtil
 import kotlinx.coroutines.launch
@@ -204,7 +208,7 @@ fun ConverterPageScreen(viewModel: SubscriptionViewModel, dataState: DataState<L
 
     when {
         addState.isLoading -> {
-            com.cloud.creeper.ui.LoadingIndicator(modifier = Modifier.width(64.dp))
+            LoadingIndicator()
         }
         addState.throwable != null -> {
             Log.d(TAG, "add failed for exception: ${addState.throwable.message}")
@@ -226,7 +230,7 @@ fun ConverterPageScreen(viewModel: SubscriptionViewModel, dataState: DataState<L
 
     when {
         deleteState.isLoading -> {
-            com.cloud.creeper.ui.LoadingIndicator(modifier = Modifier.width(64.dp))
+            LoadingIndicator()
         }
         deleteState.throwable != null -> {
 
@@ -268,15 +272,31 @@ private fun SubscriptionSourceItem(subscriptionSource: SubscriptionSource, onIte
 
         Column(modifier = Modifier.weight(1f)) {
 
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween) {
+
                 Text(text = subscriptionSource.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 24.dp), maxLines = 1)
-                Text(text = subscriptionSource.getUpdatedTimeText(context),
-                    modifier = Modifier.padding(end = 12.dp),
-                    style = MaterialTheme.typography.labelMedium)
+
+                Row(modifier = Modifier
+                    .wrapContentWidth().padding(end = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = subscriptionSource.getUpdatedTimeText(context),
+                        modifier = Modifier,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    if (subscriptionSource.pullStatus == SourceStatus.UPDATING) {
+                        ThreeDotsLoadingAnimation(modifier = Modifier)
+                    }
+                }
+
             }
-            Text(text = if (subscriptionSource.description.isNullOrEmpty()) subscriptionSource.sourceUrl else subscriptionSource.description!!, modifier = Modifier.padding(start = 24.dp, bottom = 12.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = if (subscriptionSource.description.isNullOrEmpty()) subscriptionSource.sourceUrl else subscriptionSource.description!!,
+                modifier = Modifier.padding(start = 24.dp, bottom = 12.dp),
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.MiddleEllipsis)
         }
 
         IconButton(onClick = {

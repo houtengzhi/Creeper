@@ -59,7 +59,7 @@ import com.cloud.creeper.R
 import com.cloud.creeper.base.DataState
 import com.cloud.creeper.repository.entity.Converter
 import com.cloud.creeper.repository.entity.ConverterWithSources
-import com.cloud.creeper.ui.ErrorDialog
+import com.cloud.creeper.ui.widget.ErrorDialog
 
 /**
  *

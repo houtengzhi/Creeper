@@ -242,7 +242,7 @@ private fun SubscriptionStatisticsDialog(subscriptionDetails: SubscriptionDetail
             }
         },
         title = {
-            Text(text = stringResource(id = R.string.Subscription_statistics))
+            Text(text = stringResource(id = R.string.Statistics))
         },
         text = {
             if (subscriptionDetails == null) {

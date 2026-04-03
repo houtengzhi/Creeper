@@ -1,6 +1,6 @@
 package com.cloud.creeper.protocol.core
 
-import com.cloud.creeper.base.VMError
+import com.cloud.creeper.base.AppError
 import com.cloud.creeper.server.model.ApiResult
 
 
@@ -15,10 +15,10 @@ sealed interface ApiResponse<out T> {
 
         constructor(error: Error): this(error.errorCode, error.errorMessage)
 
-        constructor(error: VMError) : this(error.errorCode, error.errorMessage)
+        constructor(error: AppError) : this(error.errorCode, error.errorMessage)
 
         override fun toString(): String {
-            return "Error(errorCode=$errorCode, errorMessage='$errorMessage')"
+            return "Error(errorCode=$errorCode, errorMessage=\"$errorMessage\")"
         }
     }
     data class Exception(val throwable: Throwable) : ApiResponse<Nothing> {

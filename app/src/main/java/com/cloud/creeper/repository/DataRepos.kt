@@ -1,7 +1,8 @@
 package com.cloud.creeper.repository
 
 import android.util.Log
-import com.cloud.creeper.base.VMError
+import com.cloud.creeper.base.AppError
+import com.cloud.creeper.base.AppErrorCode
 import com.cloud.creeper.protocol.ClashConfig
 import com.cloud.creeper.protocol.ClientType
 import com.cloud.creeper.protocol.ProxyConfig
@@ -215,7 +216,14 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
             is ApiResponse.Success -> {
                 Log.d(TAG, "Fetch subscription content success")
                 val content = apiResponse.data
-                val clashConfig = ConverterUtil.parseToClashConfig(subscriptionSource.type, content)
+                var clashConfig: ClashConfig? = null
+                try {
+                     clashConfig = ConverterUtil.parseToClashConfig(subscriptionSource.type, content)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Parse content failed: ${e.message}")
+                    return ApiResponse.Error(AppErrorCode.DATA_PARSE_ERROR, "Parse subscription content failed")
+                }
+
                 Log.d(TAG, "Parse content success, proxy nodes size=${clashConfig.proxies?.size}")
                 if (!clashConfig.proxies.isNullOrEmpty()) {
                     fileRepos.saveSubscriptionSource(
@@ -231,13 +239,13 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
 
                 } else {
                     Log.w(TAG, "Proxy nodes is empty.")
-                    return ApiResponse.Error(VMError.EmptyProxyList)
+                    return ApiResponse.Error(AppErrorCode.EMPTY_PROXY_LIST, "Empty proxies list")
                 }
             }
 
             is ApiResponse.Error -> {
                 Log.e(TAG, "addSubscriptionSource error=${apiResponse}")
-                return apiResponse
+                return ApiResponse.Error(AppErrorCode.HTTP_ERROR, "Http request failed")
             }
 
             is ApiResponse.Exception -> {
@@ -252,7 +260,7 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
         Log.d(TAG, "editSubscriptionSource()")
         val oldSubscriptionSource = dbRepos.querySubscriptionSourceById(subscriptionSource.id)
         if (oldSubscriptionSource == null) {
-            return ApiResponse.Error(VMError.SubscriptionSourceNotFound)
+            return ApiResponse.Error(AppError.SubscriptionSourceNotFound)
         }
         if (subscriptionSource.sourceUrl != oldSubscriptionSource.sourceUrl) {
             var content: String?
@@ -274,7 +282,7 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
                         return ApiResponse.Success(subscriptionSource)
                     } else {
                         Log.w(TAG, "Proxy nodes is empty.")
-                        return ApiResponse.Error(VMError.EmptyProxyList)
+                        return ApiResponse.Error(AppError.EmptyProxyList)
                     }
                 }
 
@@ -317,6 +325,8 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
 
         val file = fileRepos.readSubscriptionSourceFile(subscriptionSource.getCacheFileName())
         if (forceRefresh || !file.exists()) {
+            subscriptionSource.pullStatus = SourceStatus.UPDATING
+            dbRepos.updateSubscriptionSource(subscriptionSource)
             when (val apiResponse = httpRepos.fetchUrl(subscriptionSource.sourceUrl)) {
                 is ApiResponse.Success -> {
                     fileRepos.saveSubscriptionSource(subscriptionSource.getCacheFileName(), apiResponse.data)
@@ -362,7 +372,7 @@ class DataRepos(val httpRepos: HttpRepos, val dbRepos: DbRepos, val fileRepos: F
             ApiResponse.Success(subscriptionDetails!!)
 
         } else {
-            ApiResponse.Error(VMError.EmptyProxyList)
+            ApiResponse.Error(AppError.EmptyProxyList)
         }
     }
 

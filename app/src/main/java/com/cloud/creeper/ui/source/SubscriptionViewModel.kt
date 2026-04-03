@@ -6,18 +6,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloud.creeper.base.DataState
-import com.cloud.creeper.base.VMError
-import com.cloud.creeper.protocol.core.ApiResponse
-import com.cloud.creeper.protocol.core.ConverterUtil
 import com.cloud.creeper.protocol.core.onError
 import com.cloud.creeper.protocol.core.onException
 import com.cloud.creeper.protocol.core.onSuccess
-import com.cloud.creeper.protocol.core.suspendOnError
-import com.cloud.creeper.protocol.core.suspendOnException
-import com.cloud.creeper.protocol.core.suspendOnSuccess
 import com.cloud.creeper.repository.DataRepos
 import com.cloud.creeper.repository.db.DbRepos
-import com.cloud.creeper.repository.entity.SourceStatus
 import com.cloud.creeper.repository.entity.SubscriptionDetails
 import com.cloud.creeper.repository.entity.SubscriptionSource
 import com.cloud.creeper.repository.file.FileRepos
@@ -40,7 +33,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  *
@@ -97,7 +89,12 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
             .stateIn(viewModelScope, started = SharingStarted.Eagerly, initialValue = DataState.initial())
 
     fun addSubscriptionSource(source: SubscriptionSource) {
-        viewModelScope.launch {
+        val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+            Log.e(TAG, "addSubscriptionSource() exception for ${throwable.message}")
+            throwable.printStackTrace()
+            _addState.value = DataState(throwable)
+        }
+        viewModelScope.launch(coroutineExceptionHandler) {
             flow {
                 Log.d(TAG, "addSubscriptionSource()")
                 val apiResponse = dataRepos.suspendAddSubscriptionSource(source)
@@ -109,6 +106,7 @@ class SubscriptionViewModel @AssistedInject constructor(@Assisted private val su
                 }
                 .catch {
                     Log.e(TAG, "addSubscriptionSource throwable=${it.message}")
+                    it.printStackTrace()
                     _addState.value = DataState(it)
                 }
                 .collect {

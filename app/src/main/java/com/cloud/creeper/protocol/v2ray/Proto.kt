@@ -23,10 +23,10 @@ data class VMess(
     val id: String,
     //alertId
     val aid: String,
-    val scy: String?,
+    val scy: String? = null,
     val net: String,
     val type: String,
-    val fp: String?,
+    val fp: String? = null,
     @SerialName("inside_port") val insidePort: String? = null,
     @SerialName("") val unknown: String? = null,
     val sni: String? = null

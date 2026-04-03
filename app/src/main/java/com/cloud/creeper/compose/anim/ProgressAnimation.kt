@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -96,6 +98,35 @@ fun ProgressAnimation(modifier: Modifier = Modifier) {
                     Spacer(modifier = Modifier.width(5.dp))
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ThreeDotsLoadingAnimation(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition()
+
+    val infiniteRepeatable: InfiniteRepeatableSpec<Int> = infiniteRepeatable<Int>(
+        animation = tween(durationMillis = 1000, easing = LinearOutSlowInEasing),
+        repeatMode = RepeatMode.Reverse
+    )
+
+
+    val dotCount by infiniteTransition.animateValue(
+        initialValue = 1,
+        targetValue = 4,
+        typeConverter = Int.VectorConverter,
+        animationSpec = infiniteRepeatable
+    )
+
+
+    Row(
+        modifier = modifier.width(24.dp),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        for (i in 1..dotCount) {
+            Text("·", style = MaterialTheme.typography.labelLarge)
         }
     }
 }
